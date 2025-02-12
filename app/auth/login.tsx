@@ -76,8 +76,6 @@ const Login = () => {
       style={styles.background}
       resizeMode="cover"
     >
-      <View />
-
       <View style={styles.container}>
         <KeyboardAwareScrollView
           contentContainerStyle={{ flexGrow: 1 }}

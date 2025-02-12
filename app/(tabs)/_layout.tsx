@@ -7,7 +7,7 @@ export default function TabLayout() {
   const colorScheme = useColorScheme();
   const colors = COLORS();
 
-  const icons = {
+  const icons: any = {
     home: {
       active: require("../../assets/images/home-active.png"),
       light: require("../../assets/images/home-deactive-light.png"),
@@ -25,15 +25,15 @@ export default function TabLayout() {
     },
   };
 
-  const getTabIcon = (focused, type) => {
+  const getTabIcon = (focused: any, type: any) => {
     return (
       <Image
         source={
           focused
             ? icons[type].active
-            : colorScheme === "dark"
-            ? icons[type].dark
-            : icons[type].light
+            : colorScheme !== "dark"
+              ? icons[type].dark
+              : icons[type].light
         }
         style={{ width: 24, height: 24 }}
         resizeMode="contain"
@@ -49,32 +49,37 @@ export default function TabLayout() {
         tabBarInactiveTintColor: colors.tabIconDefault,
         tabBarStyle: {
           backgroundColor: colors.background,
-          marginBottom: "2%",
-          height: "10%",
-          alignItems: "center",
-          justifyContent: "center",
-          paddingTop: "2%",
+          height: 70,
+          paddingBottom: 10,
+          paddingTop: 10,
+          borderTopWidth: 0,
+          elevation: 4,
+          shadowColor: "#3C221D",
+          shadowOffset: { width: 0, height: -4 },
+          shadowOpacity: 0.08,
+          shadowRadius: 6,
         },
+        headerShown: false,
       }}
     >
       <Tabs.Screen
         name="home"
         options={{
-          title: "Home",
+          tabBarLabel: "Beranda",
           tabBarIcon: ({ focused }) => getTabIcon(focused, "home"),
         }}
       />
       <Tabs.Screen
         name="chat"
         options={{
-          title: "Chat",
+          tabBarLabel: "Chatbot",
           tabBarIcon: ({ focused }) => getTabIcon(focused, "chat"),
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
-          title: "Profile",
+          tabBarLabel: "Profile",
           tabBarIcon: ({ focused }) => getTabIcon(focused, "profile"),
         }}
       />
