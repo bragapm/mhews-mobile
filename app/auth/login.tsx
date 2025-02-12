@@ -8,7 +8,9 @@ import {
   Image,
   Alert,
   ActivityIndicator,
+  useColorScheme,
 } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import React, { useState } from "react";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import Feather from "@expo/vector-icons/Feather";
@@ -19,6 +21,7 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { postData } from "../services/apiServices";
+import COLORS from "../config/COLORS";
 
 // Skema validasi dengan Zod
 const signinSchema = z.object({
@@ -27,6 +30,8 @@ const signinSchema = z.object({
 });
 
 const Login = () => {
+  const colorScheme = useColorScheme();
+  const colors = COLORS();
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -56,118 +61,236 @@ const Login = () => {
     }
   };
 
+  const backgroundSource =
+    colorScheme === "dark"
+      ? require("../../assets/images/overlay-dark.png")
+      : require("../../assets/images/overlay-light.png");
+  const logoSource =
+    colorScheme === "dark"
+      ? require("../../assets/images/logo-dark.png")
+      : require("../../assets/images/braga-logo.png");
+
   return (
     <ImageBackground
-      source={require("../../assets/images/splashscreen.png")}
+      source={backgroundSource}
       style={styles.background}
       resizeMode="cover"
     >
-      <View style={styles.overlay} />
+      <View />
+
       <View style={styles.container}>
-        {/* Header */}
-        <View style={{ marginLeft: 15, marginTop: 25 }}>
-          <Image
-            source={require("../../assets/images/braga-logo.png")}
-            style={{ width: 150, height: 50, resizeMode: "contain" }}
-          />
-        </View>
-
-        {/* Title */}
-        <View style={{ marginBottom: 20 }}>
-          <Text style={styles.title}>Selamat datang di</Text>
-          <Text style={styles.title}>Aplikasi MHEWS</Text>
-        </View>
-
-        {/* Form Login */}
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Masuk</Text>
-
-
-          {/* Input Email */}
-          <Controller
-            control={control}
-            name="email"
-            render={({ field: { onChange, value } }) => (
-              <View style={styles.inputContainer}>
-                <MaterialIcons name="email" size={24} color="black" style={styles.inputIcon} />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Email"
-                  keyboardType="email-address"
-                  value={value}
-                  onChangeText={onChange}
-                />
-              </View>
-            )}
-          />
-          {errors.email?.message && (
-            <Text style={styles.errorText}>{String(errors.email.message)}</Text>
-          )}
-
-          {/* Input Password */}
-          <Controller
-            control={control}
-            name="password"
-            render={({ field: { onChange, value } }) => (
-              <View style={styles.inputContainer}>
-                <Feather name="lock" size={24} color="black" style={styles.inputIcon} />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Password"
-                  secureTextEntry={!isPasswordVisible}
-                  value={value}
-                  onChangeText={onChange}
-                />
-                <TouchableOpacity onPress={() => setIsPasswordVisible(!isPasswordVisible)}>
-                  <Feather name={isPasswordVisible ? "eye" : "eye-off"} size={24} color="black" />
-                </TouchableOpacity>
-              </View>
-            )}
-          />
-          {errors.password?.message && (
-            <Text style={styles.errorText}>{String(errors.password.message)}</Text>
-          )}
-
-          <TouchableOpacity style={styles.button} onPress={handleSubmit(handleSignin)} disabled={loading}>
-            {loading ? (
-              <ActivityIndicator size="small" color="#fff" />
-            ) : (
-              <Text style={styles.textButton}>Masuk</Text>
-            )}
-          </TouchableOpacity>
-
-          <View style={{ flexDirection: "row", alignItems: "center", marginVertical: 10 }}>
-            <View style={{ flex: 1, height: 1, backgroundColor: "#ccc" }} />
-            <Text style={[styles.orText, { marginHorizontal: 10, textAlign: "center" }]}>atau</Text>
-            <View style={{ flex: 1, height: 1, backgroundColor: "#ccc" }} />
+        <KeyboardAwareScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
+          enableOnAndroid={true}
+          extraScrollHeight={20} // Sesuaikan nilai ini jika perlu
+        >
+          {/* Header */}
+          <View style={{ marginLeft: 15, marginTop: 25 }}>
+            <Image
+              source={logoSource}
+              style={{ width: 150, height: 50, resizeMode: "contain" }}
+            />
           </View>
 
-          {/* Tombol Masuk dengan Google */}
-          <TouchableOpacity style={styles.altButton}>
-            <AntDesign name="google" size={24} color="#DB4437" />
-            <Text style={styles.altText}>Masuk dengan Google</Text>
-          </TouchableOpacity>
+          {/* Title */}
+          <View style={{ marginBottom: 20 }}>
+            <Text style={[styles.title, { color: colors.text }]}>
+              Selamat datang di
+            </Text>
+            <Text style={[styles.title, { color: colors.text }]}>
+              Aplikasi MHEWS
+            </Text>
+          </View>
 
-          {/* Tombol Masuk dengan SSO BNPB */}
-          <TouchableOpacity style={styles.altButton}>
-            <Image source={require("../../assets/icons/bnpb.svg")} style={styles.iconImage} />
-            <Text style={styles.altText}>Masuk dengan SSO BNPB</Text>
-          </TouchableOpacity>
+          {/* Form Login */}
+          <View style={[styles.card, { backgroundColor: colors.background }]}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>
+              Masuk
+            </Text>
 
-          {/* Tombol Masuk sebagai Guest */}
-          <TouchableOpacity style={styles.altButton}>
-            <MaterialIcons name="person-outline" size={24} color="black" />
-            <Text style={styles.altText}>Masuk Sebagai Guest</Text>
-          </TouchableOpacity>
+            {/* Input Email */}
+            <Controller
+              control={control}
+              name="email"
+              render={({ field: { onChange, value } }) => (
+                <View
+                  style={[
+                    styles.inputContainer,
+                    {
+                      borderColor: colors.border,
+                      backgroundColor: colors.background,
+                    },
+                  ]}
+                >
+                  <MaterialIcons
+                    name="email"
+                    size={24}
+                    color={colors.text}
+                    style={styles.inputIcon}
+                  />
+                  <TextInput
+                    style={[
+                      styles.input,
+                      {
+                        color: colors.text,
+                        backgroundColor: colors.background,
+                      },
+                    ]}
+                    placeholder="Email"
+                    placeholderTextColor={colors.text}
+                    keyboardType="email-address"
+                    value={value}
+                    onChangeText={onChange}
+                  />
+                </View>
+              )}
+            />
+            {errors.email?.message && (
+              <Text style={styles.errorText}>
+                {String(errors.email.message)}
+              </Text>
+            )}
 
-          {/* Link Daftar */}
-          <View style={{ flexDirection: "row", justifyContent: "center", marginTop: 20 }}>
-            <Text style={{ fontSize: 16 }}>Belum punya akun?</Text>
-            <TouchableOpacity onPress={() => router.push("/auth/signup")}>
-              <Text style={styles.registerText}> Daftar Disini</Text>
+            {/* Input Password */}
+            <Controller
+              control={control}
+              name="password"
+              render={({ field: { onChange, value } }) => (
+                <View
+                  style={[
+                    styles.inputContainer,
+                    {
+                      borderColor: colors.border,
+                      backgroundColor: colors.background,
+                    },
+                  ]}
+                >
+                  <Feather
+                    name="lock"
+                    size={24}
+                    color={colors.text}
+                    style={styles.inputIcon}
+                  />
+                  <TextInput
+                    style={[
+                      styles.input,
+                      {
+                        color: colors.text,
+                        backgroundColor: colors.background,
+                      },
+                    ]}
+                    placeholder="Password"
+                    secureTextEntry={!isPasswordVisible}
+                    value={value}
+                    onChangeText={onChange}
+                    placeholderTextColor={colors.text}
+                  />
+                  <TouchableOpacity
+                    onPress={() => setIsPasswordVisible(!isPasswordVisible)}
+                  >
+                    <Feather
+                      name={isPasswordVisible ? "eye" : "eye-off"}
+                      size={24}
+                      color={colors.text}
+                    />
+                  </TouchableOpacity>
+                </View>
+              )}
+            />
+            {errors.password?.message && (
+              <Text style={styles.errorText}>
+                {String(errors.password.message)}
+              </Text>
+            )}
+
+            <TouchableOpacity
+              style={styles.button}
+              onPress={handleSubmit(handleSignin)}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text style={styles.textButton}>Masuk</Text>
+              )}
             </TouchableOpacity>
+
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                marginVertical: 10,
+              }}
+            >
+              <View style={{ flex: 1, height: 1, backgroundColor: "#ccc" }} />
+              <Text
+                style={[
+                  styles.orText,
+                  {
+                    marginHorizontal: 10,
+                    textAlign: "center",
+                    color: colors.text,
+                  },
+                ]}
+              >
+                atau
+              </Text>
+              <View style={{ flex: 1, height: 1, backgroundColor: "#ccc" }} />
+            </View>
+
+            {/* Tombol Masuk dengan Google */}
+            <TouchableOpacity
+              style={[styles.altButton, { backgroundColor: colors.background }]}
+            >
+              {/* <AntDesign name="google" size={24} color="#DB4437" /> */}
+              <Image
+                source={require("../../assets/images/google.png")}
+                style={styles.iconImage}
+              />
+              <Text style={styles.altText}>Masuk dengan Google</Text>
+            </TouchableOpacity>
+
+            {/* Tombol Masuk dengan SSO BNPB */}
+            <TouchableOpacity
+              style={[styles.altButton, { backgroundColor: colors.background }]}
+            >
+              <Image
+                source={require("../../assets/icons/bnpb-logo.png")}
+                style={styles.iconImage}
+              />
+              <Text style={styles.altText}>Masuk dengan SSO BNPB</Text>
+            </TouchableOpacity>
+
+            {/* Tombol Masuk sebagai Guest */}
+            <TouchableOpacity
+              style={[styles.altButton, { backgroundColor: colors.background }]}
+            >
+              <Image
+                source={require("../../assets/images/guest.png")}
+                style={styles.iconImage}
+              />
+              {/* <MaterialIcons name="person-outline" size={24} color="black" /> */}
+              <Text style={styles.altText}>Masuk Sebagai Guest</Text>
+            </TouchableOpacity>
+
+            {/* Link Daftar */}
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "center",
+                marginTop: 20,
+              }}
+            >
+              <Text style={{ fontSize: 16, color: colors.text }}>
+                Belum punya akun?
+              </Text>
+              <TouchableOpacity onPress={() => router.push("/auth/signup")}>
+                <Text style={styles.registerText}> Daftar Disini</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
+        </KeyboardAwareScrollView>
       </View>
     </ImageBackground>
   );
@@ -196,7 +319,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: "bold",
-    marginLeft: 15
+    marginLeft: 15,
   },
   card: {
     position: "absolute",
