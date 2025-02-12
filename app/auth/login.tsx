@@ -206,7 +206,8 @@ const Login = () => {
 
             <TouchableOpacity
               style={styles.button}
-              onPress={handleSubmit(handleSignin)}
+              onPress={() => router.push("/(tabs)/home")}
+              // onPress={handleSubmit(handleSignin)}
               disabled={loading}
             >
               {loading ? (

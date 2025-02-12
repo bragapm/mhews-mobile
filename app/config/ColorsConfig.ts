@@ -1,6 +1,5 @@
-// theme.js
-const tintColorLight = "#2f95dc"; // sesuaikan dengan warna yang kamu inginkan
-const tintColorDark = "#fff"; // sesuaikan dengan kebutuhan
+const tintColorLight = "#F36A1D";
+const tintColorDark = "#F36A1D";
 
 export const ColorsConfig = {
   light: {
