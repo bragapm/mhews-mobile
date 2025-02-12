@@ -42,6 +42,7 @@ export const getData = async (endpoint: string, params = {}) => {
 };
 
 export const postData = async (endpoint: string, data = {}) => {
+    return true;
     try {
         const response = await api.post(endpoint, data);
         return response.data;

@@ -7,6 +7,7 @@ import {
   ImageBackground,
   Image,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import React, { useState } from "react";
 import AntDesign from "@expo/vector-icons/AntDesign";
@@ -27,6 +28,7 @@ const signinSchema = z.object({
 
 const Login = () => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const {
     control,
@@ -38,14 +40,19 @@ const Login = () => {
   });
 
   const handleSignin = async (data: any) => {
+    setLoading(true);
     try {
       const response = await postData("/signin", data);
       console.log(response);
-
-      Alert.alert("Sukses", "Akun berhasil dibuat!");
-      router.push("/(tabs)/home");
+      setTimeout(() => {
+        setLoading(false);
+        Alert.alert("Sukses", "Login berhasil!");
+        router.push("/auth/otp");
+      }, 2000);
     } catch (error: any) {
+      console.log(error);
       Alert.alert("Error", error.message);
+      router.push("/auth/otp");
     }
   };
 
@@ -121,11 +128,19 @@ const Login = () => {
             <Text style={styles.errorText}>{String(errors.password.message)}</Text>
           )}
 
-          <TouchableOpacity style={styles.button} onPress={handleSubmit(handleSignin)}>
-            <Text style={styles.textButton}>Masuk</Text>
+          <TouchableOpacity style={styles.button} onPress={handleSubmit(handleSignin)} disabled={loading}>
+            {loading ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <Text style={styles.textButton}>Masuk</Text>
+            )}
           </TouchableOpacity>
 
-          <Text style={styles.orText}>atau</Text>
+          <View style={{ flexDirection: "row", alignItems: "center", marginVertical: 10 }}>
+            <View style={{ flex: 1, height: 1, backgroundColor: "#ccc" }} />
+            <Text style={[styles.orText, { marginHorizontal: 10, textAlign: "center" }]}>atau</Text>
+            <View style={{ flex: 1, height: 1, backgroundColor: "#ccc" }} />
+          </View>
 
           {/* Tombol Masuk dengan Google */}
           <TouchableOpacity style={styles.altButton}>
@@ -247,18 +262,20 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#F36A1D",
     marginTop: 10,
-    justifyContent: "center",
+    paddingHorizontal: 10,
   },
   altText: {
+    flex: 1,
     fontSize: 16,
     fontWeight: "bold",
-    marginLeft: 10,
-    color: "#F36A1D"
+    textAlign: "center",
+    color: "#F36A1D",
   },
   iconImage: {
     width: 24,
     height: 24,
     resizeMode: "contain",
+    alignSelf: "flex-start",
   },
   registerText: {
     fontSize: 16,

@@ -7,6 +7,7 @@ import {
     View,
     ImageBackground,
     Alert,
+    ActivityIndicator,
 } from "react-native";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -35,6 +36,7 @@ const signupSchema = z.object({
 const Signup = () => {
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     const {
         control,
@@ -53,8 +55,11 @@ const Signup = () => {
             const response = await postData("/signup", formData);
             console.log(response);
 
-            Alert.alert("Sukses", "Akun berhasil dibuat!");
-            router.push("/auth/login");
+            setTimeout(() => {
+                setLoading(false);
+                Alert.alert("Sukses", "Akun berhasil dibuat!");
+                router.push("/auth/login");
+            }, 2000);
         } catch (error: any) {
             Alert.alert("Error", error.message);
         }
@@ -210,8 +215,12 @@ const Signup = () => {
                         <Text style={styles.errorText}>{String(errors.confirm_password.message)}</Text>
                     )}
 
-                    <TouchableOpacity style={styles.button} onPress={handleSubmit(handleSignup)}>
-                        <Text style={styles.textButton}>Buat Akun</Text>
+                    <TouchableOpacity style={styles.button} onPress={handleSubmit(handleSignup)} disabled={loading}>
+                        {loading ? (
+                            <ActivityIndicator size="small" color="#fff" />
+                        ) : (
+                            <Text style={styles.textButton}>Buat Akun</Text>
+                        )}
                     </TouchableOpacity>
                 </View>
             </View>
