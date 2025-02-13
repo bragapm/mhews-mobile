@@ -29,24 +29,45 @@ export default function ProfileScreen() {
   const options = [
     {
       title: "Detail Akun",
-      icon: require("../../assets/images/detail-account-dark.png"),
+      icon:
+        colorScheme === "dark"
+          ? require("../../assets/images/detail-account-dark.png")
+          : require("../../assets/images/detail-account-light.png"),
     },
     {
       title: "Ubah Password",
-      icon: require("../../assets/images/ubah-password-dark.png"),
+      icon:
+        colorScheme === "dark"
+          ? require("../../assets/images/ubah-password-dark.png")
+          : require("../../assets/images/ubah-password-light.png"),
     },
     {
       title: "Profil Kerabat",
-      icon: require("../../assets/images/profil-kerabat-dark.png"),
+      icon:
+        colorScheme === "dark"
+          ? require("../../assets/images/profil-kerabat-dark.png")
+          : require("../../assets/images/profil-kerabat-light.png"),
     },
-    { title: "Bahasa", icon: require("../../assets/images/bahasa-dark.png") },
+    {
+      title: "Bahasa",
+      icon:
+        colorScheme === "dark"
+          ? require("../../assets/images/bahasa-dark.png")
+          : require("../../assets/images/bahasa-light.png"),
+    },
     {
       title: "Tentang Kami",
-      icon: require("../../assets/images/tentang-kami-dark.png"),
+      icon:
+        colorScheme === "dark"
+          ? require("../../assets/images/tentang-kami-dark.png")
+          : require("../../assets/images/tentang-kami-light.png"),
     },
     {
       title: "Pusat Bantuan",
-      icon: require("../../assets/images/pusat-bantuan-dark.png"),
+      icon:
+        colorScheme === "dark"
+          ? require("../../assets/images/pusat-bantuan-dark.png")
+          : require("../../assets/images/pusat-bantuan-light.png"),
     },
     {
       title: "Keluar Akun",
@@ -190,7 +211,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingBottom: 20,
   },
-  container: { flex: 1, padding: 16 },
+  container: { flex: 1, padding: 16, marginTop: "5%" },
   background: {
     flex: 1,
     width: "100%",

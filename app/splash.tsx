@@ -12,10 +12,11 @@ import { useEffect, useState } from "react";
 import { router } from "expo-router";
 import COLORS from "./config/COLORS";
 import { useAuth } from "./context/AuthContext";
+import { StatusBar } from "react-native";
 
 const SplashScreen = () => {
   const { accessToken, refreshToken } = useAuth();
-//   console.log("token", refreshToken);
+  //   console.log("token", refreshToken);
   const colorScheme = useColorScheme();
   const colors = COLORS();
   const [showNextBtn, setShowNextBtn] = useState(false);
@@ -45,60 +46,67 @@ const SplashScreen = () => {
       : require("../assets/images/braga-logo.png");
 
   return (
-    <ImageBackground
-      source={backgroundSource}
-      style={styles.background}
-      resizeMode="cover"
-    >
-      {!showNextBtn ? (
-        <View style={styles.loaderContainer}>
-          <ActivityIndicator size="large" color="#FF6600" />
-        </View>
-      ) : (
-        <>
-          <View style={styles.overlay} />
-          <View style={styles.content}>
-            <Image source={logoSource} style={styles.brand} />
-            <Text style={[styles.title, { color: colors.text }]}>
-              Multi-Hazard{"\n"}Early Warning System
-            </Text>
-            <Text style={[styles.description, { color: colors.text }]}>
-              Sistem Peringatan Dini Bencana Alam yang dapat diakses dimanapun
-              dan kapanpun dalam genggaman tangan pengguna
-            </Text>
+    <>
+      <StatusBar
+        translucent={true}
+        backgroundColor="transparent"
+        barStyle={colorScheme === "dark" ? "light-content" : "dark-content"}
+      />
+      <ImageBackground
+        source={backgroundSource}
+        style={styles.background}
+        resizeMode="cover"
+      >
+        {!showNextBtn ? (
+          <View style={styles.loaderContainer}>
+            <ActivityIndicator size="large" color="#FF6600" />
           </View>
-        </>
-      )}
+        ) : (
+          <>
+            <View style={styles.overlay} />
+            <View style={styles.content}>
+              <Image source={logoSource} style={styles.brand} />
+              <Text style={[styles.title, { color: colors.text }]}>
+                Multi-Hazard{"\n"}Early Warning System
+              </Text>
+              <Text style={[styles.description, { color: colors.text }]}>
+                Sistem Peringatan Dini Bencana Alam yang dapat diakses dimanapun
+                dan kapanpun dalam genggaman tangan pengguna
+              </Text>
+            </View>
+          </>
+        )}
 
-      {showNextBtn && (
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => router.replace("/auth/login")}
-        >
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "center",
-              width: "100%",
-              position: "relative",
-            }}
+        {showNextBtn && (
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => router.replace("/auth/login")}
           >
-            <Text style={styles.buttonText}>Mulai</Text>
-            <Image
-              source={require("../assets/images/arrow-right.png")}
+            <View
               style={{
-                width: 20,
-                height: 20,
-                resizeMode: "contain",
-                position: "absolute",
-                right: 16,
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "100%",
+                position: "relative",
               }}
-            />
-          </View>
-        </TouchableOpacity>
-      )}
-    </ImageBackground>
+            >
+              <Text style={styles.buttonText}>Mulai</Text>
+              <Image
+                source={require("../assets/images/arrow-right.png")}
+                style={{
+                  width: 20,
+                  height: 20,
+                  resizeMode: "contain",
+                  position: "absolute",
+                  right: 16,
+                }}
+              />
+            </View>
+          </TouchableOpacity>
+        )}
+      </ImageBackground>
+    </>
   );
 };
 
