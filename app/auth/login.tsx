@@ -22,7 +22,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { postData } from "../services/apiServices";
 import COLORS from "../config/COLORS";
-import { useAuth } from "../context/AuthContext";
+import useAuthStore from "../hooks/auth";
+import { useAlert } from "@/components/AlertContext";
 
 // Skema validasi dengan Zod
 const signinSchema = z.object({
@@ -35,7 +36,8 @@ const Login = () => {
   const colors = COLORS();
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { setTokens } = useAuth();
+  const { setAuthData, getProfile } = useAuthStore();
+  const { showAlert } = useAlert();
 
   const {
     control,
@@ -50,18 +52,17 @@ const Login = () => {
     setLoading(true);
     try {
       const response = await postData("/auth/login", data);
-      console.log(response);
       if (response?.data) {
-        setTokens(response?.data?.access_token, response?.data?.refresh_token);
+        setAuthData(response?.data?.access_token, response?.data?.refresh_token);
         setLoading(false);
-        Alert.alert("Sukses", "Login berhasil!");
+        showAlert("success", "Login berhasil!");
         router.push("/auth/otp");
       } else {
         setLoading(false);
-        Alert.alert("Error", "Login Gagal!");
+        showAlert("error", "Login Gagal!");
       }
     } catch (error: any) {
-      Alert.alert("Error", error.message);
+      showAlert("error", error.message);
     }
   };
 

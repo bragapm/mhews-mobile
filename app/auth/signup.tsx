@@ -21,6 +21,7 @@ import colors from "../constants/colors";
 import { postData } from "../services/apiServices";
 import { useColorScheme } from "react-native";
 import COLORS from "../config/COLORS";
+import { useAlert } from "@/components/AlertContext";
 
 // Skema validasi dengan Zod
 const signupSchema = z
@@ -39,6 +40,7 @@ const signupSchema = z
   });
 
 const Signup = () => {
+  const { showAlert } = useAlert();
   const colorScheme = useColorScheme();
   const colors = COLORS();
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -68,11 +70,11 @@ const Signup = () => {
       //bypass langsung soalnya gak ada response kalo berhasil
       setTimeout(() => {
         setLoading(false);
-        Alert.alert("Sukses", "Akun berhasil dibuat!");
+        showAlert("success", "Akun berhasil dibuat!");
         router.push("/auth/login");
       }, 2000);
     } catch (error: any) {
-      Alert.alert("Error", error.message);
+      showAlert("error", error.message);
       setLoading(false);
     } finally {
       setLoading(false);

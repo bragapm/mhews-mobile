@@ -12,12 +12,17 @@ import {
 import COLORS from "../config/COLORS";
 import { LinearGradient } from "expo-linear-gradient";
 import FloatingSOSButton from "@/components/FloatingSOSButton";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Modal from "react-native-modal";
+import useAuthStore from "../hooks/auth";
+import { useRouter } from "expo-router";
 
 export default function ProfileScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [emergencyMessage, setEmergencyMessage] = useState("");
+  const reset = useAuthStore((state) => state.reset);
+  const router = useRouter();
+  const { profile, getProfile } = useAuthStore();
   const colorScheme = useColorScheme();
   const colors = COLORS();
   const iconQuestion = require("../../assets/icons/questionCircle.png");
@@ -29,52 +34,62 @@ export default function ProfileScreen() {
   const options = [
     {
       title: "Detail Akun",
-      icon:
-        colorScheme === "dark"
-          ? require("../../assets/images/detail-account-dark.png")
-          : require("../../assets/images/detail-account-light.png"),
+      icon: colorScheme === "dark"
+        ? require("../../assets/images/detail-account-dark.png")
+        : require("../../assets/images/detail-account-light.png"),
+      route: "/account/detail",
     },
     {
       title: "Ubah Password",
-      icon:
-        colorScheme === "dark"
-          ? require("../../assets/images/ubah-password-dark.png")
-          : require("../../assets/images/ubah-password-light.png"),
+      icon: colorScheme === "dark"
+        ? require("../../assets/images/ubah-password-dark.png")
+        : require("../../assets/images/ubah-password-light.png"),
+      route: "/account/change-password",
     },
     {
       title: "Profil Kerabat",
-      icon:
-        colorScheme === "dark"
-          ? require("../../assets/images/profil-kerabat-dark.png")
-          : require("../../assets/images/profil-kerabat-light.png"),
+      icon: colorScheme === "dark"
+        ? require("../../assets/images/profil-kerabat-dark.png")
+        : require("../../assets/images/profil-kerabat-light.png"),
+      route: "/account/family-profile",
     },
     {
       title: "Bahasa",
-      icon:
-        colorScheme === "dark"
-          ? require("../../assets/images/bahasa-dark.png")
-          : require("../../assets/images/bahasa-light.png"),
+      icon: colorScheme === "dark"
+        ? require("../../assets/images/bahasa-dark.png")
+        : require("../../assets/images/bahasa-light.png"),
+      route: "/account/language",
     },
     {
       title: "Tentang Kami",
-      icon:
-        colorScheme === "dark"
-          ? require("../../assets/images/tentang-kami-dark.png")
-          : require("../../assets/images/tentang-kami-light.png"),
+      icon: colorScheme === "dark"
+        ? require("../../assets/images/tentang-kami-dark.png")
+        : require("../../assets/images/tentang-kami-light.png"),
+      route: "/account/about",
     },
     {
       title: "Pusat Bantuan",
-      icon:
-        colorScheme === "dark"
-          ? require("../../assets/images/pusat-bantuan-dark.png")
-          : require("../../assets/images/pusat-bantuan-light.png"),
+      icon: colorScheme === "dark"
+        ? require("../../assets/images/pusat-bantuan-dark.png")
+        : require("../../assets/images/pusat-bantuan-light.png"),
+      route: "/account/help",
     },
     {
       title: "Keluar Akun",
       icon: require("../../assets/images/exit.png"),
       isExit: true,
+      action: () => handleLogout(),
     },
   ];
+
+  const handleLogout = () => {
+    reset();
+    router.replace("/splash");
+  };
+
+  useEffect(() => {
+    getProfile();
+  }, []);
 
   return (
     <ImageBackground
@@ -108,13 +123,13 @@ export default function ProfileScreen() {
                 />
                 <View style={styles.textContent}>
                   <Text style={[styles.cardTitle, { color: colors.text }]}>
-                    Gunawan Wibisono
+                    {profile?.first_name} {profile?.last_name}
                   </Text>
                   <Text style={[styles.txtSubTitle, { color: colors.text }]}>
-                    3502191102990002
+                    {profile?.NIK}
                   </Text>
                   <Text style={[styles.txtSubTitle, { color: colors.text }]}>
-                    user@email.com
+                    {profile?.email}
                   </Text>
                 </View>
               </View>
@@ -125,16 +140,25 @@ export default function ProfileScreen() {
             style={[
               styles.contentOption,
               {
-                backgroundColor: colors.background,
-                borderColor: colors.background,
+                backgroundColor: colorScheme === "dark" ? "#1c1c1c" : "#fff",
                 borderRadius: 12,
                 marginTop: "5%",
                 paddingVertical: "2%",
               },
             ]}
           >
-            {options.map((item, index) => (
-              <TouchableOpacity key={index} style={styles.optionContainer}>
+            {options.map((item: any, index) => (
+              <TouchableOpacity
+                key={index}
+                style={styles.optionContainer}
+                onPress={() => {
+                  if (item.isExit && item.action) {
+                    item.action();
+                  } else {
+                    router.push(item.route);
+                  }
+                }}
+              >
                 <View style={styles.optionLeft}>
                   <View style={styles.iconWrapper}>
                     <Image source={item.icon} style={styles.iconImage} />
@@ -143,65 +167,27 @@ export default function ProfileScreen() {
                     <Text
                       style={[
                         styles.textOption,
-                        { color: item.isExit ? colors.exit : colors.text },
+                        { color: item.isExit ? "#d9534f" : "#333" },
                       ]}
                     >
                       {item.title}
                     </Text>
                   </View>
                 </View>
-                <View style={styles.arrowWrapper}>
-                  <Image
-                    source={require("../../assets/images/arrow-right.png")}
-                    style={styles.arrowIcon}
-                  />
-                </View>
+                {!item.isExit && (
+                  <View style={styles.arrowWrapper}>
+                    <Image
+                      source={require("../../assets/images/arrow-right.png")}
+                      style={styles.arrowIcon}
+                    />
+                  </View>
+                )}
               </TouchableOpacity>
             ))}
           </View>
         </View>
       </ScrollView>
-      <FloatingSOSButton onPress={() => setModalVisible(true)} />
-      {/* Modal SOS */}
-      <Modal
-        isVisible={modalVisible}
-        onBackdropPress={() => setModalVisible(false)}
-        style={stylesModal.modalContainer}
-      >
-        <View style={stylesModal.modalContent}>
-          {/* Judul */}
-          <Text style={stylesModal.modalTitle}>SOS</Text>
-          <Text style={stylesModal.modalSubtitle}>
-            Kirimkan Pesan Darurat untuk mendapatkan penanganan segera atas
-            situasi darurat yang anda alami.
-          </Text>
-
-          {/* Input Pesan Darurat */}
-          <TextInput
-            style={stylesModal.input}
-            placeholder="Masukkan Pesan Darurat beserta Lokasi dan Detail Bencana yang terjadi"
-            multiline
-            value={emergencyMessage}
-            onChangeText={setEmergencyMessage}
-          />
-
-          {/* Info Koneksi */}
-          <View style={stylesModal.infoContainer}>
-            <Text style={stylesModal.infoText}>
-              <Image source={iconQuestion} /> Pesan Darurat akan terkirim ketika
-              anda memiliki koneksi internet
-            </Text>
-          </View>
-
-          {/* Tombol Geser untuk Mengirim SOS */}
-          <TouchableOpacity
-            style={stylesModal.sosButton}
-            onPress={() => console.log("SOS Dikirim:", emergencyMessage)}
-          >
-            <Text style={stylesModal.sosText}>Geser untuk Mengirim SOS</Text>
-          </TouchableOpacity>
-        </View>
-      </Modal>
+      <FloatingSOSButton />
     </ImageBackground>
   );
 }
@@ -352,69 +338,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   arrowIcon: {
-    width: 20,
-    height: 20,
+    width: 12,
+    height: 12,
+    marginRight: 15,
     resizeMode: "contain",
-  },
-});
-
-const stylesModal = StyleSheet.create({
-  modalContainer: {
-    justifyContent: "flex-end",
-    margin: 0,
-  },
-  modalContent: {
-    backgroundColor: "white",
-    padding: 20,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    minHeight: "50%",
-  },
-  modalTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 5,
-  },
-  modalSubtitle: {
-    fontSize: 14,
-    color: "#666",
-    marginBottom: 15,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    padding: 10,
-    minHeight: 80,
-    textAlignVertical: "top",
-  },
-  infoContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 10,
-  },
-  infoText: {
-    fontSize: 12,
-    color: "#666",
-    display: "flex",
-  },
-  sosButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#E74C3C",
-    padding: 15,
-    borderRadius: 10,
-    marginTop: 20,
-  },
-  sosIcon: {
-    width: 24,
-    height: 24,
-    marginRight: 10,
-  },
-  sosText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "bold",
+    tintColor: "#999",
   },
 });

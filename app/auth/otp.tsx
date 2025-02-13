@@ -12,9 +12,11 @@ import {
 import OTPInputView from "@twotalltotems/react-native-otp-input";
 import { router } from "expo-router";
 import AntDesign from "@expo/vector-icons/AntDesign";
+import { useAlert } from "@/components/AlertContext";
 
 const OTPConfirmation = () => {
   const [otp, setOtp] = useState("");
+  const { showAlert } = useAlert();
   const [loading, setLoading] = useState(false);
   const colorScheme = useColorScheme();
 
@@ -22,7 +24,7 @@ const OTPConfirmation = () => {
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      Alert.alert("OTP Verified!");
+      showAlert("success", "OTP Verified!");
       router.push("/(tabs)/home");
     }, 2000);
   };

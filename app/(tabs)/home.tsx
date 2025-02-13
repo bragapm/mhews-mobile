@@ -12,15 +12,15 @@ import {
   ScrollView,
   TextInput,
 } from "react-native";
-import { useAuth } from "../context/AuthContext";
 import { LinearGradient } from "expo-linear-gradient";
 import Icon from "react-native-vector-icons/Feather";
 import FloatingSOSButton from "@/components/FloatingSOSButton";
 import Modal from "react-native-modal";
 import { ASSET_URL, getData } from "../services/apiServices";
+import { useAlert } from "@/components/AlertContext";
 
 export default function HomeScreen() {
-  const { logout } = useAuth();
+  const { showAlert } = useAlert();
   const colorScheme = useColorScheme();
   const [modalVisible, setModalVisible] = useState(false);
   const [emergencyMessage, setEmergencyMessage] = useState("");
@@ -51,8 +51,6 @@ export default function HomeScreen() {
     colorScheme === "dark"
       ? require("../../assets/images/bg-home.png")
       : require("../../assets/images/bg-home.png");
-
-  const iconQuestion = require("../../assets/icons/questionCircle.png");
 
   const fetchData = async () => {
     setLoading(true);
@@ -202,48 +200,7 @@ export default function HomeScreen() {
           />
         </View>
       </ScrollView>
-      <FloatingSOSButton onPress={() => setModalVisible(true)} />
-
-      {/* Modal SOS */}
-      <Modal
-        isVisible={modalVisible}
-        onBackdropPress={() => setModalVisible(false)}
-        style={stylesModal.modalContainer}
-      >
-        <View style={stylesModal.modalContent}>
-          {/* Judul */}
-          <Text style={stylesModal.modalTitle}>SOS</Text>
-          <Text style={stylesModal.modalSubtitle}>
-            Kirimkan Pesan Darurat untuk mendapatkan penanganan segera atas
-            situasi darurat yang anda alami.
-          </Text>
-
-          {/* Input Pesan Darurat */}
-          <TextInput
-            style={stylesModal.input}
-            placeholder="Masukkan Pesan Darurat beserta Lokasi dan Detail Bencana yang terjadi"
-            multiline
-            value={emergencyMessage}
-            onChangeText={setEmergencyMessage}
-          />
-
-          {/* Info Koneksi */}
-          <View style={stylesModal.infoContainer}>
-            <Text style={stylesModal.infoText}>
-              <Image source={iconQuestion} /> Pesan Darurat akan terkirim ketika
-              anda memiliki koneksi internet
-            </Text>
-          </View>
-
-          {/* Tombol Geser untuk Mengirim SOS */}
-          <TouchableOpacity
-            style={stylesModal.sosButton}
-            onPress={() => console.log("SOS Dikirim:", emergencyMessage)}
-          >
-            <Text style={stylesModal.sosText}>Geser untuk Mengirim SOS</Text>
-          </TouchableOpacity>
-        </View>
-      </Modal>
+      <FloatingSOSButton />
     </ImageBackground>
   );
 }
@@ -363,65 +320,4 @@ const styles = StyleSheet.create({
   },
   cardTitleSec: { fontSize: 18, fontWeight: "bold", marginTop: 5 },
   cardSubtitleSec: { fontSize: 14, marginTop: 4, color: "#4F4D4A" },
-});
-
-const stylesModal = StyleSheet.create({
-  modalContainer: {
-    justifyContent: "flex-end",
-    margin: 0,
-  },
-  modalContent: {
-    backgroundColor: "white",
-    padding: 20,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    minHeight: "50%",
-  },
-  modalTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 5,
-  },
-  modalSubtitle: {
-    fontSize: 14,
-    color: "#666",
-    marginBottom: 15,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    padding: 10,
-    minHeight: 80,
-    textAlignVertical: "top",
-  },
-  infoContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 10,
-  },
-  infoText: {
-    fontSize: 12,
-    color: "#666",
-    display: "flex",
-  },
-  sosButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#E74C3C",
-    padding: 15,
-    borderRadius: 10,
-    marginTop: 20,
-  },
-  sosIcon: {
-    width: 24,
-    height: 24,
-    marginRight: 10,
-  },
-  sosText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
 });

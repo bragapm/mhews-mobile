@@ -1,30 +1,29 @@
-import React from 'react';
-import { View, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import React from "react";
+import { Image, TouchableOpacity, StyleSheet } from "react-native";
+import { useSOSModal } from "../components/GlobalSOSModal";
 
-interface FloatingSOSButtonProps {
-    onPress: () => void;
-}
+const FloatingSOSButton: React.FC = () => {
+    const { showModal } = useSOSModal();
 
-const FloatingSOSButton: React.FC<FloatingSOSButtonProps> = ({ onPress }) => {
     return (
-        <TouchableOpacity style={styles.fab} onPress={onPress}>
-            <Image source={require('../assets/icons/SOS.png')} style={styles.icon} />
+        <TouchableOpacity style={styles.fab} onPress={showModal}>
+            <Image source={require("../assets/icons/SOS.png")} style={styles.icon} />
         </TouchableOpacity>
     );
 };
 
 const styles = StyleSheet.create({
     fab: {
-        position: 'absolute',
-        bottom: 0,
-        right: 5,
-        alignItems: 'center',
-        justifyContent: 'center',
+        position: "absolute",
+        bottom: 20,
+        right: 20,
+        alignItems: "center",
+        justifyContent: "center",
     },
     icon: {
         width: 70,
         height: 70,
-        resizeMode: 'contain',
+        resizeMode: "contain",
     },
 });
 

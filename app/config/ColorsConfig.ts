@@ -34,3 +34,5 @@ export const ColorsConfig = {
     exit: "#E35131",
   },
 };
+
+export default ColorsConfig; 

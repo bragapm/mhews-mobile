@@ -14,13 +14,31 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "Aplikasi memerlukan akses kamera untuk mengambil foto.",
+        "NSMicrophoneUsageDescription": "Aplikasi memerlukan akses mikrofon untuk merekam suara.",
+        "NSLocationWhenInUseUsageDescription": "Aplikasi memerlukan akses lokasi untuk menentukan posisi Anda.",
+        "NSPhotoLibraryUsageDescription": "Aplikasi memerlukan akses ke galeri untuk memilih foto.",
+        "NSPhotoLibraryAddUsageDescription": "Aplikasi memerlukan izin untuk menyimpan foto ke galeri."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.ACCESS_BACKGROUND_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.READ_MEDIA_AUDIO",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.READ_MEDIA_VIDEO",
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "bundler": "metro",
