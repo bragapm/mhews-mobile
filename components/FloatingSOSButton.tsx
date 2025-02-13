@@ -16,8 +16,8 @@ const FloatingSOSButton: React.FC<FloatingSOSButtonProps> = ({ onPress }) => {
 const styles = StyleSheet.create({
     fab: {
         position: 'absolute',
-        bottom: 20,
-        right: 20,
+        bottom: 0,
+        right: 5,
         alignItems: 'center',
         justifyContent: 'center',
     },

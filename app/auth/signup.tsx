@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     StyleSheet,
     Text,
@@ -55,13 +55,16 @@ const Signup = () => {
     });
 
     const handleSignup = async (data: any) => {
+        setLoading(true);
         try {
-            // Hapus confirm_password sebelum dikirim ke server
             const { confirm_password, ...formData } = data;
+            const requestData = {
+                ...formData,
+                role: "16f26149-65b3-4de5-ba0d-cd7130887441", // Set default role
+            };
 
-            const response = await postData("/signup", formData);
-            console.log(response);
-
+            const response = await postData("/users", requestData);
+            //bypass langsung soalnya gak ada response kalo berhasil
             setTimeout(() => {
                 setLoading(false);
                 Alert.alert("Sukses", "Akun berhasil dibuat!");
@@ -69,6 +72,9 @@ const Signup = () => {
             }, 2000);
         } catch (error: any) {
             Alert.alert("Error", error.message);
+            setLoading(false);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -266,6 +272,47 @@ const Signup = () => {
                     />
                     {errors.email?.message && (
                         <Text style={styles.errorText}>{String(errors.email.message)}</Text>
+                    )}
+
+                    {/* Input Email */}
+                    <Controller
+                        control={control}
+                        name="phone"
+                        render={({ field: { onChange, value } }) => (
+                            <View
+                                style={[
+                                    styles.inputContainer,
+                                    {
+                                        borderColor: colors.border,
+                                        backgroundColor: colors.background,
+                                    },
+                                ]}
+                            >
+                                <MaterialIcons
+                                    name="phone"
+                                    size={24}
+                                    color={colors.text}
+                                    style={styles.inputIcon}
+                                />
+                                <TextInput
+                                    style={[
+                                        styles.input,
+                                        {
+                                            color: colors.text,
+                                            backgroundColor: colors.background,
+                                        },
+                                    ]}
+                                    placeholder="Nomor Handphone"
+                                    placeholderTextColor={colors.text}
+                                    keyboardType="phone-pad"
+                                    value={value}
+                                    onChangeText={onChange}
+                                />
+                            </View>
+                        )}
+                    />
+                    {errors.phone?.message && (
+                        <Text style={styles.errorText}>{String(errors.phone.message)}</Text>
                     )}
 
                     {/* Input Password */}

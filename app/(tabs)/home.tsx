@@ -1,60 +1,22 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, useColorScheme, ImageBackground, Dimensions, Image, ScrollView, TextInput } from "react-native";
 import { useAuth } from "../context/AuthContext";
-import RiskIcon from "../../assets/icons/risk.svg";
-import ReportIcon from "../../assets/icons/report.svg";
-import ChartPieIcon from "../../assets/icons/chart-pie.svg";
-import PhoneIcon from "../../assets/icons/phone.svg";
-import WeatherIcon from "../../assets/icons/weather.svg";
-import ConsultIcon from "../../assets/icons/consult.svg";
-import EducationIcon from "../../assets/icons/education.svg";
-import PersonsIcon from "../../assets/icons/persons.svg";
 import { LinearGradient } from "expo-linear-gradient";
 import Icon from "react-native-vector-icons/Feather";
 import FloatingSOSButton from "@/components/FloatingSOSButton";
 import Modal from 'react-native-modal';
-
-const informasi = [
-  {
-    id: "1",
-    title: "Data Kejadian & Dampak Bencana",
-    description: "Tampilkan data terkini tentang kejadian bencana dan dampaknya",
-    icon: <ChartPieIcon width={25} height={25} />,
-  },
-  {
-    id: "2",
-    title: "Lapor Bencana",
-    description: "Laporkan Bencana yang Terjadi di Sekitar Anda",
-    icon: <PhoneIcon width={25} height={25} />,
-  },
-  {
-    id: "3",
-    title: "Data Kejadian & Dampak Bencana",
-    description: "Tampilkan data terkini tentang kejadian bencana dan dampaknya",
-    icon: <ChartPieIcon width={25} height={25} />,
-  },
-];
-
-const features = [
-  { id: "1", title: "Resiko Bencana", subtitle: "Pantau Resiko Bencana yang Terjadi di Sekitar Anda", icon: <RiskIcon width={25} height={25} /> },
-  { id: "2", title: "Lapor Bencana", subtitle: "Laporkan Bencana yang Terjadi di Sekitar Anda", icon: <ReportIcon width={25} height={25} /> },
-  { id: "3", title: "Resiko Bencana", subtitle: "Pantau Resiko Bencana yang Terjadi di Sekitar Anda", icon: <RiskIcon width={25} height={25} /> },
-  { id: "4", title: "Lapor Bencana", subtitle: "Laporkan Bencana yang Terjadi di Sekitar Anda", icon: <ReportIcon width={25} height={25} /> },
-];
-
-const supportFeatures = [
-  { id: "3", title: "Laporan Cuaca", subtitle: "Update Laporan Cuaca Berdasarkan Lokasi", icon: <WeatherIcon width={25} height={25} /> },
-  { id: "4", title: "Telekonsultasi", subtitle: "Konsultasi Kesehatan dengan Tenaga Kesehatan Terpercaya", icon: <ConsultIcon width={25} height={25} /> },
-  { id: "5", title: "Edukasi", subtitle: "Panduan Edukasi tentang Kebencanaan", icon: <EducationIcon width={25} height={25} /> },
-  { id: "6", title: "Pantau Kerabat", subtitle: "Ketahui Lokasi Kerabat Terdekat dari Resiko Bencana", icon: <PersonsIcon width={25} height={25} /> },
-];
+import { ASSET_URL, getData } from "../services/apiServices";
 
 export default function HomeScreen() {
   const { logout } = useAuth();
-  const carouselRef = useRef(null);
   const colorScheme = useColorScheme();
   const [modalVisible, setModalVisible] = useState(false);
   const [emergencyMessage, setEmergencyMessage] = useState('');
+  const [siagaBencana, setSiagaBencana] = useState([]);
+  const [fiturPendukung, setFiturPendukung] = useState([]);
+  const [infoTerkait, setInfoTerkait] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const isDarkMode = colorScheme === "dark";
   const colors = {
@@ -68,12 +30,41 @@ export default function HomeScreen() {
     textCardSecondary: "#EAEAEA",
   };
 
+  // const backgroundSource =
+  //   colorScheme === "dark"
+  //     ? require("../../assets/images/overlay-dark.png")
+  //     : require("../../assets/images/overlay-light.png");
+
   const backgroundSource =
     colorScheme === "dark"
-      ? require("../../assets/images/overlay-dark.png")
-      : require("../../assets/images/overlay-light.png");
+      ? require("../../assets/images/bg-home.png")
+      : require("../../assets/images/bg-home.png");
 
   const iconQuestion = require("../../assets/icons/questionCircle.png");
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const [siaga, fitur, info] = await Promise.all([
+        getData("items/siaga_bencana"),
+        getData("items/fitur_pendukung"),
+        getData("items/info_terkait"),
+      ]);
+
+      setSiagaBencana(siaga?.data || []);
+      setFiturPendukung(fitur?.data || []);
+      setInfoTerkait(info?.data || []);
+    } catch (err: any) {
+      setError(err.message);
+      console.error("Gagal mengambil data:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   return (
     <ImageBackground
@@ -99,32 +90,42 @@ export default function HomeScreen() {
 
           <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Siaga Bencana</Text>
           <FlatList
-            data={features}
+            data={siagaBencana}
             horizontal
             showsHorizontalScrollIndicator={false}
-            renderItem={({ item }) => (
+            renderItem={({ item }: { item: any }) => (
               <TouchableOpacity style={styles.card} activeOpacity={0.8}>
                 <LinearGradient colors={[colors.cardGradientStart, colors.cardGradientEnd]} style={styles.gradient}>
-                  <View style={styles.iconContainer}>{item.icon}</View>
+                  <View style={styles.iconContainer}>
+                    <Image
+                      source={{ uri: `${ASSET_URL}${item.icon}` }}
+                      style={{ width: 20, height: 20, resizeMode: "contain" }}
+                    />
+                  </View>
                   <Text style={[styles.cardTitle, { color: colors.textCardPrimary }]}>{item.title}</Text>
-                  <Text style={[styles.cardSubtitle, { color: colors.textCardSecondary }]}>{item.subtitle}</Text>
+                  <Text style={[styles.cardSubtitle, { color: colors.textCardSecondary }]}>{item.description}</Text>
                 </LinearGradient>
               </TouchableOpacity>
             )}
-            keyExtractor={(item) => item.id}
+            keyExtractor={(item: any) => item.id}
           />
 
           <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Informasi Terkait</Text>
           <FlatList
-            data={informasi}
+            data={infoTerkait}
             horizontal
             showsHorizontalScrollIndicator={false}
-            renderItem={({ item }) => (
+            renderItem={({ item }: { item: any }) => (
               <TouchableOpacity
                 style={[styles.informasiCard, { backgroundColor: colors.supportCardBackground }]}
                 activeOpacity={0.8}
               >
-                <View style={styles.iconInfoContainer}>{item.icon}</View>
+                <View style={styles.iconInfoContainer}>
+                  <Image
+                    source={{ uri: `${ASSET_URL}${item.icon}` }}
+                    style={{ width: 30, height: 30, resizeMode: "contain" }}
+                  />
+                </View>
                 <View style={styles.textContainer}>
                   <Text style={styles.cardTitleSec}>{item.title}</Text>
                   <Text style={styles.cardSubtitleSec}>{item.description}</Text>
@@ -137,14 +138,17 @@ export default function HomeScreen() {
 
           <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Fitur Pendukung</Text>
           <FlatList
-            data={supportFeatures}
+            data={fiturPendukung}
             numColumns={2}
             scrollEnabled={false}
-            renderItem={({ item }) => (
+            renderItem={({ item }: { item: any }) => (
               <TouchableOpacity style={[styles.supportCard, { backgroundColor: colors.supportCardBackground }]}>
-                {item.icon}
+                <Image
+                  source={{ uri: `${ASSET_URL}${item.icon}` }}
+                  style={{ width: 20, height: 20, resizeMode: "contain" }}
+                />
                 <Text style={styles.cardTitleSec}>{item.title}</Text>
-                <Text style={styles.cardSubtitleSec}>{item.subtitle}</Text>
+                <Text style={styles.cardSubtitleSec}>{item.description}</Text>
               </TouchableOpacity>
             )}
             keyExtractor={(item) => item.id}
@@ -205,7 +209,7 @@ const styles = StyleSheet.create({
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(255, 255, 255, 0.8)",
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
   },
   header: {
     flexDirection: "row",
@@ -271,7 +275,7 @@ const styles = StyleSheet.create({
   informasiCard: {
     borderRadius: 10,
     padding: 16,
-    margin: 8,
+    margin: 5,
     maxWidth: 300,
     width: "100%",
     textAlign: "left",
@@ -282,7 +286,7 @@ const styles = StyleSheet.create({
   supportCard: {
     borderRadius: 10,
     padding: 16,
-    margin: 8,
+    margin: 5,
     flex: 1,
     textAlign: "left"
   },

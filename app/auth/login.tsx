@@ -12,7 +12,6 @@ import {
 } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import React, { useState } from "react";
-import AntDesign from "@expo/vector-icons/AntDesign";
 import Feather from "@expo/vector-icons/Feather";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { router } from "expo-router";
@@ -22,6 +21,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { postData } from "../services/apiServices";
 import COLORS from "../config/COLORS";
+import { useAuth } from "../context/AuthContext";
 
 // Skema validasi dengan Zod
 const signinSchema = z.object({
@@ -34,6 +34,7 @@ const Login = () => {
   const colors = COLORS();
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { setTokens } = useAuth();
 
   const {
     control,
@@ -47,17 +48,19 @@ const Login = () => {
   const handleSignin = async (data: any) => {
     setLoading(true);
     try {
-      const response = await postData("/signin", data);
+      const response = await postData("/auth/login", data);
       console.log(response);
-      setTimeout(() => {
+      if (response?.data) {
+        await setTokens(response?.data?.access_token, response?.data?.refresh_token);
         setLoading(false);
         Alert.alert("Sukses", "Login berhasil!");
         router.push("/auth/otp");
-      }, 2000);
+      } else {
+        setLoading(false);
+        Alert.alert("Error", "Login Gagal!");
+      }
     } catch (error: any) {
-      console.log(error);
       Alert.alert("Error", error.message);
-      router.push("/auth/otp");
     }
   };
 
@@ -204,8 +207,7 @@ const Login = () => {
 
             <TouchableOpacity
               style={styles.button}
-              onPress={() => router.push("/(tabs)/home")}
-              // onPress={handleSubmit(handleSignin)}
+              onPress={handleSubmit(handleSignin)}
               disabled={loading}
             >
               {loading ? (

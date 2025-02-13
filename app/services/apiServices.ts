@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const BASE_URL = "https://mhewsmobile.braga.co.id/panel";
+const BASE_URL = "https://mhewsmobile.braga.co.id/";
+export const ASSET_URL = "https://mhewsmobile.braga.co.id/assets/";
 
 const api = axios.create({
     baseURL: BASE_URL,
@@ -42,8 +43,6 @@ export const getData = async (endpoint: string, params = {}) => {
 };
 
 export const postData = async (endpoint: string, data = {}) => {
-    //bypass dulu
-    return true;
     try {
         const response = await api.post(endpoint, data);
         return response.data;

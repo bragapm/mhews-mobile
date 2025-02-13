@@ -11,18 +11,24 @@ import {
 import { useEffect, useState } from "react";
 import { router } from "expo-router";
 import COLORS from "./config/COLORS";
+import { useAuth } from "./context/AuthContext";
 
 const SplashScreen = () => {
+    const { accessToken } = useAuth();
     const colorScheme = useColorScheme();
     const colors = COLORS();
     const [showNextBtn, setShowNextBtn] = useState(false);
 
     useEffect(() => {
         const timer = setTimeout(() => {
-            setShowNextBtn(true);
+            if (accessToken) {
+                router.push("/(tabs)/home");
+            } else {
+                setShowNextBtn(true);
+            }
         }, 3000);
         return () => clearTimeout(timer);
-    }, []);
+    }, [accessToken]);
 
     const backgroundSource = showNextBtn
         ? colorScheme === "dark"
