@@ -12,6 +12,10 @@ export const ColorsConfig = {
     tabIconSelected: primaryColor,
     border: "#B4B4AF",
     button: "#CD541B",
+    borderTwo: "#C3C3BF",
+    gradientStartProfile: "#FEE4D8",
+    gradientEndProfile: "#FFF7F3",
+    exit: "#E35131",
   },
   dark: {
     text: "#F9F8F7",
@@ -24,5 +28,9 @@ export const ColorsConfig = {
     tabIconSelected: primaryColor,
     border: "#777674",
     button: primaryColor,
+    borderTwo: "#353332",
+    gradientStartProfile: "#5B1A1A",
+    gradientEndProfile: "#2E0C0C",
+    exit: "#E35131",
   },
 };

@@ -29,7 +29,7 @@ const useAuthStore = create<AuthState>((set) => ({
   getProfile: async () => {
     try {
     
-      const response = await fetch("https://api.example.com/profile", {
+      const response = await fetch("https://api.bnpb.com/profile", {
         headers: { Authorization: `Bearer ${useAuthStore.getState().token}` },
       });
       const data: UserProfile = await response.json();

@@ -51,7 +51,7 @@ const Login = () => {
       const response = await postData("/auth/login", data);
       console.log(response);
       if (response?.data) {
-        await setTokens(response?.data?.access_token, response?.data?.refresh_token);
+        setTokens(response?.data?.access_token, response?.data?.refresh_token);
         setLoading(false);
         Alert.alert("Sukses", "Login berhasil!");
         router.push("/auth/otp");

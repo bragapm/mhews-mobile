@@ -1,17 +1,29 @@
 import React, { useEffect, useRef, useState } from "react";
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, useColorScheme, ImageBackground, Dimensions, Image, ScrollView, TextInput } from "react-native";
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  StyleSheet,
+  useColorScheme,
+  ImageBackground,
+  Dimensions,
+  Image,
+  ScrollView,
+  TextInput,
+} from "react-native";
 import { useAuth } from "../context/AuthContext";
 import { LinearGradient } from "expo-linear-gradient";
 import Icon from "react-native-vector-icons/Feather";
 import FloatingSOSButton from "@/components/FloatingSOSButton";
-import Modal from 'react-native-modal';
+import Modal from "react-native-modal";
 import { ASSET_URL, getData } from "../services/apiServices";
 
 export default function HomeScreen() {
   const { logout } = useAuth();
   const colorScheme = useColorScheme();
   const [modalVisible, setModalVisible] = useState(false);
-  const [emergencyMessage, setEmergencyMessage] = useState('');
+  const [emergencyMessage, setEmergencyMessage] = useState("");
   const [siagaBencana, setSiagaBencana] = useState([]);
   const [fiturPendukung, setFiturPendukung] = useState([]);
   const [infoTerkait, setInfoTerkait] = useState([]);
@@ -72,7 +84,10 @@ export default function HomeScreen() {
       style={styles.background}
       resizeMode="cover"
     >
-      <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContainer}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.overlay} />
         <View style={styles.container}>
           <View style={styles.header}>
@@ -80,7 +95,9 @@ export default function HomeScreen() {
               <Text style={styles.greeting}>Hi, Gunawan Wibisono!</Text>
               <View style={styles.locationContainer}>
                 <Icon name="map-pin" size={16} color={colors.textPrimary} />
-                <Text style={styles.locationText}>Cihapit, Bandung Wetan, Bandung</Text>
+                <Text style={styles.locationText}>
+                  Cihapit, Bandung Wetan, Bandung
+                </Text>
               </View>
             </View>
             <TouchableOpacity style={styles.notificationIcon}>
@@ -88,36 +105,60 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </View>
 
-          <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Siaga Bencana</Text>
+          <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+            Siaga Bencana
+          </Text>
           <FlatList
             data={siagaBencana}
             horizontal
             showsHorizontalScrollIndicator={false}
             renderItem={({ item }: { item: any }) => (
               <TouchableOpacity style={styles.card} activeOpacity={0.8}>
-                <LinearGradient colors={[colors.cardGradientStart, colors.cardGradientEnd]} style={styles.gradient}>
+                <LinearGradient
+                  colors={[colors.cardGradientStart, colors.cardGradientEnd]}
+                  style={styles.gradient}
+                >
                   <View style={styles.iconContainer}>
                     <Image
                       source={{ uri: `${ASSET_URL}${item.icon}` }}
                       style={{ width: 20, height: 20, resizeMode: "contain" }}
                     />
                   </View>
-                  <Text style={[styles.cardTitle, { color: colors.textCardPrimary }]}>{item.title}</Text>
-                  <Text style={[styles.cardSubtitle, { color: colors.textCardSecondary }]}>{item.description}</Text>
+                  <Text
+                    style={[
+                      styles.cardTitle,
+                      { color: colors.textCardPrimary },
+                    ]}
+                  >
+                    {item.title}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.cardSubtitle,
+                      { color: colors.textCardSecondary },
+                    ]}
+                  >
+                    {item.description}
+                  </Text>
                 </LinearGradient>
               </TouchableOpacity>
             )}
             keyExtractor={(item: any) => item.id}
           />
 
-          <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Informasi Terkait</Text>
+          <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+            Informasi Terkait
+          </Text>
           <FlatList
             data={infoTerkait}
             horizontal
             showsHorizontalScrollIndicator={false}
             renderItem={({ item }: { item: any }) => (
               <TouchableOpacity
-                style={[styles.informasiCard, { backgroundColor: colors.supportCardBackground }]}
+                style={[
+                  styles.informasiCard,
+                  { backgroundColor: colors.supportCardBackground },
+                ]}
                 activeOpacity={0.8}
               >
                 <View style={styles.iconInfoContainer}>
@@ -131,18 +172,24 @@ export default function HomeScreen() {
                   <Text style={styles.cardSubtitleSec}>{item.description}</Text>
                 </View>
               </TouchableOpacity>
-
             )}
             keyExtractor={(item) => item.id}
           />
 
-          <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Fitur Pendukung</Text>
+          <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+            Fitur Pendukung
+          </Text>
           <FlatList
             data={fiturPendukung}
             numColumns={2}
             scrollEnabled={false}
             renderItem={({ item }: { item: any }) => (
-              <TouchableOpacity style={[styles.supportCard, { backgroundColor: colors.supportCardBackground }]}>
+              <TouchableOpacity
+                style={[
+                  styles.supportCard,
+                  { backgroundColor: colors.supportCardBackground },
+                ]}
+              >
                 <Image
                   source={{ uri: `${ASSET_URL}${item.icon}` }}
                   style={{ width: 20, height: 20, resizeMode: "contain" }}
@@ -167,7 +214,8 @@ export default function HomeScreen() {
           {/* Judul */}
           <Text style={stylesModal.modalTitle}>SOS</Text>
           <Text style={stylesModal.modalSubtitle}>
-            Kirimkan Pesan Darurat untuk mendapatkan penanganan segera atas situasi darurat yang anda alami.
+            Kirimkan Pesan Darurat untuk mendapatkan penanganan segera atas
+            situasi darurat yang anda alami.
           </Text>
 
           {/* Input Pesan Darurat */}
@@ -182,12 +230,16 @@ export default function HomeScreen() {
           {/* Info Koneksi */}
           <View style={stylesModal.infoContainer}>
             <Text style={stylesModal.infoText}>
-              <Image source={iconQuestion} /> Pesan Darurat akan terkirim ketika anda memiliki koneksi internet
+              <Image source={iconQuestion} /> Pesan Darurat akan terkirim ketika
+              anda memiliki koneksi internet
             </Text>
           </View>
 
           {/* Tombol Geser untuk Mengirim SOS */}
-          <TouchableOpacity style={stylesModal.sosButton} onPress={() => console.log('SOS Dikirim:', emergencyMessage)}>
+          <TouchableOpacity
+            style={stylesModal.sosButton}
+            onPress={() => console.log("SOS Dikirim:", emergencyMessage)}
+          >
             <Text style={stylesModal.sosText}>Geser untuk Mengirim SOS</Text>
           </TouchableOpacity>
         </View>
@@ -249,7 +301,7 @@ const styles = StyleSheet.create({
     height: 150,
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 10
+    marginBottom: 10,
   },
   gradient: {
     borderRadius: 12,
@@ -288,18 +340,18 @@ const styles = StyleSheet.create({
     padding: 16,
     margin: 5,
     flex: 1,
-    textAlign: "left"
+    textAlign: "left",
   },
   cardTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    textAlign: "right"
+    textAlign: "right",
   },
   cardSubtitle: {
     fontSize: 14,
     marginTop: 4,
     color: "#4F4D4A",
-    textAlign: "right"
+    textAlign: "right",
   },
   infoContent: {
     flexDirection: "row",
@@ -315,49 +367,49 @@ const styles = StyleSheet.create({
 
 const stylesModal = StyleSheet.create({
   modalContainer: {
-    justifyContent: 'flex-end',
+    justifyContent: "flex-end",
     margin: 0,
   },
   modalContent: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
     padding: 20,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    minHeight: '50%',
+    minHeight: "50%",
   },
   modalTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 5,
   },
   modalSubtitle: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
     marginBottom: 15,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: "#ccc",
     borderRadius: 8,
     padding: 10,
     minHeight: 80,
-    textAlignVertical: 'top',
+    textAlignVertical: "top",
   },
   infoContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginTop: 10,
   },
   infoText: {
     fontSize: 12,
-    color: '#666',
-    display: "flex"
+    color: "#666",
+    display: "flex",
   },
   sosButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#E74C3C',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#E74C3C",
     padding: 15,
     borderRadius: 10,
     marginTop: 20,
@@ -368,8 +420,8 @@ const stylesModal = StyleSheet.create({
     marginRight: 10,
   },
   sosText: {
-    color: 'white',
+    color: "white",
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
 });
