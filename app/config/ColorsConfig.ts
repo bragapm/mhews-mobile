@@ -16,6 +16,7 @@ export const ColorsConfig = {
     gradientStartProfile: "#FEE4D8",
     gradientEndProfile: "#FFF7F3",
     exit: "#E35131",
+    darkOrange: "#3C221D",
   },
   dark: {
     text: "#F9F8F7",
@@ -32,6 +33,7 @@ export const ColorsConfig = {
     gradientStartProfile: "#5B1A1A",
     gradientEndProfile: "#2E0C0C",
     exit: "#E35131",
+    darkOrange: "#3C221D",
   },
 };
 
