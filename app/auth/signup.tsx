@@ -98,25 +98,17 @@ const Signup = () => {
     setIsModalVisible(false);
 
     try {
-      if (selectedMethod === "wa") {
-        // Panggil endpoint untuk WhatsApp
-        await postData("/signup-otp/phone", { phone: savedData.phone });
-      } else {
-        // Panggil endpoint untuk Email
-        await postData("/signup-otp/email", { email: savedData.email });
-      }
-
-      // Jika semua sukses, lalu push ke halaman OTP
       router.push({
         pathname: "/auth/otp",
         params: {
           email: savedData.email,
           phone: savedData.phone,
           sendTo: selectedMethod, // "wa" atau "email"
+          from: "signup"
         },
       });
     } catch (error: any) {
-      Alert.alert("Error", error.message);
+      showAlert("error", error.message);
     }
   };
 

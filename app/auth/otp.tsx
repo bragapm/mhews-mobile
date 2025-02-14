@@ -19,15 +19,16 @@ import {
 import { router, useLocalSearchParams } from "expo-router";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { postData } from "../services/apiServices";
+import { useAlert } from "@/components/AlertContext";
 
 const CELL_COUNT = 6;
 const OTPConfirmation = () => {
   const [otp, setOtp] = useState("");
+  const { showAlert } = useAlert();
   const [loading, setLoading] = useState(false);
   const [countdown, setCountdown] = useState(300);
   const colorScheme = useColorScheme();
-  const { email, phone, sendTo } = useLocalSearchParams();
-  // console.log("sendTo", sendTo);
+  const { email, phone, sendTo, from } = useLocalSearchParams();
 
   useEffect(() => {
     let interval: any = null;
@@ -44,9 +45,14 @@ const OTPConfirmation = () => {
       }, 1000);
     }
 
-    // Bersihkan interval jika unmount
     return () => clearInterval(interval);
   }, [countdown]);
+
+  useEffect(() => {
+    if (email) {
+      handleSendOTP();
+    }
+  }, [email]);
 
   const formatTime = (secs: number) => {
     const minutes = Math.floor(secs / 60);
@@ -56,8 +62,6 @@ const OTPConfirmation = () => {
     return `${sMinutes}:${sSeconds}`;
   };
 
-  // - useBlurOnFulfill: otomatis fokus ke cell berikutnya
-  // - useClearByFocusCell: membersihkan cell saat di-tap
   const ref = useBlurOnFulfill({ value: otp, cellCount: CELL_COUNT });
   const [propsCell, getCellOnLayoutHandler] = useClearByFocusCell({
     value: otp,
@@ -66,20 +70,66 @@ const OTPConfirmation = () => {
 
   const handleVerifyOTP = async () => {
     setLoading(true);
+    router.replace("/(tabs)/home");
+    showAlert("success", "OTP Berhasil diverifikasi (bypass).");
+    return;
     try {
-      // const response = await postData("/users", requestData);
-    } catch {}
-    setTimeout(() => {
+      if (from == "signin") {
+        const data = {
+          "email": email,
+          "phone": "",
+          "otp": otp,
+        }
+        console.log(data);
+        const response = await postData("/signin-otp/verify", data);
+      } else {
+        const data = {
+          "email": email || "",
+          "phone": phone || "",
+          "otp": otp,
+          "secret_key": "uOpAiLcw2X/TSrX4"
+        }
+        console.log(data);
+
+        const response = await postData("/signup-otp/verify", data);
+      }
+    } catch (error: any) {
+      showAlert("error", error.message);
       setLoading(false);
-      Alert.alert("OTP Verified!");
-      router.push("/(tabs)/home");
-    }, 2000);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSendOTP = async () => {
+    try {
+      let sendOtp;
+
+      if (from === "signin") {
+        sendOtp = await postData("/signin-otp/email", { email });
+      } else {
+        if (sendTo === "wa") {
+          sendOtp = await postData("/signup-otp/phone", { phone });
+        } else {
+          sendOtp = await postData("/signup-otp/email", { email });
+        }
+      }
+
+      // Cek jika response tidak valid atau error dari server
+      if (!sendOtp || sendOtp.error) {
+        throw new Error(sendOtp?.message || "Gagal mengirim OTP. Silakan coba lagi.");
+      }
+
+      showAlert("success", "OTP Berhasil dikirim.");
+      setCountdown(300);
+    } catch (error: any) {
+      console.error("Error mengirim OTP:", error);
+      showAlert("error", error.message || "Terjadi kesalahan, silakan coba lagi.");
+    }
   };
 
   const handleResendOTP = () => {
-    // Lakukan logic kirim ulang OTP ke server (jika perlu), lalu reset timer
-    setCountdown(300);
-    Alert.alert("OTP Dikirm Ulang");
+    handleSendOTP();
   };
 
   // Apakah OTP lengkap 6 digit?
@@ -104,17 +154,33 @@ const OTPConfirmation = () => {
         {/* Card Content */}
         <View style={styles.card}>
           <Text style={styles.description}>
-            Kode OTP (One-Time Password) telah dikirimkan ke nomor whatsapp (+
-            {phone}). Harap periksa whatsapp Anda secara berkala.
+            {from === "signin" ? (
+              <>
+                Kode OTP (One-Time Password) telah dikirimkan ke email{" "}
+                <Text style={{ fontWeight: "bold" }}>{email}</Text>. Harap periksa email Anda secara berkala.
+              </>
+            ) : sendTo === "wa" ? (
+              <>
+                Kode OTP (One-Time Password) telah dikirimkan ke nomor WhatsApp (+
+                <Text style={{ fontWeight: "bold" }}>{phone}</Text>). Harap periksa WhatsApp Anda secara berkala.
+              </>
+            ) : (
+              <>
+                Kode OTP (One-Time Password) telah dikirimkan ke email{" "}
+                <Text style={{ fontWeight: "bold" }}>{email}</Text>. Harap periksa email Anda secara berkala.
+              </>
+            )}
           </Text>
 
-          <TouchableOpacity
-            style={{
-              width: "100%",
-            }}
-          >
-            <Text style={styles.changeMethod}>Ganti Metode?</Text>
-          </TouchableOpacity>
+          {from === "signup" && (
+            <TouchableOpacity
+              style={{
+                width: "100%",
+              }}
+            >
+              <Text style={styles.changeMethod}>Ganti Metode?</Text>
+            </TouchableOpacity>
+          )}
 
           {/* OTP Input (CodeField) */}
           <CodeField

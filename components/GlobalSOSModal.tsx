@@ -36,11 +36,19 @@ export const SOSModalProvider = ({ children }: { children: React.ReactNode }) =>
     useEffect(() => {
         if (modalVisible) {
             fetchLocation();
+            setEmergencyMessage("");
         }
     }, [modalVisible]);
 
     const onSubmitSOS = async () => {
+        if (!emergencyMessage.trim()) {
+            showAlert("error", "Pesan harus diisi!");
+            return;
+        }
+
         if (!location) {
+            setLoading(false);
+            setModalVisible(false);
             showAlert("error", "Lokasi tidak tersedia.");
             return;
         }
@@ -111,7 +119,7 @@ export const SOSModalProvider = ({ children }: { children: React.ReactNode }) =>
                     </View>
 
                     {/* Swipe Button untuk Kirim SOS */}
-                    <SwipeSOSButton onSwipeSuccess={onSubmitSOS} loading={loading} />
+                    <SwipeSOSButton onSwipeSuccess={onSubmitSOS} loading={loading} disabled={!emergencyMessage.trim()} />
                 </View>
             </Modal>
         </SOSModalContext.Provider>
@@ -131,6 +139,8 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
         alignItems: "center",
+        minHeight: "60%",
+        maxHeight: "80%",
     },
     dragIndicator: {
         width: 50,
@@ -155,7 +165,7 @@ const styles = StyleSheet.create({
         borderColor: "#ccc",
         padding: 10,
         borderRadius: 5,
-        minHeight: 80,
+        minHeight: 100,
         marginBottom: 10,
     },
     infoContainer: {

@@ -15,14 +15,14 @@ const FloatingSOSButton: React.FC = () => {
 const styles = StyleSheet.create({
     fab: {
         position: "absolute",
-        bottom: 20,
-        right: 20,
+        bottom: 10,
+        right: 10,
         alignItems: "center",
         justifyContent: "center",
     },
     icon: {
-        width: 70,
-        height: 70,
+        width: 80,
+        height: 80,
         resizeMode: "contain",
     },
 });

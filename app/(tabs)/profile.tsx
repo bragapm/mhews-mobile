@@ -37,7 +37,7 @@ export default function ProfileScreen() {
       icon: colorScheme === "dark"
         ? require("../../assets/images/detail-account-dark.png")
         : require("../../assets/images/detail-account-light.png"),
-      route: "/account/detail",
+      route: "/pages/EditProfile",
     },
     {
       title: "Ubah Password",

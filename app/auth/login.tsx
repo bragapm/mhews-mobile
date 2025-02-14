@@ -55,8 +55,15 @@ const Login = () => {
       if (response?.data) {
         setAuthData(response?.data?.access_token, response?.data?.refresh_token);
         setLoading(false);
-        showAlert("success", "Login berhasil!");
-        router.push("/auth/otp");
+        router.push({
+          pathname: "/auth/otp",
+          params: {
+            email: data?.email,
+            phone: null,
+            sendTo: "email",
+            from: "signin"
+          },
+        });
       } else {
         setLoading(false);
         showAlert("error", "Login Gagal!");
