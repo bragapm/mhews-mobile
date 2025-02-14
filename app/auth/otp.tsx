@@ -18,6 +18,7 @@ import {
 } from "react-native-confirmation-code-field";
 import { router, useLocalSearchParams } from "expo-router";
 import AntDesign from "@expo/vector-icons/AntDesign";
+import { postData } from "../services/apiServices";
 
 const CELL_COUNT = 6;
 const OTPConfirmation = () => {
@@ -25,8 +26,8 @@ const OTPConfirmation = () => {
   const [loading, setLoading] = useState(false);
   const [countdown, setCountdown] = useState(300);
   const colorScheme = useColorScheme();
-  const { email, phone } = useLocalSearchParams();
-  // console.log("phone", phone);
+  const { email, phone, sendTo } = useLocalSearchParams();
+  // console.log("sendTo", sendTo);
 
   useEffect(() => {
     let interval: any = null;
@@ -63,8 +64,11 @@ const OTPConfirmation = () => {
     setValue: setOtp,
   });
 
-  const handleVerifyOTP = () => {
+  const handleVerifyOTP = async () => {
     setLoading(true);
+    try {
+      // const response = await postData("/users", requestData);
+    } catch {}
     setTimeout(() => {
       setLoading(false);
       Alert.alert("OTP Verified!");

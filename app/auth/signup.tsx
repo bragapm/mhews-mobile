@@ -94,19 +94,32 @@ const Signup = () => {
     }
   };
 
-  // Fungsi ketika menekan "Kirim kode OTP" di dalam modal
-  const handleSendOTP = () => {
+  const handleSendOTP = async () => {
     setIsModalVisible(false);
-    // Lakukan push ke /auth/otp
-    router.push({
-      pathname: "/auth/otp",
-      params: {
-        email: savedData.email,
-        phone: savedData.phone,
-        sendTo: selectedMethod, // "wa" atau "email"
-      },
-    });
+
+    try {
+      if (selectedMethod === "wa") {
+        // Panggil endpoint untuk WhatsApp
+        await postData("/signup-otp/phone", { phone: savedData.phone });
+      } else {
+        // Panggil endpoint untuk Email
+        await postData("/signup-otp/email", { email: savedData.email });
+      }
+
+      // Jika semua sukses, lalu push ke halaman OTP
+      router.push({
+        pathname: "/auth/otp",
+        params: {
+          email: savedData.email,
+          phone: savedData.phone,
+          sendTo: selectedMethod, // "wa" atau "email"
+        },
+      });
+    } catch (error: any) {
+      Alert.alert("Error", error.message);
+    }
   };
+
   const backgroundSource =
     colorScheme === "dark"
       ? require("../../assets/images/overlay-dark.png")
