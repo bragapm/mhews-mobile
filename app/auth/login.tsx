@@ -53,7 +53,10 @@ const Login = () => {
     try {
       const response = await postData("/auth/login", data);
       if (response?.data) {
-        setAuthData(response?.data?.access_token, response?.data?.refresh_token);
+        setAuthData(
+          response?.data?.access_token,
+          response?.data?.refresh_token
+        );
         setLoading(false);
         showAlert("success", "Login berhasil!");
         router.push("/auth/otp");

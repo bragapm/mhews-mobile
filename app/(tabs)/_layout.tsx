@@ -46,56 +46,54 @@ export default function TabLayout() {
   );
 
   return (
-    <AlertProvider>
-      <SOSModalProvider>
-        <StatusBar
-          translucent
-          backgroundColor="transparent"
-          barStyle={colorScheme === "dark" ? "light-content" : "dark-content"}
-        />
-        <Tabs
-          initialRouteName="home"
-          screenOptions={{
-            tabBarActiveTintColor: colors.tabIconSelected,
-            tabBarInactiveTintColor: colors.tabIconDefault,
-            tabBarStyle: {
-              backgroundColor: colors.background,
-              height: 70,
-              paddingBottom: 10,
-              paddingTop: 10,
-              borderTopWidth: 0,
-              elevation: 4,
-              shadowColor: "#3C221D",
-              shadowOffset: { width: 0, height: -4 },
-              shadowOpacity: 0.08,
-              shadowRadius: 6,
-            },
-            headerShown: false,
+    <SOSModalProvider>
+      <StatusBar
+        translucent
+        backgroundColor="transparent"
+        barStyle={colorScheme === "dark" ? "light-content" : "dark-content"}
+      />
+      <Tabs
+        initialRouteName="home"
+        screenOptions={{
+          tabBarActiveTintColor: colors.tabIconSelected,
+          tabBarInactiveTintColor: colors.tabIconDefault,
+          tabBarStyle: {
+            backgroundColor: colors.background,
+            height: 70,
+            paddingBottom: 10,
+            paddingTop: 10,
+            borderTopWidth: 0,
+            elevation: 4,
+            shadowColor: "#3C221D",
+            shadowOffset: { width: 0, height: -4 },
+            shadowOpacity: 0.08,
+            shadowRadius: 6,
+          },
+          headerShown: false,
+        }}
+      >
+        <Tabs.Screen
+          name="home"
+          options={{
+            tabBarLabel: "Beranda",
+            tabBarIcon: ({ focused }) => getTabIcon(focused, "home"),
           }}
-        >
-          <Tabs.Screen
-            name="home"
-            options={{
-              tabBarLabel: "Beranda",
-              tabBarIcon: ({ focused }) => getTabIcon(focused, "home"),
-            }}
-          />
-          <Tabs.Screen
-            name="chat"
-            options={{
-              tabBarLabel: "Chatbot",
-              tabBarIcon: ({ focused }) => getTabIcon(focused, "chat"),
-            }}
-          />
-          <Tabs.Screen
-            name="profile"
-            options={{
-              tabBarLabel: "Profile",
-              tabBarIcon: ({ focused }) => getTabIcon(focused, "profile"),
-            }}
-          />
-        </Tabs>
-      </SOSModalProvider>
-    </AlertProvider>
+        />
+        <Tabs.Screen
+          name="chat"
+          options={{
+            tabBarLabel: "Chatbot",
+            tabBarIcon: ({ focused }) => getTabIcon(focused, "chat"),
+          }}
+        />
+        <Tabs.Screen
+          name="profile"
+          options={{
+            tabBarLabel: "Profile",
+            tabBarIcon: ({ focused }) => getTabIcon(focused, "profile"),
+          }}
+        />
+      </Tabs>
+    </SOSModalProvider>
   );
 }
