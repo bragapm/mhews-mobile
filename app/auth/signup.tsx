@@ -185,6 +185,7 @@ const Signup = () => {
                         },
                       ]}
                       placeholder="NIK"
+                      maxLength={16}
                       placeholderTextColor={colors.text}
                       keyboardType="number-pad"
                       value={value}

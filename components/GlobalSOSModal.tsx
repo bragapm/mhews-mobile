@@ -5,6 +5,9 @@ import SwipeSOSButton from "./SwipeSOSButton";
 import { postData } from "@/app/services/apiServices";
 import * as Location from "expo-location";
 import { useAlert } from "./AlertContext";
+import { useColorScheme } from "react-native";
+import COLORS from "@/app/config/COLORS";
+import colors from "@/app/constants/colors";
 
 // Context untuk mengontrol modal
 const SOSModalContext = createContext({
@@ -14,7 +17,10 @@ const SOSModalContext = createContext({
 
 export const SOSModalProvider = ({ children }: { children: React.ReactNode }) => {
     const { showAlert } = useAlert();
+    const colorScheme = useColorScheme();
+    const colors = COLORS();
     const [modalVisible, setModalVisible] = useState(false);
+    const [isSuccessSubmitSOS, setIsSuccessSubmitSOS] = useState(false);
     const [emergencyMessage, setEmergencyMessage] = useState("");
     const [loading, setLoading] = useState(false);
     const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
@@ -68,8 +74,7 @@ export const SOSModalProvider = ({ children }: { children: React.ReactNode }) =>
             if (response?.data) {
                 setLoading(false);
                 showAlert("success", "SOS berhasil dikirim!");
-                setEmergencyMessage("");
-                setModalVisible(false);
+                setIsSuccessSubmitSOS(true);
             } else {
                 setLoading(false);
                 showAlert("error", "Gagal mengirim SOS. Silakan coba lagi.");
@@ -78,6 +83,11 @@ export const SOSModalProvider = ({ children }: { children: React.ReactNode }) =>
             showAlert("error", error.message);
             setLoading(false);
         }
+    }
+
+    const closeModal = () => {
+        setModalVisible(false);
+        setIsSuccessSubmitSOS(false);
     }
 
     return (
@@ -95,32 +105,53 @@ export const SOSModalProvider = ({ children }: { children: React.ReactNode }) =>
                 onSwipeComplete={() => setModalVisible(false)}
                 style={styles.modal}
             >
-                <View style={styles.modalContent}>
-                    <View style={styles.dragIndicator} />
+                {!isSuccessSubmitSOS ? (
+                    <View style={styles.modalContent}>
+                        <View style={styles.dragIndicator} />
 
-                    <Text style={styles.modalTitle}>SOS</Text>
-                    <Text style={styles.modalSubtitle}>
-                        Kirimkan Pesan Darurat untuk mendapatkan penanganan segera atas situasi darurat yang Anda alami.
-                    </Text>
-
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Masukkan Pesan Darurat beserta Lokasi dan Detail Bencana"
-                        multiline
-                        value={emergencyMessage}
-                        onChangeText={setEmergencyMessage}
-                    />
-
-                    <View style={styles.infoContainer}>
-                        <Image source={require("../assets/icons/questionCircle.png")} style={styles.infoIcon} />
-                        <Text style={styles.infoText}>
-                            Pesan Darurat akan terkirim ketika Anda memiliki koneksi internet.
+                        <Text style={styles.modalTitle}>SOS</Text>
+                        <Text style={styles.modalSubtitle}>
+                            Kirimkan Pesan Darurat untuk mendapatkan penanganan segera atas situasi darurat yang Anda alami.
                         </Text>
-                    </View>
 
-                    {/* Swipe Button untuk Kirim SOS */}
-                    <SwipeSOSButton onSwipeSuccess={onSubmitSOS} loading={loading} disabled={!emergencyMessage.trim()} />
-                </View>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Masukkan Pesan Darurat beserta Lokasi dan Detail Bencana"
+                            multiline
+                            value={emergencyMessage}
+                            onChangeText={setEmergencyMessage}
+                        />
+
+                        <View style={styles.infoContainer}>
+                            <Image source={require("../assets/icons/questionCircle.png")} style={styles.infoIcon} />
+                            <Text style={styles.infoText}>
+                                Pesan Darurat akan terkirim ketika Anda memiliki koneksi internet.
+                            </Text>
+                        </View>
+
+                        {/* Swipe Button untuk Kirim SOS */}
+                        <SwipeSOSButton onSwipeSuccess={onSubmitSOS} loading={loading} disabled={!emergencyMessage.trim()} />
+                    </View>
+                ) : (
+                    <View style={styles.modalContent}>
+                        <View style={styles.dragIndicator} />
+
+                        <Image source={require("../assets/icons/alert.png")} style={styles.icon} />
+                        <Text style={styles.modalTitle}>SOS Terkirim</Text>
+                        <Text style={styles.modalSubtitle}>
+                            Pesan Darurat anda telah terkirim dan akan segera diproses oleh petugas kami. Selama dalam proses menunggu, pastikan anda dalam keadaan aman.
+                        </Text>
+
+
+                        <TouchableOpacity
+                            style={styles.button}
+                            onPress={closeModal}
+                            disabled={loading}
+                        >
+                            <Text style={styles.textButton}>Kembali ke Beranda</Text>
+                        </TouchableOpacity>
+                    </View>
+                )}
             </Modal>
         </SOSModalContext.Provider>
     );
@@ -172,6 +203,8 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         marginBottom: 10,
+        marginLeft: 5,
+        marginRight: 5
     },
     infoIcon: {
         width: 20,
@@ -191,5 +224,21 @@ const styles = StyleSheet.create({
     sosText: {
         color: "white",
         fontWeight: "bold",
+    },
+    button: {
+        backgroundColor: colors.primary,
+        paddingVertical: 15,
+        borderRadius: 10,
+        marginTop: 10,
+        padding: 15
+    },
+    textButton: {
+        color: "white",
+        fontWeight: "bold",
+        textAlign: "center",
+        fontSize: 18,
+    },
+    icon: {
+        marginTop: 20
     },
 });

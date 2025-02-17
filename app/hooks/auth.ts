@@ -65,6 +65,7 @@ interface UserProfile {
   theme_dark_overrides: string | null;
   NIK: string;
   phone: string;
+  password: string;
 }
 
 // Membuat store Zustand dengan middleware persist

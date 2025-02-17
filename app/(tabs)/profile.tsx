@@ -37,42 +37,42 @@ export default function ProfileScreen() {
       icon: colorScheme === "dark"
         ? require("../../assets/images/detail-account-dark.png")
         : require("../../assets/images/detail-account-light.png"),
-      route: "/pages/EditProfile",
+      route: "/pages/account/EditProfile",
     },
     {
       title: "Ubah Password",
       icon: colorScheme === "dark"
         ? require("../../assets/images/ubah-password-dark.png")
         : require("../../assets/images/ubah-password-light.png"),
-      route: "/account/change-password",
+      route: "/pages/account/ChangePassword",
     },
     {
       title: "Profil Kerabat",
       icon: colorScheme === "dark"
         ? require("../../assets/images/profil-kerabat-dark.png")
         : require("../../assets/images/profil-kerabat-light.png"),
-      route: "/account/family-profile",
+      route: "/pages/account/FamilyProfile",
     },
     {
       title: "Bahasa",
       icon: colorScheme === "dark"
         ? require("../../assets/images/bahasa-dark.png")
         : require("../../assets/images/bahasa-light.png"),
-      route: "/account/language",
+      route: "/pages/account/Language",
     },
     {
       title: "Tentang Kami",
       icon: colorScheme === "dark"
         ? require("../../assets/images/tentang-kami-dark.png")
         : require("../../assets/images/tentang-kami-light.png"),
-      route: "/account/about",
+      route: "/pages/account/AboutUs",
     },
     {
       title: "Pusat Bantuan",
       icon: colorScheme === "dark"
         ? require("../../assets/images/pusat-bantuan-dark.png")
         : require("../../assets/images/pusat-bantuan-light.png"),
-      route: "/account/help",
+      route: "/pages/account/HelpCenter",
     },
     {
       title: "Keluar Akun",
@@ -232,21 +232,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderColor: "#C3C3BF",
   },
-
-  cardOption: {
-    // marginRight: 14,
-
-    alignItems: "center",
-    justifyContent: "center",
-    // marginBottom: 10,
-
-    borderWidth: 1,
-    borderRadius: 12,
-    borderColor: "#C3C3BF",
-    width: "100%",
-    alignSelf: "center",
-    marginTop: "5%",
-  },
   contentOption: {
     borderRadius: 12,
     // paddingHorizontal: "5%",
@@ -293,16 +278,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: "5%",
     alignItems: "flex-start",
     justifyContent: "center",
-  },
-  cardSubtitle: {
-    fontSize: 14,
-    marginTop: 4,
-    color: "#4F4D4A",
-    textAlign: "right",
-  },
-  textContainer: {
-    flex: 1,
-    marginLeft: 10,
   },
   optionContainer: {
     width: "100%",

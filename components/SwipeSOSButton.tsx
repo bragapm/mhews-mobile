@@ -1,6 +1,6 @@
 import React from "react";
 import { Dimensions, StyleSheet, Text, View, ActivityIndicator } from "react-native";
-import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import { Gesture, GestureDetector, GestureHandlerRootView } from "react-native-gesture-handler";
 import Animated, {
     useAnimatedStyle,
     useSharedValue,
@@ -42,24 +42,29 @@ const SwipeSOSButton: React.FC<SwipeSOSButtonProps> = ({ onSwipeSuccess, loading
     }));
 
     return (
-        <View style={[styles.sliderContainer, disabled && styles.disabledContainer]}>
-            <Text style={[styles.sliderText, disabled && styles.disabledText]}>
-                {loading ? <ActivityIndicator size="small" color="red" /> : "Geser untuk Kirim SOS"}
-            </Text>
-            {!loading && !disabled && (
-                <GestureDetector gesture={panGesture}>
-                    <Animated.View style={[styles.swipeBtn, animatedStyle]}>
-                        <Entypo name="chevron-thin-right" size={24} color="white" />
-                    </Animated.View>
-                </GestureDetector>
-            )}
-        </View>
+        <GestureHandlerRootView style={styles.gestureRoot}>
+            <View style={[styles.sliderContainer, disabled && styles.disabledContainer]}>
+                <Text style={[styles.sliderText, disabled && styles.disabledText]}>
+                    {loading ? <ActivityIndicator size="small" color="red" /> : "Geser untuk Kirim SOS"}
+                </Text>
+                {!loading && !disabled && (
+                    <GestureDetector gesture={panGesture}>
+                        <Animated.View style={[styles.swipeBtn, animatedStyle]} collapsable={false}>
+                            <Entypo name="chevron-thin-right" size={24} color="white" />
+                        </Animated.View>
+                    </GestureDetector>
+                )}
+            </View>
+        </GestureHandlerRootView>
     );
 };
 
 export default SwipeSOSButton;
 
 const styles = StyleSheet.create({
+    gestureRoot: {
+        width: "100%",
+    },
     sliderContainer: {
         justifyContent: "center",
         alignItems: "center",

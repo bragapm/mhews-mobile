@@ -1,5 +1,10 @@
+import { SOSModalProvider } from "@/components/GlobalSOSModal";
 import { Stack } from "expo-router";
 
 export default function PagesLayout() {
-    return <Stack screenOptions={{ headerShown: false }} />;
+    return (
+        <SOSModalProvider>
+            <Stack screenOptions={{ headerShown: false }} />;
+        </SOSModalProvider>
+    )
 }
