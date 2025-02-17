@@ -18,11 +18,13 @@ import FloatingSOSButton from "@/components/FloatingSOSButton";
 import Modal from "react-native-modal";
 import { ASSET_URL, getData } from "../services/apiServices";
 import { useAlert } from "@/components/AlertContext";
+import useAuthStore from "../hooks/auth";
 
 export default function HomeScreen() {
   const { showAlert } = useAlert();
   const colorScheme = useColorScheme();
   const [modalVisible, setModalVisible] = useState(false);
+  const { profile, getProfile } = useAuthStore();
   const [emergencyMessage, setEmergencyMessage] = useState("");
   const [siagaBencana, setSiagaBencana] = useState([]);
   const [fiturPendukung, setFiturPendukung] = useState([]);
@@ -90,7 +92,7 @@ export default function HomeScreen() {
         <View style={styles.container}>
           <View style={styles.header}>
             <View style={styles.headerTextContainer}>
-              <Text style={styles.greeting}>Hi, Gunawan Wibisono!</Text>
+              <Text style={styles.greeting}>Hi, {profile?.first_name} {profile?.last_name}</Text>
               <View style={styles.locationContainer}>
                 <Icon name="map-pin" size={16} color={colors.textPrimary} />
                 <Text style={styles.locationText}>

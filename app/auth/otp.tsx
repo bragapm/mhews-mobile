@@ -29,6 +29,7 @@ const OTPConfirmation = () => {
   const [countdown, setCountdown] = useState(300);
   const colorScheme = useColorScheme();
   const { email, phone, sendTo, from } = useLocalSearchParams();
+  const [secretKey, setSecretKey] = useState(null);
 
   useEffect(() => {
     let interval: any = null;
@@ -70,9 +71,6 @@ const OTPConfirmation = () => {
 
   const handleVerifyOTP = async () => {
     setLoading(true);
-    router.replace("/(tabs)/home");
-    showAlert("success", "OTP Berhasil diverifikasi (bypass).");
-    return;
     try {
       if (from == "signin") {
         const data = {
@@ -80,21 +78,34 @@ const OTPConfirmation = () => {
           "phone": "",
           "otp": otp,
         }
-        console.log(data);
         const response = await postData("/signin-otp/verify", data);
+        if (response) {
+          if (response?.status == "ok") {
+            router.replace("/(tabs)/home");
+            showAlert("success", "OTP Berhasil diverifikasi.");
+          } else {
+            showAlert("error", response?.message);
+          }
+        }
       } else {
         const data = {
-          "email": email || "",
-          "phone": phone || "",
+          "email": sendTo == "email" ? email : "",
+          "phone": sendTo == "wa" ? phone : "",
           "otp": otp,
-          "secret_key": "uOpAiLcw2X/TSrX4"
+          "secret_key": secretKey
         }
-        console.log(data);
-
         const response = await postData("/signup-otp/verify", data);
+        if (response) {
+          if (response?.status == "ok") {
+            router.replace("/(tabs)/home");
+            showAlert("success", "OTP Berhasil diverifikasi.");
+          } else {
+            showAlert("error", response?.message);
+          }
+        }
       }
     } catch (error: any) {
-      showAlert("error", error.message);
+      showAlert("error", error.error || error.message);
       setLoading(false);
     } finally {
       setLoading(false);
@@ -120,6 +131,9 @@ const OTPConfirmation = () => {
         throw new Error(sendOtp?.message || "Gagal mengirim OTP. Silakan coba lagi.");
       }
 
+      if (sendOtp?.secretKey) {
+        setSecretKey(sendOtp?.secretKey);
+      }
       showAlert("success", "OTP Berhasil dikirim.");
       setCountdown(300);
     } catch (error: any) {
