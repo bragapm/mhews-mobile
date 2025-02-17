@@ -19,6 +19,9 @@ export const ColorsConfig = {
     darkOrange: "#3C221D",
     subText: "#232221",
     subBackground: "#F4F3F1",
+    gradientCardStart:'#F59047',
+    gradientCardEnd:'#CD541B',
+    
   },
   dark: {
     text: "#F9F8F7",
@@ -38,6 +41,8 @@ export const ColorsConfig = {
     darkOrange: "#3C221D",
     subText: "#E2E1DF",
     subBackground: "#191919",
+    gradientCardStart:'#F59047',
+    gradientCardEnd:'#CD541B'
   },
 };
 

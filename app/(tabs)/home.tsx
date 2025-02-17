@@ -20,6 +20,7 @@ import { ASSET_URL, getData } from "../services/apiServices";
 import { useAlert } from "@/components/AlertContext";
 import useAuthStore from "../hooks/auth";
 import { useRouter } from "expo-router";
+import COLORS from "../config/COLORS";
 
 export default function HomeScreen() {
   const { showAlert } = useAlert();
@@ -45,6 +46,7 @@ export default function HomeScreen() {
     textCardPrimary: "#FFFFFF",
     textCardSecondary: "#EAEAEA",
   };
+   const color= COLORS()
 
   // const backgroundSource =
   //   colorScheme === "dark"
@@ -53,7 +55,7 @@ export default function HomeScreen() {
 
   const backgroundSource =
     colorScheme === "dark"
-      ? require("../../assets/images/bg-home.png")
+      ? require("../../assets/images/bg-home-dark.png")
       : require("../../assets/images/bg-home.png");
 
   const fetchData = async () => {
@@ -100,10 +102,10 @@ export default function HomeScreen() {
         <View style={styles.container}>
           <View style={styles.header}>
             <View style={styles.headerTextContainer}>
-              <Text style={styles.greeting}>Hi, {profile?.first_name} {profile?.last_name}</Text>
+              <Text style={[styles.greeting,{color:color.text}]}>Hi, {profile?.first_name} {profile?.last_name}</Text>
               <View style={styles.locationContainer}>
-                <Icon name="map-pin" size={16} color={colors.textPrimary} />
-                <Text style={styles.locationText}>
+                <Icon name="map-pin" size={16} color={color.subText} />
+                <Text style={[styles.locationText,{color:color.subText}]}>
                   Cihapit, Bandung Wetan, Bandung
                 </Text>
               </View>
@@ -127,7 +129,7 @@ export default function HomeScreen() {
                 onPress={() => handleClickDisaster(item)}
               >
                 <LinearGradient
-                  colors={[colors.cardGradientStart, colors.cardGradientEnd]}
+                  colors={[color.gradientCardStart, color.gradientCardEnd]}
                   style={styles.gradient}
                 >
                   <View style={styles.iconContainer}>
@@ -169,7 +171,7 @@ export default function HomeScreen() {
               <TouchableOpacity
                 style={[
                   styles.informasiCard,
-                  { backgroundColor: colors.supportCardBackground },
+                  { backgroundColor: color.background },
                 ]}
                 activeOpacity={0.8}
               >
@@ -180,8 +182,8 @@ export default function HomeScreen() {
                   />
                 </View>
                 <View style={styles.textContainer}>
-                  <Text style={styles.cardTitleSec}>{item.title}</Text>
-                  <Text style={styles.cardSubtitleSec}>{item.description}</Text>
+                  <Text style={[styles.cardTitleSec,{color:color.text}]}>{item.title}</Text>
+                  <Text style={[styles.cardSubtitleSec,{color:color.tabIconDefault}]}>{item.description}</Text>
                 </View>
               </TouchableOpacity>
             )}
@@ -206,8 +208,8 @@ export default function HomeScreen() {
                   source={{ uri: `${ASSET_URL}${item.icon}`, headers: { 'Accept': 'image/*' } }}
                   style={{ width: 20, height: 20, resizeMode: "contain" }}
                 />
-                <Text style={styles.cardTitleSec}>{item.title}</Text>
-                <Text style={styles.cardSubtitleSec}>{item.description}</Text>
+                <Text  style={[styles.cardTitleSec,{color:color.text}]}>{item.title}</Text>
+                <Text style={[styles.cardSubtitleSec,{color:color.tabIconDefault}]}>{item.description}</Text>
               </TouchableOpacity>
             )}
             keyExtractor={(item) => item.id}

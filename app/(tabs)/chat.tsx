@@ -12,14 +12,16 @@ import {
   ScrollView,
   TextInput,
 } from "react-native";
+import COLORS from "../config/COLORS";
 
 export default function ChatScreen() {
   const colorScheme = useColorScheme();
+  const colors=COLORS()
 
-  const backgroundSource =
+   const backgroundSource =
     colorScheme === "dark"
-      ? require("../../assets/images/bg-home.png")
-      : require("../../assets/images/bg-home.png");
+      ? require("../../assets/images/bg-page-dark.png")
+      : require("../../assets/images/bg-page-light.png");
 
   return (
     <ImageBackground
@@ -33,7 +35,9 @@ export default function ChatScreen() {
       >
         <View style={styles.overlay} />
         <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-          <Text>Chat</Text>
+          <Text style={{
+            color: colors.text
+          }}>Chat</Text>
         </View>
       </ScrollView>
       <FloatingSOSButton />
