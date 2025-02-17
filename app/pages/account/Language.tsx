@@ -78,14 +78,14 @@ export default function LanguageScreen() {
                                 },
                             ]}
                         >
-                            <Text style={styles.subTitle}>
+                            <Text style={[styles.subTitle,{color:colors.tabIconDefault}]}>
                                 Ubah Bahasa yang digunakan dalam Aplikasi MHEWS
                             </Text>
 
                             <View style={styles.languageOptionContainer}>
                                 <TouchableOpacity
                                     style={[
-                                        styles.languageOption,
+                                        [styles.languageOption],
                                         selectedLanguage === "indonesia" &&
                                         styles.activeLanguageOption,
                                     ]}

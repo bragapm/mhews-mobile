@@ -131,34 +131,34 @@ export default function EditProfileScreen() {
                                         },
                                     ]}
                                 >
-                                    <Text style={styles.subTitle}>
+                                    <Text style={[styles.subTitle,{color:colors.tabIconDefault}]}>
                                         Kelola Data Diri dan Detail Informasi Profil Pengguna
                                     </Text>
 
                                     {/* NIK */}
                                     <View style={styles.infoContainer}>
-                                        <Text style={styles.textLabel}>NIK</Text>
-                                        <Text style={styles.textValue}>{profile?.NIK}</Text>
+                                        <Text style={[styles.textLabel,{color:colors.subText}]}>NIK</Text>
+                                        <Text style={[styles.textValue,{color:colors.tabIconDefault}]}>{profile?.NIK}</Text>
                                     </View>
 
                                     {/* Nama */}
                                     <View style={styles.infoContainer}>
-                                        <Text style={styles.textLabel}>Nama</Text>
-                                        <Text style={styles.textValue}>
+                                        <Text style={[styles.textLabel,{color:colors.subText}]}>Nama</Text>
+                                        <Text style={[styles.textValue,{color:colors.tabIconDefault}]}>
                                             {profile?.first_name} {profile?.last_name}
                                         </Text>
                                     </View>
 
                                     {/* No. Handphone */}
                                     <View style={styles.infoContainer}>
-                                        <Text style={styles.textLabel}>No. Handphone</Text>
-                                        <Text style={styles.textValue}>{profile?.phone}</Text>
+                                        <Text style={[styles.textLabel,{color:colors.subText}]}>No. Handphone</Text>
+                                        <Text style={[styles.textValue,{color:colors.tabIconDefault}]}>{profile?.phone}</Text>
                                     </View>
 
                                     {/* Email */}
                                     <View style={styles.infoContainer}>
-                                        <Text style={styles.textLabel}>Email</Text>
-                                        <Text style={styles.textValue}>{profile?.email}</Text>
+                                        <Text style={[styles.textLabel,{color:colors.subText}]}>Email</Text>
+                                        <Text style={[styles.textValue,{color:colors.tabIconDefault}]}>{profile?.email}</Text>
                                     </View>
 
                                     <TouchableOpacity
@@ -182,7 +182,7 @@ export default function EditProfileScreen() {
                                         },
                                     ]}
                                 >
-                                    <Text style={styles.subTitle}>
+                                    <Text style={[styles.subTitle,{color:colors.tabIconDefault}]}>
                                         Ubah Informasi Profil Pengguna yang anda inginkan. Pastikan
                                         informasi yang anda ubah seusai.
                                     </Text>
@@ -399,7 +399,9 @@ export default function EditProfileScreen() {
                                                         source={require("../../../assets/icons/questionCircle.png")}
                                                         style={styles.infoIcon}
                                                     />
-                                                    <Text>
+                                                    <Text style={{
+                                                        color:colors.tabIconDefault
+                                                    }}>
                                                         Pastikan alamat email yang anda masukkan aktif
                                                     </Text>
                                                 </View>

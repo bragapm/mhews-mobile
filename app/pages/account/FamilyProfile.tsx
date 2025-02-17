@@ -95,7 +95,7 @@ export default function FamilyProfileScreen() {
                                     },
                                 ]}
                             >
-                                <Text style={styles.subTitle}>
+                                <Text style={[styles.subTitle,{color:colors.tabIconDefault}]}>
                                     Kelola dan cari profil kerabat anda pada aplikasi MHEWS
                                 </Text>
 
@@ -120,7 +120,7 @@ export default function FamilyProfileScreen() {
                                                     <Text
                                                         style={[
                                                             styles.textOption,
-                                                            { color: item.isExit ? "#d9534f" : "#333" },
+                                                            { color: item.isExit ? "#d9534f" : colors.subText},
                                                         ]}
                                                     >
                                                         {item.title}
