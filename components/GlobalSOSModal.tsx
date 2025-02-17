@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useRef, useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Alert } from "react-native";
 import Modal from "react-native-modal";
 import SwipeSOSButton from "./SwipeSOSButton";
@@ -8,6 +8,7 @@ import { useAlert } from "./AlertContext";
 import { useColorScheme } from "react-native";
 import COLORS from "@/app/config/COLORS";
 import colors from "@/app/constants/colors";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 // Context untuk mengontrol modal
 const SOSModalContext = createContext({
@@ -23,6 +24,9 @@ export const SOSModalProvider = ({ children }: { children: React.ReactNode }) =>
     const [isSuccessSubmitSOS, setIsSuccessSubmitSOS] = useState(false);
     const [emergencyMessage, setEmergencyMessage] = useState("");
     const [loading, setLoading] = useState(false);
+    const [holding, setHolding] = useState(false);
+    const [countdown, setCountdown] = useState(5);
+    const countdownRef = useRef<NodeJS.Timeout | null>(null);
     const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
 
     const fetchLocation = async () => {
@@ -90,6 +94,34 @@ export const SOSModalProvider = ({ children }: { children: React.ReactNode }) =>
         setIsSuccessSubmitSOS(false);
     }
 
+    const handleLongPress = () => {
+        if (!loading && emergencyMessage.trim()) {
+            setHolding(true);
+            setCountdown(5); // Reset countdown setiap kali ditekan
+
+            let timer = 5;
+            countdownRef.current = setInterval(() => {
+                timer -= 1;
+                setCountdown(timer);
+                if (timer <= 0) {
+                    clearInterval(countdownRef.current!);
+                    countdownRef.current = null;
+                    setHolding(false);
+                    setLoading(true);
+                    onSubmitSOS();
+                }
+            }, 1000);
+        }
+    };
+
+    const handlePressOut = () => {
+        if (countdownRef.current) {
+            clearInterval(countdownRef.current);
+            countdownRef.current = null;
+        }
+        setHolding(false);
+    };
+
     return (
         <SOSModalContext.Provider
             value={{
@@ -108,19 +140,22 @@ export const SOSModalProvider = ({ children }: { children: React.ReactNode }) =>
                 {!isSuccessSubmitSOS ? (
                     <View style={styles.modalContent}>
                         <View style={styles.dragIndicator} />
-
                         <Text style={styles.modalTitle}>SOS</Text>
                         <Text style={styles.modalSubtitle}>
                             Kirimkan Pesan Darurat untuk mendapatkan penanganan segera atas situasi darurat yang Anda alami.
                         </Text>
 
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Masukkan Pesan Darurat beserta Lokasi dan Detail Bencana"
-                            multiline
-                            value={emergencyMessage}
-                            onChangeText={setEmergencyMessage}
-                        />
+                        <View style={styles.inputContainer}>
+                            <Text style={styles.label}>Pesan Darurat</Text>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Masukkan Pesan Darurat beserta Lokasi dan Detail Bencana"
+                                multiline
+                                value={emergencyMessage}
+                                onChangeText={setEmergencyMessage}
+                            />
+                        </View>
+
 
                         <View style={styles.infoContainer}>
                             <Image source={require("../assets/icons/questionCircle.png")} style={styles.infoIcon} />
@@ -129,8 +164,21 @@ export const SOSModalProvider = ({ children }: { children: React.ReactNode }) =>
                             </Text>
                         </View>
 
+                        {/* Hold Button untuk Kirim SOS */}
+                        <TouchableOpacity
+                            style={[styles.outlineButton, !emergencyMessage.trim() && styles.disabledButton]}
+                            onLongPress={handleLongPress}
+                            onPressOut={handlePressOut}
+                            delayLongPress={5000}
+                            disabled={loading || !emergencyMessage.trim()}
+                        >
+                            <Text style={[styles.outlineButtonText, !emergencyMessage.trim() && styles.disableOutlineButtonText]}>
+                                {loading ? "Mengirim..." : holding ? `Tahan ${countdown} detik lagi` : "Tahan untuk Kirim SOS"}
+                            </Text>
+                        </TouchableOpacity>
+
                         {/* Swipe Button untuk Kirim SOS */}
-                        <SwipeSOSButton onSwipeSuccess={onSubmitSOS} loading={loading} disabled={!emergencyMessage.trim()} />
+                        {/* <SwipeSOSButton onSwipeSuccess={onSubmitSOS} loading={loading} disabled={!emergencyMessage.trim()} /> */}
                     </View>
                 ) : (
                     <View style={styles.modalContent}>
@@ -173,6 +221,15 @@ const styles = StyleSheet.create({
         minHeight: "60%",
         maxHeight: "80%",
     },
+    inputContainer: {
+        width: "100%",
+        marginBottom: 10,
+    },
+    label: {
+        fontSize: 14,
+        color: "#555",
+        marginBottom: 5,
+    },
     dragIndicator: {
         width: 50,
         height: 5,
@@ -187,7 +244,7 @@ const styles = StyleSheet.create({
     },
     modalSubtitle: {
         fontSize: 16,
-        textAlign: "center",
+        textAlign: "left",
         marginBottom: 20,
     },
     input: {
@@ -214,17 +271,6 @@ const styles = StyleSheet.create({
     infoText: {
         fontSize: 14,
     },
-    sosButton: {
-        backgroundColor: "red",
-        padding: 15,
-        borderRadius: 10,
-        alignItems: "center",
-        width: "100%",
-    },
-    sosText: {
-        color: "white",
-        fontWeight: "bold",
-    },
     button: {
         backgroundColor: colors.primary,
         paddingVertical: 15,
@@ -240,5 +286,35 @@ const styles = StyleSheet.create({
     },
     icon: {
         marginTop: 20
+    },
+    outlineButton: {
+        borderWidth: 2,
+        borderColor: "#E64040",
+        paddingVertical: 12,
+        borderRadius: 8,
+        alignItems: "center",
+        marginTop: 20,
+        padding: 20,
+        width: "100%"
+    },
+    outlineButtonText: {
+        color: "#E64040",
+        fontSize: 16,
+        fontWeight: "600",
+    },
+    disabledButton: {
+        borderWidth: 2,
+        borderColor: "#BDBDBD",
+        paddingVertical: 12,
+        borderRadius: 8,
+        alignItems: "center",
+        marginTop: 20,
+        padding: 20,
+        width: "100%"
+    },
+    disableOutlineButtonText: {
+        color: "#BDBDBD",
+        fontSize: 16,
+        fontWeight: "600",
     },
 });

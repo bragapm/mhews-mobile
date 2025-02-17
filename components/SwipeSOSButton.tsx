@@ -42,29 +42,24 @@ const SwipeSOSButton: React.FC<SwipeSOSButtonProps> = ({ onSwipeSuccess, loading
     }));
 
     return (
-        <GestureHandlerRootView style={styles.gestureRoot}>
-            <View style={[styles.sliderContainer, disabled && styles.disabledContainer]}>
-                <Text style={[styles.sliderText, disabled && styles.disabledText]}>
-                    {loading ? <ActivityIndicator size="small" color="red" /> : "Geser untuk Kirim SOS"}
-                </Text>
-                {!loading && !disabled && (
-                    <GestureDetector gesture={panGesture}>
-                        <Animated.View style={[styles.swipeBtn, animatedStyle]} collapsable={false}>
-                            <Entypo name="chevron-thin-right" size={24} color="white" />
-                        </Animated.View>
-                    </GestureDetector>
-                )}
-            </View>
-        </GestureHandlerRootView>
+        <View style={[styles.sliderContainer, disabled && styles.disabledContainer]}>
+            <Text style={[styles.sliderText, disabled && styles.disabledText]}>
+                {loading ? <ActivityIndicator size="small" color="red" /> : "Geser untuk Kirim SOS"}
+            </Text>
+            {!loading && !disabled && (
+                <GestureDetector gesture={panGesture}>
+                    <Animated.View style={[styles.swipeBtn, animatedStyle]} collapsable={false}>
+                        <Entypo name="chevron-thin-right" size={24} color="white" />
+                    </Animated.View>
+                </GestureDetector>
+            )}
+        </View>
     );
 };
 
 export default SwipeSOSButton;
 
 const styles = StyleSheet.create({
-    gestureRoot: {
-        width: "100%",
-    },
     sliderContainer: {
         justifyContent: "center",
         alignItems: "center",

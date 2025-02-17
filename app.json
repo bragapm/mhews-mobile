@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "mhews",
+    "name": "MHEWS",
     "slug": "mhews",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -52,7 +52,14 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      [
+        "@rnmapbox/maps",
+        {
+          "RNMapboxMapsVersion": "11.0.0",
+          "RNMapboxMapsDownloadToken": "pk.eyJ1Ijoid2hvaXNhcnZpYW4iLCJhIjoiY2xqOGg0eGhnMHowMDNka3h4ZHg3ajlpcCJ9.KFgX_DQd1tKbDumdjWzkpg"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

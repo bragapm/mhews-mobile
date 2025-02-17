@@ -19,9 +19,11 @@ import Modal from "react-native-modal";
 import { ASSET_URL, getData } from "../services/apiServices";
 import { useAlert } from "@/components/AlertContext";
 import useAuthStore from "../hooks/auth";
+import { useRouter } from "expo-router";
 
 export default function HomeScreen() {
   const { showAlert } = useAlert();
+  const router = useRouter();
   const colorScheme = useColorScheme();
   const [modalVisible, setModalVisible] = useState(false);
   const { profile, getProfile } = useAuthStore();
@@ -78,6 +80,12 @@ export default function HomeScreen() {
     fetchData();
   }, []);
 
+  const handleClickDisaster = (item: any) => {
+    if (item?.title == "Resiko Bencana") {
+      router.push("/pages/DisasterRisk");
+    }
+  };
+
   return (
     <ImageBackground
       source={backgroundSource}
@@ -113,14 +121,18 @@ export default function HomeScreen() {
             horizontal
             showsHorizontalScrollIndicator={false}
             renderItem={({ item }: { item: any }) => (
-              <TouchableOpacity style={styles.card} activeOpacity={0.8}>
+              <TouchableOpacity
+                style={styles.card}
+                activeOpacity={0.8}
+                onPress={() => handleClickDisaster(item)}
+              >
                 <LinearGradient
                   colors={[colors.cardGradientStart, colors.cardGradientEnd]}
                   style={styles.gradient}
                 >
                   <View style={styles.iconContainer}>
                     <Image
-                      source={{ uri: `${ASSET_URL}${item.icon}` }}
+                      source={{ uri: `${ASSET_URL}${item.icon}`, headers: { 'Accept': 'image/*' } }}
                       style={{ width: 20, height: 20, resizeMode: "contain" }}
                     />
                   </View>
@@ -163,8 +175,8 @@ export default function HomeScreen() {
               >
                 <View style={styles.iconInfoContainer}>
                   <Image
-                    source={{ uri: `${ASSET_URL}${item.icon}` }}
-                    style={{ width: 30, height: 30, resizeMode: "contain" }}
+                    source={{ uri: `${ASSET_URL}${item.icon}`, headers: { 'Accept': 'image/*' } }}
+                    style={{ width: 20, height: 20, resizeMode: "contain" }}
                   />
                 </View>
                 <View style={styles.textContainer}>
@@ -191,7 +203,7 @@ export default function HomeScreen() {
                 ]}
               >
                 <Image
-                  source={{ uri: `${ASSET_URL}${item.icon}` }}
+                  source={{ uri: `${ASSET_URL}${item.icon}`, headers: { 'Accept': 'image/*' } }}
                   style={{ width: 20, height: 20, resizeMode: "contain" }}
                 />
                 <Text style={styles.cardTitleSec}>{item.title}</Text>
@@ -311,10 +323,6 @@ const styles = StyleSheet.create({
     marginTop: 4,
     color: "#4F4D4A",
     textAlign: "right",
-  },
-  infoContent: {
-    flexDirection: "row",
-    alignItems: "center",
   },
   textContainer: {
     flex: 1,

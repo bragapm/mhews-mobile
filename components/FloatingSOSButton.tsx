@@ -7,7 +7,7 @@ const FloatingSOSButton: React.FC = () => {
 
     return (
         <TouchableOpacity style={styles.fab} onPress={showModal}>
-            <Image source={require("../assets/icons/SOS.png")} style={styles.icon} />
+            <Image source={require("../assets/icons/SOS.svg")} style={styles.icon} />
         </TouchableOpacity>
     );
 };
