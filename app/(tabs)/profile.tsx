@@ -167,7 +167,7 @@ export default function ProfileScreen() {
                     <Text
                       style={[
                         styles.textOption,
-                        { color: item.isExit ? "#d9534f" : "#333" },
+                        { color: item.isExit ? colors.exit : colors.text },
                       ]}
                     >
                       {item.title}
