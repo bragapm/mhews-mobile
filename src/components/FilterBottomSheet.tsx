@@ -1,4 +1,4 @@
-import React, {useRef, useState} from 'react';
+import React, { useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -149,7 +149,7 @@ const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
   ];
 
   const tipeOptions = [
-    {value: 'semua', label: 'Semua Bencana'},
+    { value: 'semua', label: 'Semua Bencana' },
     {
       value: 'potensi_bahaya',
       label: 'Potensi Bahaya',
@@ -172,20 +172,40 @@ const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
 
   // Fungsi toggle untuk Jenis Bencana
   const toggleJenisBencana = (value: string) => {
-    setJenisBencana(prev =>
-      prev.includes(value)
+    setJenisBencana(prev => {
+      if (value === 'semua') {
+        return ['semua'];
+      }
+
+      if (prev.includes('semua')) {
+        return [value];
+      }
+
+      const updatedFilters = prev.includes(value)
         ? prev.filter(item => item !== value)
-        : [...prev, value],
-    );
+        : [...prev, value];
+
+      return updatedFilters.length > 0 ? updatedFilters : ['semua'];
+    });
   };
 
   // Fungsi toggle untuk Tipe Bencana
   const toggleTipe = (value: string) => {
-    setTipe(prev =>
-      prev.includes(value)
+    setTipe(prev => {
+      if (value === 'semua') {
+        return ['semua'];
+      }
+
+      if (prev.includes('semua')) {
+        return [value];
+      }
+
+      const updatedFiltersTipe = prev.includes(value)
         ? prev.filter(item => item !== value)
-        : [...prev, value],
-    );
+        : [...prev, value];
+
+      return updatedFiltersTipe.length > 0 ? updatedFiltersTipe : ['semua'];
+    });
   };
 
   return (
@@ -219,7 +239,7 @@ const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
               <View style={styles.sliderContainer}>
                 {/* Tooltip */}
                 <Animated.View
-                  style={[styles.tooltip, {left: getTooltipPosition(radius)}]}>
+                  style={[styles.tooltip, { left: getTooltipPosition(radius) }]}>
                   <Text style={styles.tooltipText}>{radius} km</Text>
                 </Animated.View>
 
@@ -263,7 +283,9 @@ const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
                           color={isSelected ? 'white' : 'black'}
                           style={{marginRight: 5}}
                         /> */}
-                      <Image source={iconSource} style={styles.iconImage} />
+                      {iconSource && (
+                        <Image source={iconSource} style={styles.iconImage} />
+                      )}
                       <Text
                         style={{
                           color: isSelected ? '#F36A1D' : '#232221',
@@ -291,7 +313,9 @@ const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
                       key={item.value}
                       style={[styles.chip, isSelected && styles.chipSelected]}
                       onPress={() => toggleTipe(item.value)}>
-                      <Image source={iconSource} style={styles.iconImage} />
+                      {iconSource && (
+                        <Image source={iconSource} style={styles.iconImage} />
+                      )}
                       <Text
                         style={{
                           color: isSelected ? '#F36A1D' : '#232221',
@@ -307,7 +331,7 @@ const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
               <Text style={styles.sectionLabel}>Tanggal</Text>
               <View style={styles.dateRow}>
                 {/* Tanggal Mulai */}
-                <View style={{width: '45%'}}>
+                <View style={{ width: '45%' }}>
                   <Text
                     style={{
                       fontSize: 12,
@@ -328,7 +352,7 @@ const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
                 </View>
 
                 {/* Tanggal Selesai */}
-                <View style={{width: '45%'}}>
+                <View style={{ width: '45%' }}>
                   <Text
                     style={{
                       fontSize: 12,
@@ -373,13 +397,13 @@ const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
               <TouchableOpacity
                 style={styles.resetButton}
                 onPress={resetFilter}>
-                <Text style={{color: 'black'}}>Reset Filter</Text>
+                <Text style={{ color: 'black' }}>Reset Filter</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
                 style={styles.applyButton}
                 onPress={applyFilter}>
-                <Text style={{color: '#FFFFFF'}}>Terapkan Filter</Text>
+                <Text style={{ color: '#FFFFFF' }}>Terapkan Filter</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -392,7 +416,7 @@ const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
 
 export default FilterBottomSheet;
 
-const {width, height} = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
@@ -420,14 +444,13 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 16,
   },
-  closeButton: {position: 'absolute', right: 16},
-  title: {fontSize: 18, fontWeight: 'bold'},
-  scrollContainer: {flex: 1},
-  scrollContent: {paddingHorizontal: 16, paddingBottom: 16},
-  sectionLabel: {fontWeight: 'bold', marginBottom: 6, marginTop: 10},
-  slider: {width: '100%', height: 40},
-  currentRadius: {fontSize: 12, color: '#333', marginTop: -5},
-  chipContainer: {flexDirection: 'row', flexWrap: 'wrap', marginVertical: 5},
+  closeButton: { position: 'absolute', right: 16 },
+  title: { fontSize: 18, fontWeight: 'bold' },
+  scrollContainer: { flex: 1 },
+  scrollContent: { paddingHorizontal: 16, paddingBottom: 16 },
+  sectionLabel: { fontWeight: 'bold', marginBottom: 6, marginTop: 10 },
+  slider: { width: '100%', height: 40 },
+  chipContainer: { flexDirection: 'row', flexWrap: 'wrap', marginVertical: 5 },
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -439,7 +462,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     borderWidth: 1,
   },
-  chipSelected: {borderColor: '#f36a1d'},
+  chipSelected: { borderColor: '#f36a1d' },
   buttonRow: {
     flexDirection: 'column',
     justifyContent: 'center',

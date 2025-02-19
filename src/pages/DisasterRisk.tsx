@@ -1,4 +1,4 @@
-import React, {useState, useRef, useEffect} from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -17,77 +17,72 @@ import {
   Modal,
 } from 'react-native';
 // import MapView, { Circle, Marker, PROVIDER_GOOGLE, UrlTile } from "react-native-maps";
-import MapboxGL, {Camera} from '@rnmapbox/maps';
+import MapboxGL, { Camera } from '@rnmapbox/maps';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import {useNavigation} from '@react-navigation/native';
-import {StackNavigationProp} from '@react-navigation/stack';
-import {RootStackParamList} from '../navigation/types';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../navigation/types';
 import GetLocation from 'react-native-get-location';
-import {useAlert} from '../components/AlertContext';
-import {check, request, PERMISSIONS, RESULTS} from 'react-native-permissions';
+import { useAlert } from '../components/AlertContext';
+import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Feather from 'react-native-vector-icons/Feather';
-import {BASE_URL, getData} from '../services/apiServices';
+import { BASE_URL, getData } from '../services/apiServices';
 import haversine from 'haversine';
 import useAuthStore from '../hooks/auth';
 import FilterBottomSheet from '../components/FilterBottomSheet';
+import { filterDisasterData } from '../utils/filterDisaster';
 
-const {width, height} = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 const customMapStyle = [
   {
     featureType: 'landscape',
     elementType: 'geometry',
     stylers: [
-      {color: '#FAD9C3'}, // Warna daratan pastel oranye
+      { color: '#FAD9C3' }, // Warna daratan pastel oranye
     ],
   },
   {
     featureType: 'water',
     elementType: 'geometry.fill',
     stylers: [
-      {color: '#9AC7D4'}, // Warna laut biru kehijauan
+      { color: '#9AC7D4' }, // Warna laut biru kehijauan
     ],
   },
   {
     featureType: 'road',
     elementType: 'geometry',
     stylers: [
-      {color: '#F2B8A9'}, // Warna jalan pastel
+      { color: '#F2B8A9' }, // Warna jalan pastel
     ],
   },
   {
     featureType: 'road',
     elementType: 'labels.text.fill',
     stylers: [
-      {color: '#6B4A3A'}, // Warna teks jalan
+      { color: '#6B4A3A' }, // Warna teks jalan
     ],
   },
   {
     featureType: 'poi',
     elementType: 'labels.text.fill',
-    stylers: [{color: '#845B47'}],
+    stylers: [{ color: '#845B47' }],
   },
   {
     featureType: 'administrative',
     elementType: 'labels.text.fill',
-    stylers: [{color: '#594536'}],
+    stylers: [{ color: '#594536' }],
   },
 ];
 
-MapboxGL.setAccessToken(
-  'sk.eyJ1Ijoid2hvaXNhcnZpYW4iLCJhIjoiY203YjJkajRtMDk3cDJtczlxMDRrOTExNiJ9.61sU5Z9qNoRfQ22qdcAMzQ',
-);
+const MAPBOX_ACCESS_TOKEN = 'sk.eyJ1Ijoid2hvaXNhcnZpYW4iLCJhIjoiY203YjJkajRtMDk3cDJtczlxMDRrOTExNiJ9.61sU5Z9qNoRfQ22qdcAMzQ';
+MapboxGL.setAccessToken(MAPBOX_ACCESS_TOKEN);
 
 export default function DisasterRiskScreen() {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const [filterVisible, setFilterVisible] = useState(false);
-  const handleApplyFilter = (filterData: any) => {
-    console.log('Filter diterapkan:', filterData);
-    // Contoh: setSelectedFilter, panggil fetchData, dsb.
-    setFilterVisible(false);
-  };
   const [bottomSheetHeight, setBottomSheetHeight] = useState(300);
   const pan = useRef(new Animated.ValueXY()).current;
   const [location, setLocation] = useState<{
@@ -95,7 +90,7 @@ export default function DisasterRiskScreen() {
     longitude: number;
   } | null>(null);
   const pulseAnim = useRef(new Animated.Value(1)).current;
-  const {showAlert} = useAlert();
+  const { showAlert } = useAlert();
   const [alertVisible, setAlertVisible] = useState(false);
   const [nearbyDisasters, setNearbyDisasters] = useState([]);
   const mapRef = useRef<MapboxGL.MapView | null>(null);
@@ -104,15 +99,20 @@ export default function DisasterRiskScreen() {
   const [dataBencana, setDataBencana] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const {token} = useAuthStore();
+  const { token } = useAuthStore();
   const [selectedBencana, setSelectedBencana] = useState<any>(null);
   const [isMapReady, setIsMapReady] = useState(false);
-  const [selectedFilter, setSelectedFilter] = useState<string[]>(['semua']);
+  const [selectedFilterJenisBencana, setSelectedFilterJenisBencana] = useState<string[]>(['semua']);
+  const [filterData, setFilterData] = useState<any>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [modalVisible, setModalVisible] = useState(false);
+
   // const urlMvt = `${BASE_URL}/mvt/bencana_alam/?z={z}&x={x}&y={y}&access_token=${token}`;
   const urlMvt = `${BASE_URL}mvt/bencana_alam/?z={z}&x={x}&y={y}`;
 
   const handleFilterPress = (jenis_bencana: string) => {
-    setSelectedFilter(prev => {
+    setSelectedFilterJenisBencana(prev => {
       if (jenis_bencana === 'semua') {
         return ['semua'];
       }
@@ -127,6 +127,13 @@ export default function DisasterRiskScreen() {
 
       return updatedFilters.length > 0 ? updatedFilters : ['semua'];
     });
+  };
+
+  const handleApplyFilter = (filterData: any) => {
+    console.log('Filter diterapkan:', filterData);
+    setFilterData(filterData);
+    setSelectedFilterJenisBencana(filterData?.jenisBencana);
+    setFilterVisible(false);
   };
 
   const panResponder = PanResponder.create({
@@ -156,13 +163,45 @@ export default function DisasterRiskScreen() {
   const iconLongsor = require('../assets/images/iconLongsor.png');
   const iconErupsiGunung = require('../assets/images/iconErupsi.png');
 
-  const filterDisasterData = [
-    {id: 1, jenis_bencana: 'gempa_bumi', label: 'Gempa Bumi'},
-    {id: 2, jenis_bencana: 'gunung_berapi', label: 'Gunung Berapi'},
-    {id: 3, jenis_bencana: 'tanah_longsor', label: 'Tanah Longsor'},
-    {id: 4, jenis_bencana: 'tsunami', label: 'Tsunami'},
-    {id: 5, jenis_bencana: 'banjir', label: 'Banjir'},
-  ];
+  const handleSearch = async (text: any) => {
+    setSearchQuery(text);
+    if (text.trim() === '') {
+      setSearchResults([]);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(text)}.json?access_token=${MAPBOX_ACCESS_TOKEN}&limit=20&country=id`
+      );
+      const data = await response.json();
+
+      if (data.features) {
+        setSearchResults(
+          data.features.map((place: any) => ({
+            id: place.id,
+            name: place.place_name,
+            lat: place.center[1], // Latitude
+            lon: place.center[0], // Longitude
+          }))
+        );
+      }
+    } catch (error) {
+      console.error('Error fetching locations:', error);
+    }
+  };
+
+  const handleSelectLocation = (location: any) => {
+    setSearchQuery(location.name);
+    setModalVisible(false);
+    if (cameraRef.current) {
+      cameraRef.current.setCamera({
+        centerCoordinate: [location.lon, location.lat],
+        zoomLevel: 14,
+        animationDuration: 1000,
+      });
+    }
+  };
 
   const requestLocationPermission = async () => {
     try {
@@ -207,8 +246,8 @@ export default function DisasterRiskScreen() {
       timeout: 60000,
     })
       .then(location => {
-        const {latitude, longitude} = location;
-        setLocation({latitude, longitude});
+        const { latitude, longitude } = location;
+        setLocation({ latitude, longitude });
         if (cameraRef.current) {
           cameraRef.current.setCamera({
             centerCoordinate: [longitude, latitude],
@@ -220,7 +259,7 @@ export default function DisasterRiskScreen() {
         }
       })
       .catch(error => {
-        const {code, message} = error;
+        const { code, message } = error;
         console.warn(code, message);
       });
   };
@@ -244,8 +283,8 @@ export default function DisasterRiskScreen() {
     try {
       let filterQuery = '';
 
-      if (!selectedFilter.includes('semua')) {
-        filterQuery = `?filter[jenis_bencana][_in]=${selectedFilter.join(
+      if (!selectedFilterJenisBencana.includes('semua')) {
+        filterQuery = `?filter[jenis_bencana][_in]=${selectedFilterJenisBencana.join(
           ',',
         )}&field=*`;
       }
@@ -267,17 +306,17 @@ export default function DisasterRiskScreen() {
 
   useEffect(() => {
     fetchData();
-  }, [selectedFilter]);
+  }, [selectedFilterJenisBencana]);
 
   useEffect(() => {
     if (location && dataBencana) {
       const nearbyDisaster = dataBencana.filter((disaster: any) => {
-        const {coordinates} = disaster.geom;
+        const { coordinates } = disaster.geom;
         const disasterLocation = {
           latitude: coordinates[1],
           longitude: coordinates[0],
         };
-        const distance = haversine(location, disasterLocation, {unit: 'meter'});
+        const distance = haversine(location, disasterLocation, { unit: 'meter' });
 
         return distance <= 500; //meter
       });
@@ -332,7 +371,7 @@ export default function DisasterRiskScreen() {
             onDidFinishLoadingMap={() => setIsMapReady(true)}>
             <Camera ref={cameraRef} minZoomLevel={4} />
 
-            {isMapReady && urlMvt && (
+            {dataBencana && (
               <>
                 {dataBencana.map((item: any) => {
                   let markerIcon;
@@ -445,18 +484,14 @@ export default function DisasterRiskScreen() {
           </TouchableOpacity>
 
           {/* Search Bar */}
-          <View style={styles.headerSearchContainer}>
-            <Feather
-              name="search"
-              size={18}
-              color="gray"
-              style={styles.headerSearchIcon}
-            />
-            <TextInput
-              placeholder="Cari Lokasi"
-              style={styles.headerSearchInput}
-            />
-          </View>
+          <TouchableOpacity style={styles.headerSearchContainer} onPress={() => setModalVisible(true)}>
+            <Feather name="search" size={18} color="gray" style={styles.headerSearchIcon} />
+            <View style={styles.headerSearchInput}>
+              <Text style={styles.searchText}>
+                {searchQuery || 'Cari Lokasi'}
+              </Text>
+            </View>
+          </TouchableOpacity>
 
           {/* Tombol Filter */}
           <TouchableOpacity
@@ -468,26 +503,38 @@ export default function DisasterRiskScreen() {
           {/* Filter Bencana */}
           <FlatList
             data={[
-              {jenis_bencana: 'semua', label: 'Semua'},
+              { jenis_bencana: 'semua', label: 'Semua Bencana', iconSelected: null, iconUnselected: null },
               ...filterDisasterData,
             ]}
             horizontal
             showsHorizontalScrollIndicator={false}
             keyExtractor={item => item.jenis_bencana}
-            renderItem={({item}) => (
-              <TouchableOpacity
-                style={[styles.headerFilterCategoryButton]}
-                onPress={() => handleFilterPress(item.jenis_bencana)}>
-                <Text
-                  style={[
-                    styles.headerFilterText,
-                    selectedFilter.includes(item.jenis_bencana) &&
-                      styles.selectedText,
-                  ]}>
-                  {item.label}
-                </Text>
-              </TouchableOpacity>
-            )}
+            renderItem={({ item }) => {
+              const isSelected = selectedFilterJenisBencana.includes(item.jenis_bencana);
+              const iconSource = item.iconSelected
+                ? isSelected
+                  ? item.iconSelected
+                  : item.iconUnselected
+                : item.iconUnselected;
+
+              return (
+                <TouchableOpacity
+                  style={[styles.chip, isSelected && styles.chipSelected]}
+                  onPress={() => handleFilterPress(item.jenis_bencana)}
+                >
+                  {iconSource && (
+                    <Image source={iconSource} style={styles.iconImage} />
+                  )}
+                  <Text
+                    style={{
+                      color: isSelected ? '#F36A1D' : '#232221',
+                      fontSize: 12,
+                    }}>
+                    {item.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            }}
           />
 
           {/* Notifikasi Bahaya */}
@@ -510,7 +557,7 @@ export default function DisasterRiskScreen() {
           <View style={styles.containerContent}>
             {/* Tombol Locate Me */}
             <TouchableOpacity
-              style={[styles.locateMeButton, {bottom: bottomSheetHeight + 10}]}>
+              style={[styles.locateMeButton, { bottom: bottomSheetHeight + 10 }]}>
               <Ionicons
                 name="locate-outline"
                 size={24}
@@ -521,13 +568,13 @@ export default function DisasterRiskScreen() {
 
             <View
               {...panResponder.panHandlers}
-              style={[styles.bottomSheet, {height: bottomSheetHeight}]}>
+              style={[styles.bottomSheet, { height: bottomSheetHeight }]}>
               {/* Drag Indicator */}
               <View style={styles.dragIndicator} />
 
               <ScrollView showsVerticalScrollIndicator={false}>
                 <Text style={styles.sectionTitle}>Resiko Bencana</Text>
-                <Text style={{marginBottom: 10}}>
+                <Text style={{ marginBottom: 10 }}>
                   Semua resiko bencana yang berupa potensi bencana yang akan
                   datang dan riwayat bencana yang akan terjadi
                 </Text>
@@ -916,6 +963,51 @@ export default function DisasterRiskScreen() {
             </View>
           </View>
         </Modal>
+
+        {/* List hasil pencarian */}
+        <Modal animationType="slide" visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
+          <View style={styles.modalContainer}>
+            {/* Header Modal */}
+            <View style={styles.modalHeader}>
+              {/* Tombol Back */}
+              <TouchableOpacity style={styles.headerBackButtonModal} onPress={() => setModalVisible(false)}>
+                <AntDesign name="arrowleft" size={24} color="black" />
+              </TouchableOpacity>
+
+              {/* Input Pencarian */}
+              <View style={styles.headerSearchContainerModal}>
+                <Feather name="search" size={18} color="gray" style={styles.headerSearchIconModal} />
+                <TextInput
+                  placeholder="Cari Lokasi"
+                  style={styles.headerSearchInputModal}
+                  value={searchQuery}
+                  onChangeText={handleSearch}
+                />
+              </View>
+            </View>
+
+            {/* List hasil pencarian */}
+            <FlatList
+              data={searchResults}
+              keyExtractor={(item: any) => item.id}
+              ListHeaderComponent={() => (
+                <Text style={styles.resultHeader}>Hasil Pencarian</Text>
+              )}
+              renderItem={({ item }) => (
+                <TouchableOpacity style={styles.resultItem} onPress={() => handleSelectLocation(item)}>
+                  <View style={styles.resultIconContainer}>
+                    <Feather name="map-pin" size={20} color="gray" />
+                  </View>
+                  <View style={styles.resultTextContainer}>
+                    <Text style={styles.resultTitle}>{item.name}</Text>
+                    <Text style={styles.resultSubtitle}>{item.address}</Text>
+                  </View>
+                </TouchableOpacity>
+              )}
+              ItemSeparatorComponent={() => <View style={styles.separator} />}
+            />
+          </View>
+        </Modal>
       </View>
     </>
   );
@@ -1031,7 +1123,7 @@ const styles = StyleSheet.create({
     zIndex: 999,
     flexDirection: 'column',
     alignItems: 'center',
-    shadowOffset: {width: 0, height: 2},
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
   },
@@ -1072,24 +1164,19 @@ const styles = StyleSheet.create({
   headerSearchIcon: {
     marginRight: 5,
   },
-  headerSearchInput: {
-    flex: 1,
-    height: 40,
-  },
-  selectedText: {
-    color: '#F36A1D',
-    fontWeight: 'bold',
-  },
-  headerFilterCategoryButton: {
+  chip: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: 'rgb(255, 255, 255)',
+    borderRadius: 10,
+    marginRight: 8,
+    marginBottom: 8,
+    borderWidth: 1,
     paddingVertical: 8,
     paddingHorizontal: 12,
-    borderRadius: 5,
     marginHorizontal: 5,
   },
-  headerFilterText: {
-    fontWeight: 'bold',
-  },
+  chipSelected: { borderColor: '#f36a1d' },
   headerAlertContainer: {
     flexDirection: 'row',
     backgroundColor: '#e74c3c',
@@ -1126,7 +1213,7 @@ const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
     justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0,0,0,0.3)',
+    backgroundColor: 'rgba(126, 126, 126, 0.3)',
   },
   modalContent: {
     backgroundColor: 'white',
@@ -1145,9 +1232,9 @@ const styles = StyleSheet.create({
   },
   modalHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    paddingHorizontal: 20,
+    paddingVertical: 20,
   },
   modalTitle: {
     fontSize: 20,
@@ -1178,6 +1265,10 @@ const styles = StyleSheet.create({
   },
   detailContainer: {
     marginTop: 10,
+    borderWidth: 1,
+    borderColor: 'gray',
+    borderRadius: 10,
+    padding: 10
   },
   badge: {
     backgroundColor: '#f57c00',
@@ -1191,5 +1282,75 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 12,
     fontWeight: 'bold',
+  },
+  iconImage: {
+    width: 20,
+    height: 15,
+    resizeMode: 'contain',
+  },
+  headerSearchInput: {
+    flex: 1,
+    height: 40,
+    justifyContent: 'center',
+  },
+  resultHeader: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+    marginVertical: 10,
+    marginHorizontal: 16,
+  },
+  headerSearchContainerModal: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgb(255, 255, 255)',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    height: 40,
+  },
+  headerSearchIconModal: {
+    marginRight: 5,
+  },
+  headerSearchInputModal: {
+    flex: 1,
+    height: 40,
+    justifyContent: 'center',
+  },
+  searchText: {
+    fontSize: 16,
+    color: 'gray',
+  },
+  resultItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+  resultIconContainer: {
+    marginRight: 12,
+  },
+  resultTextContainer: {
+    flex: 1,
+  },
+  resultTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  resultSubtitle: {
+    fontSize: 14,
+    color: '#666',
+  },
+  separator: {
+    height: 1,
+    backgroundColor: '#E0E0E0',
+    marginHorizontal: 16,
+  },
+  headerBackButtonModal: {
+    marginRight: 10,
+    backgroundColor: 'rgb(255, 255, 255)',
+    padding: 8,
+    borderRadius: 10,
   },
 });
