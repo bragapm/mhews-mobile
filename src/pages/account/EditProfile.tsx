@@ -95,7 +95,7 @@ export default function EditProfileScreen() {
     };
 
     const backToProfile = () => {
-        navigation.replace("Profile");
+        navigation.replace("Tabs");
     };
 
     return (

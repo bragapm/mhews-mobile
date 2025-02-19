@@ -57,7 +57,7 @@ export default function FamilyProfileScreen() {
     ];
 
     const backToProfile = () => {
-        navigation.replace("Profile");
+        navigation.replace("Tabs");
     };
 
     return (

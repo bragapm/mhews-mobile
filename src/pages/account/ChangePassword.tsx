@@ -100,7 +100,7 @@ export default function ChangePasswordScreen() {
     };
 
     const backToProfile = () => {
-        navigation.replace("Profile");
+        navigation.replace("Tabs");
     };
 
     return (

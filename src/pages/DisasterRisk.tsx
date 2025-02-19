@@ -13,8 +13,11 @@ import {
   TextInput,
   ScrollView,
   FlatList,
+  Image,
+  Modal,
 } from "react-native";
-import MapView, { Circle, Marker, PROVIDER_GOOGLE, UrlTile } from "react-native-maps";
+// import MapView, { Circle, Marker, PROVIDER_GOOGLE, UrlTile } from "react-native-maps";
+import MapboxGL, { Camera } from '@rnmapbox/maps';
 import AntDesign from "react-native-vector-icons/AntDesign";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
@@ -72,6 +75,8 @@ const customMapStyle = [
   },
 ];
 
+MapboxGL.setAccessToken("sk.eyJ1Ijoid2hvaXNhcnZpYW4iLCJhIjoiY203YjJkajRtMDk3cDJtczlxMDRrOTExNiJ9.61sU5Z9qNoRfQ22qdcAMzQ");
+
 export default function DisasterRiskScreen() {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const [bottomSheetHeight, setBottomSheetHeight] = useState(300);
@@ -81,14 +86,18 @@ export default function DisasterRiskScreen() {
   const { showAlert } = useAlert();
   const [alertVisible, setAlertVisible] = useState(false);
   const [nearbyDisasters, setNearbyDisasters] = useState([]);
-  const mapRef = useRef<MapView>(null);
+  const mapRef = useRef<MapboxGL.MapView | null>(null);
+  const cameraRef = useRef<MapboxGL.Camera | null>(null);
   const [iconBencana, setIconBencana] = useState([]);
   const [dataBencana, setDataBencana] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const { token } = useAuthStore();
+  const [selectedBencana, setSelectedBencana] = useState<any>(null);
+  const [isMapReady, setIsMapReady] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState<string[]>(["semua"]);
-  const urlMvt = `${BASE_URL}/mvt/bencana_alam?z={z}&x={x}&y={y}&access_token=${token}`;
+  // const urlMvt = `${BASE_URL}/mvt/bencana_alam/?z={z}&x={x}&y={y}&access_token=${token}`;
+  const urlMvt = `${BASE_URL}mvt/bencana_alam/?z={z}&x={x}&y={y}`;
 
   const handleFilterPress = (jenis_bencana: string) => {
     setSelectedFilter((prev) => {
@@ -187,14 +196,11 @@ export default function DisasterRiskScreen() {
       .then(location => {
         const { latitude, longitude } = location;
         setLocation({ latitude, longitude });
-
-        // Fokuskan peta ke lokasi pengguna
-        if (mapRef.current) {
-          mapRef.current.animateToRegion({
-            latitude,
-            longitude,
-            latitudeDelta: 0.02,
-            longitudeDelta: 0.02,
+        if (cameraRef.current) {
+          cameraRef.current.setCamera({
+            centerCoordinate: [longitude, latitude],
+            zoomLevel: 14,
+            animationDuration: 1000,
           });
         } else {
           console.log("mapRef.current is null");
@@ -211,12 +217,11 @@ export default function DisasterRiskScreen() {
   }, []);
 
   useEffect(() => {
-    if (location && mapRef.current) {
-      mapRef.current.animateToRegion({
-        latitude: location.latitude,
-        longitude: location.longitude,
-        latitudeDelta: 0.02,
-        longitudeDelta: 0.02,
+    if (location && cameraRef.current) {
+      cameraRef.current.setCamera({
+        centerCoordinate: [location.longitude, location.latitude],
+        zoomLevel: 14,
+        animationDuration: 1000,
       });
     }
   }, [location]);
@@ -305,80 +310,112 @@ export default function DisasterRiskScreen() {
       <View style={styles.container}>
         {/* Peta */}
         <View style={styles.mapContainer}>
-          <MapView
+          <MapboxGL.MapView
             ref={mapRef}
-            provider={PROVIDER_GOOGLE}
-            customMapStyle={customMapStyle}
             style={styles.map}
-            initialRegion={{
-              latitude: location?.latitude || -7.7415727,
-              longitude: location?.longitude || 109.00724549,
-              latitudeDelta: 0.05,
-              longitudeDelta: 0.05,
-            }}
+            styleURL={
+              MapboxGL.StyleURL.Street
+            }
+            onDidFinishLoadingMap={() => setIsMapReady(true)}
           >
+            <Camera
+              ref={cameraRef}
+              minZoomLevel={4}
+            />
 
-            {/* Marker Lokasi Pengguna dengan Efek Pulse */}
-            {location && (
+            {isMapReady && urlMvt && (
               <>
-                <Circle
-                  key="locateMe"
-                  center={location}
-                  radius={500}
-                  strokeWidth={1}
-                  strokeColor={"rgba(205, 83, 27, 0.29)"}
-                  fillColor={"rgba(205, 83, 27, 0.29)"}
-                  zIndex={9}
-                />
+                {dataBencana.map((item: any) => {
+                  let markerIcon;
+                  switch (item.jenis_bencana) {
+                    case "gempa_bumi":
+                      markerIcon = iconGempa;
+                      break;
+                    case "tsunami":
+                      markerIcon = iconTsunami;
+                      break;
+                    case "gunung_berapi":
+                      markerIcon = iconErupsiGunung;
+                      break;
+                    case "tanah_longsor":
+                      markerIcon = iconLongsor;
+                      break;
+                    case "banjir":
+                      markerIcon = iconBanjir;
+                      break;
+                    default:
+                      markerIcon = iconBanjir;
+                  }
 
-                <Marker coordinate={location} anchor={{ x: 0.5, y: 0.5 }} zIndex={10}>
-                  <View style={styles.marker} />
-                </Marker>
+                  return (
+                    <MapboxGL.PointAnnotation
+                      key={item.id.toString()}
+                      id={item.id.toString()}
+                      coordinate={[item.geom.coordinates[0], item.geom.coordinates[1]]}
+                      onSelected={() => setSelectedBencana(item)}
+                    >
+                      <View style={styles.markerContainer}>
+                        <Image source={markerIcon} style={styles.markerIcon} />
+                      </View>
+                    </MapboxGL.PointAnnotation>
+                  );
+                })}
               </>
             )}
 
-            {/* Tile Overlay untuk MVT */}
-            {/* <UrlTile
-              urlTemplate={urlMvt}
-              zIndex={99}
-            /> */}
+            {location && (
+              <>
+                <MapboxGL.ShapeSource
+                  id="userLocationCircle"
+                  shape={{
+                    type: 'Feature',
+                    geometry: {
+                      type: 'Point',
+                      coordinates: [location.longitude, location.latitude],
+                    },
+                    properties: {},
+                  }}>
+                  <MapboxGL.CircleLayer
+                    id="userCircle"
+                    style={{
+                      circleRadius: [
+                        'interpolate',
+                        ['exponential', 2],
+                        ['zoom'],
+                        0, 2,
+                        10, 10,
+                        16, 250,
+                        22, 500
+                      ],
+                      circleColor: 'rgba(205, 83, 27, 0.29)',
+                      circleOpacity: 0.6,
+                    }}
+                  />
+                </MapboxGL.ShapeSource>
 
-            {dataBencana.map((item: any) => {
-              let markerIcon;
-              switch (item.jenis_bencana) {
-                case "gempa_bumi":
-                  markerIcon = iconGempa;
-                  break;
-                case "tsunami":
-                  markerIcon = iconTsunami;
-                  break;
-                case "gunung_berapi":
-                  markerIcon = iconErupsiGunung;
-                  break;
-                case "tanah_longsor":
-                  markerIcon = iconLongsor;
-                  break;
-                case "banjir":
-                  markerIcon = iconBanjir;
-                  break;
-                default:
-                  markerIcon = iconBanjir;
-              }
+                <MapboxGL.PointAnnotation id="userLocation" coordinate={[location.longitude, location.latitude]}>
+                  <View style={styles.marker} />
+                </MapboxGL.PointAnnotation>
+              </>
+            )}
 
-              return (
-                <Marker
-                  key={item.id}
-                  coordinate={{
-                    latitude: item.geom.coordinates[1],
-                    longitude: item.geom.coordinates[0],
-                  }}
-                  title={item.wilayah}
-                  description={item.arahan}
-                  image={markerIcon}
-                />
-              );
-            })}
-          </MapView>
+            {/* <MapboxGL.VectorSource
+              id="bencanaSource"
+              tileUrlTemplates={[
+                urlMvt
+              ]}
+            >
+              <MapboxGL.FillLayer
+                id="bencanaLayer"
+                sourceID="bencanaSource"
+                sourceLayerID="vector_tiles"
+                style={{
+                  fillColor: "rgba(255, 0, 0, 0.5)",
+                  fillOutlineColor: "rgba(255, 0, 0, 1)",
+                }}
+              />
+            </MapboxGL.VectorSource> */}
+          </MapboxGL.MapView>
         </View>
 
         {/* Tools Header */}
@@ -440,144 +477,298 @@ export default function DisasterRiskScreen() {
         </View>
 
         {/* Informasi Bencana */}
-        <View style={styles.containerContent}>
-          {/* Tombol Locate Me */}
-          <TouchableOpacity style={[styles.locateMeButton, { bottom: bottomSheetHeight + 10 }]}>
-            <Ionicons name="locate-outline" size={24} color="black" onPress={locateMe} />
-          </TouchableOpacity>
+        {selectedBencana == null && (
+          <View style={styles.containerContent}>
+            {/* Tombol Locate Me */}
+            <TouchableOpacity style={[styles.locateMeButton, { bottom: bottomSheetHeight + 10 }]}>
+              <Ionicons name="locate-outline" size={24} color="black" onPress={locateMe} />
+            </TouchableOpacity>
 
-          <View
-            {...panResponder.panHandlers}
-            style={[styles.bottomSheet, { height: bottomSheetHeight }]}
-          >
-            {/* Drag Indicator */}
-            <View style={styles.dragIndicator} />
-
-            <ScrollView
-              showsVerticalScrollIndicator={false}
+            <View
+              {...panResponder.panHandlers}
+              style={[styles.bottomSheet, { height: bottomSheetHeight }]}
             >
-              <Text style={styles.sectionTitle}>Resiko Bencana</Text>
-              <Text style={{ marginBottom: 10 }}>
-                Semua resiko bencana yang berupa potensi bencana yang akan datang
-                dan riwayat bencana yang akan terjadi
-              </Text>
+              {/* Drag Indicator */}
+              <View style={styles.dragIndicator} />
 
-              {/* List of Disaster Risk Cards */}
-              {dataBencana.map((item: any) => (
-                <View style={styles.cardContainer} key={item.id}>
-                  <TouchableOpacity
-                    style={
-                      item.status === "Potensi Bahaya"
-                        ? styles.cardDanger
-                        : styles.cardPotential
-                    }
-                    activeOpacity={0.8}
-                  >
-                    <View style={styles.cardHeader}>
-                      <Text style={styles.cardTitle}>
-                        {item.jenis_bencana.replace(/_/g, " ").replace(/\b\w/g, (c: any) => c.toUpperCase())}
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+              >
+                <Text style={styles.sectionTitle}>Resiko Bencana</Text>
+                <Text style={{ marginBottom: 10 }}>
+                  Semua resiko bencana yang berupa potensi bencana yang akan datang
+                  dan riwayat bencana yang akan terjadi
+                </Text>
+
+                {/* List of Disaster Risk Cards */}
+                {dataBencana.map((item: any) => (
+                  <View style={styles.cardContainer} key={item.id}>
+                    <TouchableOpacity
+                      style={
+                        item.status === "Potensi Bahaya"
+                          ? styles.cardDanger
+                          : styles.cardPotential
+                      }
+                      activeOpacity={0.8}
+                    >
+                      <View style={styles.cardHeader}>
+                        <Text style={styles.cardTitle}>
+                          {item.jenis_bencana.replace(/_/g, " ").replace(/\b\w/g, (c: any) => c.toUpperCase())}
+                        </Text>
+                        <Text
+                          style={[
+                            styles.cardStatus,
+                            item.status === "Potensi Bahaya"
+                              ? styles.potensiBahaya
+                              : styles.resikoBencana,
+                          ]}
+                        >
+                          {item.status || "Resiko Bencana"}
+                        </Text>
+                      </View>
+                      <Text style={styles.cardDescription}>
+                        {new Intl.DateTimeFormat("id-ID", {
+                          dateStyle: "full",
+                          timeStyle: "medium"
+                        }).format(new Date(item.date_created))}
                       </Text>
-                      <Text
-                        style={[
-                          styles.cardStatus,
-                          item.status === "Potensi Bahaya"
-                            ? styles.potensiBahaya
-                            : styles.resikoBencana,
-                        ]}
-                      >
-                        {item.status || "Resiko Bencana"}
+                      <Text style={styles.cardLoc}>
+                        {item.geom?.coordinates?.[1]}, {item.geom?.coordinates?.[0]}
+                      </Text>
+                      {/* Deskripsi berdasarkan tipe bencana */}
+                      {item.jenis_bencana === "gempa_bumi" && (
+                        <>
+                          <Text style={styles.cardTitleData}>Wilayah Terdampak</Text>
+                          <Text style={styles.cardDescription}>{item.wilayah || "-"}</Text>
+
+                          <Text style={styles.cardTitleData}>Magnitudo Gempa</Text>
+                          <Text style={styles.cardDescription}>{item.kekuatan_gempa || 0} M</Text>
+
+                          <Text style={styles.cardTitleData}>Kedalaman (km)</Text>
+                          <Text style={styles.cardDescription}>{item.kedalaman_gempa || 0}</Text>
+                        </>
+                      )}
+
+                      {item.jenis_bencana === "gunung_berapi" && (
+                        <>
+                          <Text style={styles.cardTitleData}>Wilayah Terdampak</Text>
+                          <Text style={styles.cardDescription}>{item.wilayah || "-"}</Text>
+
+                          <Text style={styles.cardTitleData}>Gunung Berapi</Text>
+                          <Text style={styles.cardDescription}>{item.nama_gunung || "-"}</Text>
+
+                          <Text style={styles.cardTitleData}>Ketinggian Kolom Abu (m)</Text>
+                          <Text style={styles.cardDescription}>{item.tinggi_col_abu || "-"}</Text>
+
+                          <Text style={styles.cardTitleData}>Status Aktivitas</Text>
+                          <Text style={styles.cardDescription}>{item.status_aktifitas || "-"}</Text>
+                        </>
+                      )}
+
+                      {item.jenis_bencana === "tanah_longsor" && (
+                        <>
+                          <Text style={styles.cardTitleData}>Wilayah Terdampak</Text>
+                          <Text style={styles.cardDescription}>{item.wilayah || "-"}</Text>
+
+                          <Text style={styles.cardTitleData}>Volume Material Longsor (m³)</Text>
+                          <Text style={styles.cardDescription}>{item.vol_mat_longsor || 0}</Text>
+
+                          <Text style={styles.cardTitleData}>Kemiringan Lereng (°)</Text>
+                          <Text style={styles.cardDescription}>{item.sudut_mir_longsor || 0}</Text>
+                        </>
+                      )}
+
+                      {item.jenis_bencana === "tsunami" && (
+                        <>
+                          <Text style={styles.cardTitleData}>Wilayah Terdampak</Text>
+                          <Text style={styles.cardDescription}>{item.wilayah || "-"}</Text>
+
+                          <Text style={styles.cardTitleData}>Ketinggian Gelombang (m)</Text>
+                          <Text style={styles.cardDescription}>{item.tinggi_gel_air || 0}</Text>
+
+                          <Text style={styles.cardTitleData}>Kecepatan Gelombang (m/s)</Text>
+                          <Text style={styles.cardDescription}>{item.cepat_gel_air || 0}</Text>
+                        </>
+                      )}
+
+                      {item.jenis_bencana === "banjir" && (
+                        <>
+                          <Text style={styles.cardTitleData}>Wilayah Terdampak</Text>
+                          <Text style={styles.cardDescription}>{item.wilayah || "-"}</Text>
+
+                          <Text style={styles.cardTitleData}>Ketinggian Air (cm)</Text>
+                          <Text style={styles.cardDescription}>{item.ketinggian_banjir || 0}</Text>
+
+                          <Text style={styles.cardTitleData}>Kecepatan Arus (m/s)</Text>
+                          <Text style={styles.cardDescription}>{item.kecepatan_banjir || 0}</Text>
+                        </>
+                      )}
+
+                      {/* Saran & Arahan */}
+                      <Text style={styles.cardTitleData}>Rekomendasi BMKG</Text>
+                      <Text style={styles.cardDetails}>{item.saran_bmkg || "-"}</Text>
+
+                      <Text style={styles.cardTitleData}>Arahan Evakuasi</Text>
+                      <Text style={styles.cardDetails}>{item.arahan || "-"}</Text>
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </ScrollView>
+            </View>
+          </View>
+        )}
+
+        {/* Modal Detail Bencana */}
+        <Modal visible={!!selectedBencana} transparent animationType="slide">
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              {/* Garis Tarik untuk Swipe */}
+              <View style={styles.swipeIndicator} />
+
+              {/* Header Modal */}
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>
+                  {selectedBencana?.jenis_bencana.replace(/_/g, " ").replace(/\b\w/g, (c: any) => c.toUpperCase())}
+                </Text>
+                <TouchableOpacity onPress={() => setSelectedBencana(null)}>
+                  <AntDesign name="close" size={24} color="black" />
+                </TouchableOpacity>
+              </View>
+
+              {/* 3 Kotak Info Sesuai Jenis Bencana */}
+              <View style={styles.infoContainer}>
+                {selectedBencana?.jenis_bencana === "tsunami" && (
+                  <>
+                    <View style={styles.infoBox}>
+                      <Text style={styles.infoTitle}>Kecepatan Gelombang Air</Text>
+                      <Text style={styles.infoValue}>{selectedBencana?.cepat_gel_air || 0} m/s</Text>
+                    </View>
+                    <View style={styles.infoBox}>
+                      <Text style={styles.infoTitle}>Ketinggian Gelombang Air</Text>
+                      <Text style={styles.infoValue}>{selectedBencana?.tinggi_gel_air || 0} Meter</Text>
+                    </View>
+                    <View style={styles.infoBox}>
+                      <Text style={styles.infoTitle}>Waktu</Text>
+                      <Text style={styles.infoValue}>
+                        {new Intl.DateTimeFormat("id-ID", {
+                          dateStyle: "full",
+                          timeStyle: "medium"
+                        }).format(new Date(selectedBencana?.date_created))}
                       </Text>
                     </View>
-                    <Text style={styles.cardDescription}>
-                      {new Intl.DateTimeFormat("id-ID", {
-                        dateStyle: "full",
-                        timeStyle: "medium"
-                      }).format(new Date(item.date_created))}
-                    </Text>
-                    <Text style={styles.cardLoc}>
-                      {item.geom?.coordinates?.[1]}, {item.geom?.coordinates?.[0]}
-                    </Text>
-                    {/* Deskripsi berdasarkan tipe bencana */}
-                    {item.jenis_bencana === "gempa_bumi" && (
-                      <>
-                        <Text style={styles.cardTitleData}>Wilayah Terdampak</Text>
-                        <Text style={styles.cardDescription}>{item.wilayah || "-"}</Text>
+                  </>
+                )}
 
-                        <Text style={styles.cardTitleData}>Magnitudo Gempa</Text>
-                        <Text style={styles.cardDescription}>{item.kekuatan_gempa || 0} M</Text>
+                {selectedBencana?.jenis_bencana === "gempa_bumi" && (
+                  <>
+                    <View style={styles.infoBox}>
+                      <Text style={styles.infoTitle}>Magnitudo</Text>
+                      <Text style={styles.infoValue}>{selectedBencana?.kekuatan_gempa || 0} M</Text>
+                    </View>
+                    <View style={styles.infoBox}>
+                      <Text style={styles.infoTitle}>Kedalaman</Text>
+                      <Text style={styles.infoValue}>{selectedBencana?.kedalaman_gempa || 0} km</Text>
+                    </View>
+                    <View style={styles.infoBox}>
+                      <Text style={styles.infoTitle}>Waktu</Text>
+                      <Text style={styles.infoValue}>
+                        {new Intl.DateTimeFormat("id-ID", {
+                          dateStyle: "full",
+                          timeStyle: "medium"
+                        }).format(new Date(selectedBencana?.date_created))}
+                      </Text>
+                    </View>
+                  </>
+                )}
 
-                        <Text style={styles.cardTitleData}>Kedalaman (km)</Text>
-                        <Text style={styles.cardDescription}>{item.kedalaman_gempa || 0}</Text>
-                      </>
-                    )}
+                {selectedBencana?.jenis_bencana === "gunung_berapi" && (
+                  <>
+                    <View style={styles.infoBox}>
+                      <Text style={styles.infoTitle}>Gunung Berapi</Text>
+                      <Text style={styles.infoValue}>{selectedBencana?.nama_gunung || "-"}</Text>
+                    </View>
+                    <View style={styles.infoBox}>
+                      <Text style={styles.infoTitle}>Ketinggian Kolom Abu</Text>
+                      <Text style={styles.infoValue}>{selectedBencana?.tinggi_col_abu || "-"} m</Text>
+                    </View>
+                    <View style={styles.infoBox}>
+                      <Text style={styles.infoTitle}>Status Aktivitas</Text>
+                      <Text style={styles.infoValue}>{selectedBencana?.status_aktifitas || "-"}</Text>
+                    </View>
+                  </>
+                )}
 
-                    {item.jenis_bencana === "gunung_berapi" && (
-                      <>
-                        <Text style={styles.cardTitleData}>Wilayah Terdampak</Text>
-                        <Text style={styles.cardDescription}>{item.wilayah || "-"}</Text>
+                {selectedBencana?.jenis_bencana === "tanah_longsor" && (
+                  <>
+                    <View style={styles.infoBox}>
+                      <Text style={styles.infoTitle}>Volume Material Longsor</Text>
+                      <Text style={styles.infoValue}>{selectedBencana?.vol_mat_longsor || 0} m³</Text>
+                    </View>
+                    <View style={styles.infoBox}>
+                      <Text style={styles.infoTitle}>Kemiringan Lereng</Text>
+                      <Text style={styles.infoValue}>{selectedBencana?.sudut_mir_longsor || 0}°</Text>
+                    </View>
+                    <View style={styles.infoBox}>
+                      <Text style={styles.infoTitle}>Waktu</Text>
+                      <Text style={styles.infoValue}>
+                        {new Intl.DateTimeFormat("id-ID", {
+                          dateStyle: "full",
+                          timeStyle: "medium"
+                        }).format(new Date(selectedBencana?.date_created))}
+                      </Text>
+                    </View>
+                  </>
+                )}
 
-                        <Text style={styles.cardTitleData}>Gunung Berapi</Text>
-                        <Text style={styles.cardDescription}>{item.nama_gunung || "-"}</Text>
+                {selectedBencana?.jenis_bencana === "banjir" && (
+                  <>
+                    <View style={styles.infoBox}>
+                      <Text style={styles.infoTitle}>Ketinggian Air</Text>
+                      <Text style={styles.infoValue}>{selectedBencana?.ketinggian_banjir || 0} cm</Text>
+                    </View>
+                    <View style={styles.infoBox}>
+                      <Text style={styles.infoTitle}>Kecepatan Arus</Text>
+                      <Text style={styles.infoValue}>{selectedBencana?.kecepatan_banjir || 0} m/s</Text>
+                    </View>
+                    <View style={styles.infoBox}>
+                      <Text style={styles.infoTitle}>Waktu</Text>
+                      <Text style={styles.infoValue}>
+                        {new Intl.DateTimeFormat("id-ID", {
+                          dateStyle: "full",
+                          timeStyle: "medium"
+                        }).format(new Date(selectedBencana?.date_created))}
+                      </Text>
+                    </View>
+                  </>
+                )}
+              </View>
 
-                        <Text style={styles.cardTitleData}>Ketinggian Kolom Abu (m)</Text>
-                        <Text style={styles.cardDescription}>{item.tinggi_col_abu || "-"}</Text>
+              {/* Scrollable Content */}
+              <ScrollView style={styles.detailContainer}>
+                {/* Lokasi */}
+                <Text style={styles.cardTitleData}>Lokasi</Text>
+                <Text style={styles.cardDescription}>{selectedBencana?.geom?.coordinates?.[1]}, {selectedBencana?.geom?.coordinates?.[0]}</Text>
 
-                        <Text style={styles.cardTitleData}>Status Aktivitas</Text>
-                        <Text style={styles.cardDescription}>{item.status_aktifitas || "-"}</Text>
-                      </>
-                    )}
-
-                    {item.jenis_bencana === "tanah_longsor" && (
-                      <>
-                        <Text style={styles.cardTitleData}>Wilayah Terdampak</Text>
-                        <Text style={styles.cardDescription}>{item.wilayah || "-"}</Text>
-
-                        <Text style={styles.cardTitleData}>Volume Material Longsor (m³)</Text>
-                        <Text style={styles.cardDescription}>{item.vol_mat_longsor || 0}</Text>
-
-                        <Text style={styles.cardTitleData}>Kemiringan Lereng (°)</Text>
-                        <Text style={styles.cardDescription}>{item.sudut_mir_longsor || 0}</Text>
-                      </>
-                    )}
-
-                    {item.jenis_bencana === "tsunami" && (
-                      <>
-                        <Text style={styles.cardTitleData}>Wilayah Terdampak</Text>
-                        <Text style={styles.cardDescription}>{item.wilayah || "-"}</Text>
-
-                        <Text style={styles.cardTitleData}>Ketinggian Gelombang (m)</Text>
-                        <Text style={styles.cardDescription}>{item.tinggi_gel_air || 0}</Text>
-
-                        <Text style={styles.cardTitleData}>Kecepatan Gelombang (m/s)</Text>
-                        <Text style={styles.cardDescription}>{item.cepat_gel_air || 0}</Text>
-                      </>
-                    )}
-
-                    {item.jenis_bencana === "banjir" && (
-                      <>
-                        <Text style={styles.cardTitleData}>Wilayah Terdampak</Text>
-                        <Text style={styles.cardDescription}>{item.wilayah || "-"}</Text>
-
-                        <Text style={styles.cardTitleData}>Ketinggian Air (cm)</Text>
-                        <Text style={styles.cardDescription}>{item.ketinggian_banjir || 0}</Text>
-
-                        <Text style={styles.cardTitleData}>Kecepatan Arus (m/s)</Text>
-                        <Text style={styles.cardDescription}>{item.kecepatan_banjir || 0}</Text>
-                      </>
-                    )}
-
-                    {/* Saran & Arahan */}
-                    <Text style={styles.cardTitleData}>Rekomendasi BMKG</Text>
-                    <Text style={styles.cardDetails}>{item.saran_bmkg || "-"}</Text>
-
-                    <Text style={styles.cardTitleData}>Arahan Evakuasi</Text>
-                    <Text style={styles.cardDetails}>{item.arahan || "-"}</Text>
-                  </TouchableOpacity>
+                {/* Tipe Bencana */}
+                <Text style={styles.cardTitleData}>Tipe Bencana</Text>
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>Resiko Bencana</Text>
                 </View>
-              ))}
-            </ScrollView>
+
+                {/* Wilayah Terdampak */}
+                <Text style={styles.cardTitleData}>Wilayah Terdampak</Text>
+                <Text style={styles.cardDescription}>{selectedBencana?.wilayah || "-"}</Text>
+
+                {/* Saran & Arahan */}
+                <Text style={styles.cardTitleData}>Rekomendasi BMKG</Text>
+                <Text style={styles.cardDetails}>{selectedBencana?.saran_bmkg || "-"}</Text>
+
+                <Text style={styles.cardTitleData}>Arahan Evakuasi</Text>
+                <Text style={styles.cardDetails}>{selectedBencana?.arahan || "-"}</Text>
+              </ScrollView>
+            </View>
           </View>
-        </View>
+        </Modal>
       </View>
     </>
   );
@@ -775,5 +966,83 @@ const styles = StyleSheet.create({
     borderColor: "white",
     top: "40%",
     left: "40%",
+  },
+  markerContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  markerIcon: {
+    width: 20,
+    height: 20,
+    resizeMode: "contain",
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(0,0,0,0.3)",
+  },
+  modalContent: {
+    backgroundColor: "white",
+    padding: 20,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    height: "80%",
+  },
+  swipeIndicator: {
+    width: 50,
+    height: 5,
+    backgroundColor: "#ccc",
+    borderRadius: 10,
+    alignSelf: "center",
+    marginBottom: 10,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+  infoContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginVertical: 10,
+  },
+  infoBox: {
+    backgroundColor: "#f57c00",
+    padding: 10,
+    borderRadius: 8,
+    width: "30%",
+    height: 80,
+    justifyContent: "space-between",
+  },
+  infoTitle: {
+    color: "white",
+    fontSize: 12,
+  },
+  infoValue: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 12,
+    alignSelf: "flex-start",
+  },
+  detailContainer: {
+    marginTop: 10,
+  },
+  badge: {
+    backgroundColor: "#f57c00",
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 5,
+    alignSelf: "flex-start",
+    marginVertical: 5,
+  },
+  badgeText: {
+    color: "white",
+    fontSize: 12,
+    fontWeight: "bold",
   },
 });

@@ -52,7 +52,7 @@ export default function AboutUsScreen() {
     }, []);
 
     const backToProfile = () => {
-        navigation.replace("Profile");
+        navigation.replace("Tabs");
     };
 
     const handleLanguageChange = (language: string) => {

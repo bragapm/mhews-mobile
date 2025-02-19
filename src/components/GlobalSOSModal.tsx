@@ -206,7 +206,7 @@ export const SOSModalProvider = ({ children }: { children: React.ReactNode }) =>
                             style={[styles.outlineButton, !emergencyMessage.trim() && styles.disabledButton]}
                             onLongPress={handleLongPress}
                             onPressOut={handlePressOut}
-                            delayLongPress={5000}
+                            delayLongPress={1000}
                             disabled={loading || !emergencyMessage.trim()}
                         >
                             <Text style={[styles.outlineButtonText, !emergencyMessage.trim() && styles.disableOutlineButtonText]}>

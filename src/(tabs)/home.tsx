@@ -10,7 +10,8 @@ import {
   Image,
   ScrollView,
   StatusBar,
-  Platform
+  Platform,
+  RefreshControl
 } from "react-native";
 import Icon from "react-native-vector-icons/Feather";
 import { useNavigation } from '@react-navigation/native'; // Update here
@@ -25,6 +26,7 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../navigation/types";
 import { request, PERMISSIONS, RESULTS, openSettings } from 'react-native-permissions';
 import DeviceInfo from 'react-native-device-info';
+import { SvgUri } from "react-native-svg";
 
 export default function HomeScreen() {
   const { showAlert } = useAlert();
@@ -38,6 +40,7 @@ export default function HomeScreen() {
   const [infoTerkait, setInfoTerkait] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   const isDarkMode = colorScheme === "dark";
   const colors = {
@@ -118,9 +121,15 @@ export default function HomeScreen() {
     fetchData();
   }, []);
 
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchData();
+    setRefreshing(false);
+  };
+
   const handleClickDisaster = (item: any) => {
     if (item?.title == "Resiko Bencana") {
-      navigation.navigate("DisasterRisk"); // Use navigation.navigate
+      navigation.navigate("DisasterRisk");
     }
   };
 
@@ -139,6 +148,7 @@ export default function HomeScreen() {
         <ScrollView
           contentContainerStyle={styles.scrollContainer}
           showsVerticalScrollIndicator={false}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         >
           <View style={styles.overlay} />
           <View style={styles.container}>
@@ -178,14 +188,9 @@ export default function HomeScreen() {
                   >
                     <View style={styles.iconContainer}>
                       {(() => {
-                        const iconUri = `${ASSET_URL}${item.icon}`;
+                        const iconUri = `${ASSET_URL}${item.icon}/${item.id}.png`;
                         return (
-                          <Image
-                            source={{
-                              uri: iconUri
-                            }}
-                            style={{ width: 20, height: 20, resizeMode: "contain" }}
-                          />
+                          <SvgUri width="20" height="20" uri={iconUri || "../assets/weather.svg"} />
                         );
                       })()}
                     </View>
@@ -221,16 +226,11 @@ export default function HomeScreen() {
                   ]}
                   activeOpacity={0.8}
                 >
-                  <View style={styles.iconContainer}>
+                  <View style={styles.iconInfoContainer}>
                     {(() => {
-                      const iconUri = `${ASSET_URL}${item.icon}`;
+                      const iconUri = `${ASSET_URL}${item.icon}/${item.id}.png`;
                       return (
-                        <Image
-                          source={{
-                            uri: iconUri
-                          }}
-                          style={{ width: 20, height: 20, resizeMode: "contain" }}
-                        />
+                        <SvgUri width="20" height="20" uri={iconUri || "../assets/weather.svg"} />
                       );
                     })()}
                   </View>
@@ -264,14 +264,9 @@ export default function HomeScreen() {
                   ]}
                 >
                   {(() => {
-                    const iconUri = `${ASSET_URL}${item.icon}`;
+                    let iconUri = `${ASSET_URL}${item.icon}/${item.id}.png`;
                     return (
-                      <Image
-                        source={{
-                          uri: iconUri
-                        }}
-                        style={{ width: 20, height: 20, resizeMode: "contain" }}
-                      />
+                      <SvgUri width="20" height="20" uri={iconUri || "../assets/weather.svg"} />
                     );
                   })()}
                   <Text style={[styles.cardTitleSec, { color: color.text }]}>
