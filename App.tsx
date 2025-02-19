@@ -1,7 +1,12 @@
 import React from 'react';
-import { SafeAreaView, StatusBar, useColorScheme, StyleSheet } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
+import {
+  SafeAreaView,
+  StatusBar,
+  useColorScheme,
+  StyleSheet,
+} from 'react-native';
+import {NavigationContainer} from '@react-navigation/native';
+import {createStackNavigator} from '@react-navigation/stack';
 import SplashScreen from './src/splash';
 import AlertProvider from './src/components/AlertContext';
 import TabNavigator from './src/(tabs)/_layout';
@@ -17,6 +22,7 @@ import LanguageScreen from './src/pages/account/Language';
 import AboutUsScreen from './src/pages/account/AboutUs';
 import HelpCenterScreen from './src/pages/account/HelpCenter';
 import FamilyListScreen from './src/pages/account/FamilyList';
+import FindFamilyScreen from './src/pages/account/FindFamily';
 
 const Stack = createStackNavigator();
 
@@ -30,20 +36,29 @@ function App() {
     <AlertProvider>
       <NavigationContainer>
         <SafeAreaView style={[styles.safeArea, backgroundStyle]}>
-          <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} backgroundColor={backgroundStyle.backgroundColor} />
-          <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <StatusBar
+            barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+            backgroundColor={backgroundStyle.backgroundColor}
+          />
+          <Stack.Navigator screenOptions={{headerShown: false}}>
             <Stack.Screen name="Splash" component={SplashScreen} />
             <Stack.Screen name="Login" component={Login} />
             <Stack.Screen name="Signup" component={Signup} />
             <Stack.Screen name="Otp" component={OTPConfirmation} />
             <Stack.Screen name="Tabs" component={TabNavigator} />
 
-
             <Stack.Screen name="Profile" component={ProfileScreen} />
             <Stack.Screen name="EditProfile" component={EditProfileScreen} />
-            <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
-            <Stack.Screen name="FamilyProfile" component={FamilyProfileScreen} />
+            <Stack.Screen
+              name="ChangePassword"
+              component={ChangePasswordScreen}
+            />
+            <Stack.Screen
+              name="FamilyProfile"
+              component={FamilyProfileScreen}
+            />
             <Stack.Screen name="FamilyList" component={FamilyListScreen} />
+            <Stack.Screen name="FindFamily" component={FindFamilyScreen} />
             <Stack.Screen name="Language" component={LanguageScreen} />
             <Stack.Screen name="AboutUs" component={AboutUsScreen} />
             <Stack.Screen name="HelpCenter" component={HelpCenterScreen} />
