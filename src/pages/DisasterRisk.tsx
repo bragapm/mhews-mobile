@@ -510,6 +510,7 @@ export default function DisasterRiskScreen() {
                           : styles.cardPotential
                       }
                       activeOpacity={0.8}
+                      onPress={() => setSelectedBencana(item)}
                     >
                       <View style={styles.cardHeader}>
                         <Text style={styles.cardTitle}>
