@@ -122,8 +122,6 @@ export default function HomeScreen() {
     if (location) {
       const address: any = await getLocationDetails(location.latitude, location.longitude);
       setLocateNow(address);
-    } else {
-      console.log('Gagal mendapatkan lokasi.');
     }
   };
 
@@ -239,11 +237,20 @@ export default function HomeScreen() {
                   ]}
                   activeOpacity={0.8}
                 >
+                  <LinearGradient
+                    colors={["#CD541B", "transparent"]}
+                    start={{ x: 0, y: 1 }}
+                    end={{ x: 0.1, y: 0.1 }}
+                    style={styles.gradientBackground}
+                  />
+
+                  <View style={styles.topRightBox} />
+
                   <View style={styles.iconInfoContainer}>
                     {(() => {
                       const iconUri = `${ASSET_URL}${item.icon}/${item.id}.png`;
                       return (
-                        <SvgUri width="20" height="20" uri={iconUri || "../assets/weather.svg"} />
+                        <SvgUri width="40" height="40" uri={iconUri || "../assets/weather.svg"} />
                       );
                     })()}
                   </View>
@@ -372,21 +379,47 @@ const styles = StyleSheet.create({
   },
   iconInfoContainer: {
     backgroundColor: "rgba(255, 255, 255, 0.2)",
-    padding: 10,
-    borderRadius: 10,
+    padding: 15,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: "#ccc",
+    justifyContent: "center",
+    alignItems: "center",
+    width: 60,
+    height: 60,
   },
   informasiCard: {
     borderRadius: 10,
-    padding: 16,
+    padding: 10,
     margin: 5,
+    minWidth: 300,
     maxWidth: 300,
-    width: "100%",
+    flexGrow: 1,
     textAlign: "left",
     flexDirection: "row",
     alignItems: "center",
     overflow: "hidden",
+  },
+  gradientBackground: {
+    position: "absolute",
+    left: 0,
+    bottom: 0,
+    width: "100%",
+    height: "100%",
+    borderRadius: 10,
+    opacity: 0.1
+  },
+  topRightBox: {
+    position: "absolute",
+    top: -40,
+    right: -10,
+    width: 100,
+    height: 100,
+    borderColor: "#F36A1D",
+    borderWidth: 3,
+    borderRadius: 20,
+    opacity: 0.2,
+    transform: [{ rotate: "-95deg" }],
   },
   supportCard: {
     borderRadius: 10,
@@ -409,7 +442,8 @@ const styles = StyleSheet.create({
   textContainer: {
     flex: 1,
     marginLeft: 10,
+    justifyContent: "center",
   },
   cardTitleSec: { fontSize: 18, fontWeight: "bold", marginTop: 5 },
-  cardSubtitleSec: { fontSize: 14, marginTop: 4, color: "#4F4D4A" },
+  cardSubtitleSec: { fontSize: 14, marginTop: 4, marginBottom: 4, color: "#4F4D4A" },
 });

@@ -563,7 +563,7 @@ const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
 
               {showStartPicker && (
                 <DateTimePicker
-                  value={startDate}
+                  value={startDate ?? new Date()}
                   mode="date"
                   display="default"
                   onChange={handleStartDateChange}
@@ -572,7 +572,7 @@ const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
 
               {showEndPicker && (
                 <DateTimePicker
-                  value={endDate}
+                  value={endDate ?? new Date()}
                   mode="date"
                   display="default"
                   onChange={handleEndDateChange}

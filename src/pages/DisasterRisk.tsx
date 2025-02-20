@@ -29,13 +29,13 @@ import { useAlert } from '../components/AlertContext';
 import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Feather from 'react-native-vector-icons/Feather';
-import { BASE_URL, getData } from '../services/apiServices';
+import { BASE_URL, getData, postData } from '../services/apiServices';
 import haversine from 'haversine';
 import useAuthStore from '../hooks/auth';
 import FilterBottomSheet from '../components/FilterBottomSheet';
 import { filterDisasterData } from '../utils/filterDisaster';
 import COLORS from '../config/COLORS';
-import { fetchLocation, getLocationDetails } from '../utils/locationUtils';
+import { fetchLocation } from '../utils/locationUtils';
 
 const { width, height } = Dimensions.get('window');
 
@@ -138,9 +138,7 @@ export default function DisasterRiskScreen() {
   };
 
   const handleApplyFilter = (filterData: any) => {
-    console.log('Filter diterapkan:', filterData);
     setFilterData(filterData);
-    setSelectedFilterJenisBencana(filterData?.jenisBencana);
     setFilterVisible(false);
   };
 
@@ -215,7 +213,7 @@ export default function DisasterRiskScreen() {
 
   const handleGetLocation = async () => {
     const location = await fetchLocation();
-    if (location) {
+    if (location?.latitude) {
       setLocation(location);
       if (cameraRef.current) {
         cameraRef.current.setCamera({
@@ -226,14 +224,17 @@ export default function DisasterRiskScreen() {
       } else {
         console.log('mapRef.current is null');
       }
-    } else {
-      console.log('Gagal mendapatkan lokasi.');
     }
   };
 
   useEffect(() => {
-    handleGetLocation();
-  }, []);
+    if (!filterData || filterData?.jenisBencana?.length == 0 || filterData?.tipe?.length == 0) {
+      setSelectedFilterJenisBencana(['semua']);
+      fetchData();
+    } else {
+      fetchDataBuffer();
+    }
+  }, [filterData]);
 
   useEffect(() => {
     if (location && cameraRef.current) {
@@ -271,6 +272,51 @@ export default function DisasterRiskScreen() {
     }
   };
 
+  const fetchDataBuffer = async () => {
+    setLoading(true);
+    try {
+      const data = {
+        "layers": ["bencana_alam"],
+        "points": [[location?.longitude,
+        location?.latitude]],
+        "radius": (filterData?.radius || 0) * 1000,
+        "type": "simple"
+      }
+
+      const [dataBuffer] = await Promise.all([
+        postData('buffer', data),
+      ]);
+
+      if (dataBuffer) {
+        const tipeBencanaMap: Record<string, string> = {
+          "resiko bencana": "resiko_bencana",
+          "potensi bahaya": "potensi_bahaya"
+        };
+
+        const processedData = dataBuffer
+          .filter((item: any) => {
+            const normalizedTipeBencana = item.tipe_bencana?.trim().toLowerCase() || "";
+            const itemDate = new Date(item.waktu).toISOString().split("T")[0];
+            const startDate = new Date(filterData.startDate).toISOString().split("T")[0];
+            const endDate = new Date(filterData.endDate).toISOString().split("T")[0];
+
+            return (
+              filterData?.jenisBencana.includes(item.jenis_bencana) &&
+              filterData?.tipe.includes(tipeBencanaMap[normalizedTipeBencana] || "") &&
+              itemDate >= startDate &&
+              itemDate <= endDate
+            );
+          });
+
+        setDataBencana(processedData || []);
+      }
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchData();
   }, [selectedFilterJenisBencana]);
@@ -300,7 +346,7 @@ export default function DisasterRiskScreen() {
 
   const locateMe = () => {
     showAlert('success', 'Mengambil lokasi anda...');
-    fetchLocation();
+    handleGetLocation();
   };
 
   useEffect(() => {
@@ -914,7 +960,7 @@ export default function DisasterRiskScreen() {
               <View style={styles.swipeIndicator} />
 
               {/* Header Modal */}
-              <View style={styles.modalHeader}>
+              <View style={styles.modalHeaderDetail}>
                 <Text style={styles.modalTitle}>
                   {selectedBencana?.jenis_bencana
                     .replace(/_/g, ' ')
@@ -1384,6 +1430,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 20,
+  },
+  modalHeaderDetail: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+    justifyContent: 'space-between',
   },
   modalTitle: {
     fontSize: 20,

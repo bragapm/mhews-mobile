@@ -5,8 +5,8 @@ import {
   useColorScheme,
   StyleSheet,
 } from 'react-native';
-import {NavigationContainer} from '@react-navigation/native';
-import {createStackNavigator} from '@react-navigation/stack';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
 import SplashScreen from './src/splash';
 import AlertProvider from './src/components/AlertContext';
 import TabNavigator from './src/(tabs)/_layout';
@@ -23,6 +23,7 @@ import AboutUsScreen from './src/pages/account/AboutUs';
 import HelpCenterScreen from './src/pages/account/HelpCenter';
 import FamilyListScreen from './src/pages/account/FamilyList';
 import FindFamilyScreen from './src/pages/account/FindFamily';
+import DisasterAlertScreen from './src/pages/DisasterAlert';
 
 const Stack = createStackNavigator();
 
@@ -40,7 +41,7 @@ function App() {
             barStyle={isDarkMode ? 'light-content' : 'dark-content'}
             backgroundColor={backgroundStyle.backgroundColor}
           />
-          <Stack.Navigator screenOptions={{headerShown: false}}>
+          <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen name="Splash" component={SplashScreen} />
             <Stack.Screen name="Login" component={Login} />
             <Stack.Screen name="Signup" component={Signup} />
@@ -63,6 +64,9 @@ function App() {
             <Stack.Screen name="AboutUs" component={AboutUsScreen} />
             <Stack.Screen name="HelpCenter" component={HelpCenterScreen} />
             <Stack.Screen name="DisasterRisk" component={DisasterRiskScreen} />
+
+            {/* Full screen notif */}
+            <Stack.Screen name="DisasterAlert" component={DisasterAlertScreen} />
           </Stack.Navigator>
         </SafeAreaView>
       </NavigationContainer>
