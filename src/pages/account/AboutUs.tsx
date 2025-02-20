@@ -144,7 +144,7 @@ export default function AboutUsScreen() {
                                 },
                             ]}
                         >
-                            <Text style={[styles.subTitle, { color: colors.tabIconDefault }]}>
+                            <Text style={[styles.subTitle, { color: colors.info }]}>
                                 Penjelasan tentang aplikasi MHEWS dan profil perusahaan
                             </Text>
 

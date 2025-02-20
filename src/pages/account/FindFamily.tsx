@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import COLORS from '../../config/COLORS';
 import {HeaderNav} from '../../components/Header';
@@ -74,7 +75,7 @@ export default function FindFamilyScreen() {
 
   // Kembali ke tab
   const backToProfile = () => {
-    navigation.replace('Tabs');
+    navigation.replace('FamilyProfile');
   };
 
   // Pencarian
@@ -117,14 +118,21 @@ export default function FindFamilyScreen() {
     setIsAdded(false);
     setIsAdding(false);
   };
+  const kerabatIcon =
+    colorScheme === 'dark'
+      ? require('../../assets/images/kerabat-dark.png')
+      : require('../../assets/images/kerabat-light.png');
 
   // Render daftar hasil pencarian
   const renderResultList = () => {
     if (searchResult.length === 0) {
       return (
         <View style={styles.noResultContainer}>
-          <Text style={styles.noResultTitle}>Tidak Ada Hasil Kerabat</Text>
-          <Text style={styles.noResultDesc}>
+          <Image source={kerabatIcon} style={styles.iconImage} />
+          <Text style={[styles.noResultTitle, {color: colors.info}]}>
+            Tidak Ada Hasil Kerabat
+          </Text>
+          <Text style={[styles.noResultDesc, {color: colors.info}]}>
             Silahkan memasukkan alamat email yang benar pada kolom pencarian
             diatas
           </Text>
@@ -137,7 +145,7 @@ export default function FindFamilyScreen() {
         {searchResult.map(item => (
           <TouchableOpacity
             key={item.id}
-            style={styles.userCard}
+            style={[styles.userCard, {backgroundColor: colors.cardBackground}]}
             onPress={() => handleSelectUser(item)}>
             {/* Avatar Inisial */}
             <View style={styles.avatarContainer}>
@@ -146,15 +154,50 @@ export default function FindFamilyScreen() {
 
             {/* Info singkat */}
             <View style={styles.infoContainer}>
-              <Text style={styles.nameText}>{item.name}</Text>
-              <Text style={styles.locationText}>{item.location}</Text>
-              <Text style={styles.emailText}>{item.email}</Text>
+              <Text style={[styles.nameText, {color: colors.text}]}>
+                {item.name}
+              </Text>
+              <Text style={[styles.locationText, {color: colors.info}]}>
+                {item.location}
+              </Text>
+              <Text style={[styles.emailText, {color: colors.text}]}>
+                {item.email}
+              </Text>
             </View>
-            <TouchableOpacity
-              style={styles.addButton}
-              onPress={() => handleAddFriend(item.id)}>
-              <Text style={styles.addButtonText}>+ Tambahkan</Text>
-            </TouchableOpacity>
+            <View style={{marginTop: 20}}>
+              {isAdded ? (
+                // Sudah berhasil ditambahkan
+                <View
+                  style={[
+                    styles.addButton,
+                    {backgroundColor: colors.text},
+                  ]}>
+                  <Text
+                    style={[
+                      styles.addedButtonText,
+                      {color: colors.background},
+                    ]}>
+                    ✓
+                  </Text>
+                </View>
+              ) : (
+                // Belum ditambahkan
+                <TouchableOpacity
+                  style={[
+                    styles.addButton,
+                    {backgroundColor: colors.cardBackground},
+                  ]}
+                  onPress={handleAddFriend}>
+                  {isAdding ? (
+                    <ActivityIndicator color="#FF7A00" />
+                  ) : (
+                    <Text style={[styles.addButtonText, {color: colors.text}]}>
+                      + Tambahkan
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              )}
+            </View>
           </TouchableOpacity>
         ))}
       </View>
@@ -166,7 +209,11 @@ export default function FindFamilyScreen() {
     if (!selectedUser) return null; // kalau belum pilih, tidak render apa2
 
     return (
-      <View style={styles.detailCard}>
+      <View
+        style={[
+          styles.detailCard,
+          {backgroundColor: colors.cardBackground, borderColor: colors.border},
+        ]}>
         {/* Avatar */}
         <View style={styles.detailHeader}>
           <View style={styles.avatarContainerBig}>
@@ -175,29 +222,44 @@ export default function FindFamilyScreen() {
             </Text>
           </View>
           <View style={styles.detailInfo}>
-            <Text style={styles.detailName}>{selectedUser.name}</Text>
-            <Text style={styles.detailLocation}>{selectedUser.location}</Text>
+            <Text style={[styles.detailName, {color: colors.text}]}>
+              {selectedUser.name}
+            </Text>
+            <Text style={[styles.detailLocation, , {color: colors.info}]}>
+              {selectedUser.location}
+            </Text>
           </View>
         </View>
 
         {/* Info Lengkap */}
         <View style={{marginTop: 10}}>
-          <Text style={styles.detailLabel}>NIK</Text>
-          <Text style={styles.detailValue}>{selectedUser.nik || '-'}</Text>
+          <Text style={[styles.detailLabel, , {color: colors.text}]}>NIK</Text>
+          <Text style={[styles.detailValue, {color: colors.info}]}>
+            {selectedUser.nik || '-'}
+          </Text>
 
-          <Text style={styles.detailLabel}>No. Handphone</Text>
-          <Text style={styles.detailValue}>{selectedUser.phone || '-'}</Text>
+          <Text style={[styles.detailLabel, , {color: colors.text}]}>
+            No. Handphone
+          </Text>
+          <Text style={[styles.detailValue, {color: colors.info}]}>
+            {selectedUser.phone || '-'}
+          </Text>
 
-          <Text style={styles.detailLabel}>Email</Text>
-          <Text style={styles.detailValue}>{selectedUser.email}</Text>
+          <Text style={[styles.detailLabel, {color: colors.text}]}>Email</Text>
+          <Text style={[styles.detailValue, {color: colors.info}]}>
+            {selectedUser.email}
+          </Text>
         </View>
 
         {/* Tombol Tambah Kerabat */}
         <View style={{marginTop: 20}}>
           {isAdded ? (
             // Sudah berhasil ditambahkan
-            <View style={styles.addedButton}>
-              <Text style={styles.addedButtonText}>✓ Kerabat Ditambahkan</Text>
+            <View style={[styles.addedButton, {backgroundColor: colors.text}]}>
+              <Text
+                style={[styles.addedButtonText, {color: colors.background}]}>
+                ✓ Kerabat Ditambahkan
+              </Text>
             </View>
           ) : (
             // Belum ditambahkan
@@ -255,7 +317,7 @@ export default function FindFamilyScreen() {
               ]}>
               {/* Deskripsi pencarian */}
               {!selectedUser && (
-                <Text style={styles.desc}>
+                <Text style={[styles.desc, {color: colors.info}]}>
                   Temukan profil kerabat anda untuk ditambahkan dengan alamat
                   email yang terdaftar
                 </Text>
@@ -282,7 +344,9 @@ export default function FindFamilyScreen() {
                   </TouchableOpacity>
 
                   {/* Hasil Pencarian */}
-                  <Text style={styles.resultTitle}>Hasil Pencarian</Text>
+                  <Text style={[styles.resultTitle, {color: colors.text}]}>
+                    Hasil Pencarian
+                  </Text>
                 </>
               )}
 
@@ -518,5 +582,10 @@ const styles = StyleSheet.create({
     color: '#777674',
     fontWeight: 'bold',
     fontSize: 12,
+  },
+  iconImage: {
+    width: 50,
+    height: 30,
+    resizeMode: 'contain',
   },
 });

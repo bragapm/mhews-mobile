@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, {useRef, useState} from 'react';
 import {
   View,
   Text,
@@ -12,10 +12,145 @@ import {
   TouchableWithoutFeedback,
   PanResponder,
   Image,
+  useColorScheme,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Slider from '@react-native-community/slider';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import COLORS from '../config/COLORS';
+
+const {width, height} = Dimensions.get('window');
+function makeStyles(colors: any) {
+  return StyleSheet.create({
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.3)',
+      justifyContent: 'flex-end',
+    },
+    bottomSheetContainer: {
+      backgroundColor: 'white',
+      borderTopLeftRadius: 20,
+      borderTopRightRadius: 20,
+      height: '80%',
+    },
+    swipeIndicator: {
+      width: '30%',
+      height: 5,
+      backgroundColor: '#ccc',
+      borderRadius: 10,
+      alignSelf: 'center',
+      marginVertical: '2%',
+    },
+    headerContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'flex-start',
+      paddingVertical: 10,
+      paddingHorizontal: 16,
+    },
+    closeButton: {position: 'absolute', right: 16},
+    title: {fontSize: 18, fontWeight: 'bold'},
+    scrollContainer: {flex: 1},
+    scrollContent: {paddingHorizontal: 16, paddingBottom: 16},
+    sectionLabel: {fontWeight: 'bold', marginBottom: 6, marginTop: 10},
+    slider: {width: '100%', height: 40},
+    chipContainer: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      marginVertical: 5,
+    },
+    chip: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: colors.bg,
+      borderRadius: 10,
+      paddingVertical: 6,
+      paddingHorizontal: 12,
+      marginRight: 8,
+      marginBottom: 8,
+      borderWidth: 1,
+      borderColor: colors.text,
+    },
+    chipSelected: {borderColor: '#f36a1d'},
+    buttonRow: {
+      flexDirection: 'column',
+      justifyContent: 'center',
+      paddingBottom: '2%',
+      width: '100%',
+      alignItems: 'center',
+    },
+    resetButton: {
+      backgroundColor: '#FFFFFF00',
+      paddingVertical: 12,
+      paddingHorizontal: 20,
+      borderRadius: 8,
+      width: '90%',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    applyButton: {
+      backgroundColor: '#F36A1D',
+      paddingVertical: 12,
+      paddingHorizontal: 20,
+      borderRadius: 8,
+      width: '90%',
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: '2%',
+    },
+    sliderLabelRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginHorizontal: 2,
+    },
+    sliderLabel: {
+      fontSize: 12,
+      color: 'gray',
+    },
+    sliderContainer: {
+      position: 'relative',
+      width: '100%',
+      alignItems: 'center',
+    },
+    tooltip: {
+      position: 'absolute',
+      top: -30,
+      backgroundColor: '#e5e5e5',
+      paddingVertical: 5,
+      paddingHorizontal: 10,
+      borderRadius: 8,
+      alignItems: 'center',
+    },
+    tooltipText: {
+      fontSize: 12,
+      fontWeight: 'bold',
+    },
+    dateRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      width: '100%',
+      marginTop: '3%',
+    },
+    dateBox: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: '#F0F0F0',
+      paddingVertical: 10,
+      paddingHorizontal: 10,
+      borderRadius: 8,
+      width: '100%',
+      marginTop: '3%',
+    },
+    dateIcon: {
+      marginRight: 5,
+    },
+    iconImage: {
+      width: 20,
+      height: 15,
+      resizeMode: 'contain',
+    },
+  });
+}
 
 interface FilterBottomSheetProps {
   visible: boolean;
@@ -28,6 +163,7 @@ const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
   onClose,
   onApply,
 }) => {
+  const colorScheme = useColorScheme();
   const [radius, setRadius] = useState(2);
   const [tempRadius, setTempRadius] = useState(radius);
   const [jenisBencana, setJenisBencana] = useState<string[]>([]);
@@ -37,7 +173,8 @@ const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndPicker, setShowEndPicker] = useState(false);
   const [sliderPosition, setSliderPosition] = useState(new Animated.Value(0));
-
+  const colors = COLORS();
+  const styles = makeStyles(colors);
   const bottomSheetAnim = useRef(new Animated.Value(0)).current;
 
   const panResponder = useRef(
@@ -120,53 +257,77 @@ const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
       value: 'gempa_bumi',
       label: 'Gempa Bumi',
       iconSelected: require('../assets/images/gempaActive.png'),
-      iconUnselected: require('../assets/images/gempaDeactive.png'),
+      iconUnselected: {
+        light: require('../assets/images/gempaDeactive.png'),
+        dark: require('../assets/images/gempaDeactive-dark.png'),
+      },
     },
     {
       value: 'tsunami',
       label: 'Tsunami',
       iconSelected: require('../assets/images/tsunamiActive.png'),
-      iconUnselected: require('../assets/images/tsunamiDeactive.png'),
+      iconUnselected: {
+        light: require('../assets/images/tsunamiDeactive.png'),
+        dark: require('../assets/images/tsunamiDeactive-dark.png'),
+      },
     },
     {
       value: 'banjir',
       label: 'Banjir',
       iconSelected: require('../assets/images/banjirActive.png'),
-      iconUnselected: require('../assets/images/banjirDeactive.png'),
+      iconUnselected: {
+        light: require('../assets/images/banjirDeactive.png'),
+        dark: require('../assets/images/banjirDeactive-dark.png'),
+      },
     },
     {
       value: 'longsor',
       label: 'Longsor',
       iconSelected: require('../assets/images/longsorActive.png'),
-      iconUnselected: require('../assets/images/longsorDeactive.png'),
+      iconUnselected: {
+        light: require('../assets/images/longsorDeactive.png'),
+        dark: require('../assets/images/longsorDeactive-dark.png'),
+      },
     },
     {
       value: 'gunung_berapi',
       label: 'Erupsi Gn. Berapi',
       iconSelected: require('../assets/images/erupsiActive.png'),
-      iconUnselected: require('../assets/images/erupsiDeactive.png'),
+      iconUnselected: {
+        light: require('../assets/images/erupsiDeactive.png'),
+        dark: require('../assets/images/erupsiDeactive-dark.png'),
+      },
     },
   ];
 
   const tipeOptions = [
-    { value: 'semua', label: 'Semua Bencana' },
+    {value: 'semua', label: 'Semua Bencana'},
     {
       value: 'potensi_bahaya',
       label: 'Potensi Bahaya',
       iconSelected: require('../assets/images/potensiBahayaActive.png'),
-      iconUnselected: require('../assets/images/potensiBahayaDeactive.png'),
+      iconUnselected: {
+        light: require('../assets/images/potensiBahayaDeactive.png'),
+        dark: require('../assets/images/potensiBahayaDeactive-dark.png'),
+      },
     },
     {
       value: 'resiko_bencana',
       label: 'Resiko Bencana',
       iconSelected: require('../assets/images/resikoBahayaActive.png'),
-      iconUnselected: require('../assets/images/resikoBahayaDeactive.png'),
+      iconUnselected: {
+        light: require('../assets/images/resikoBahayaDeactive.png'),
+        dark: require('../assets/images/resikoBencanaDeactive-dark.png'),
+      },
     },
     {
       value: 'riwayat_bencana',
       label: 'Riwayat Bencana',
       iconSelected: require('../assets/images/riwayatBencanaActive.png'),
-      iconUnselected: require('../assets/images/riwayatBencanaDeactive.png'),
+      iconUnselected: {
+        light: require('../assets/images/riwayatBencanaDeactive.png'),
+        dark: require('../assets/images/riwayatBencana-dark.png'),
+      },
     },
   ];
 
@@ -222,10 +383,11 @@ const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
               {transform: [{translateY: bottomSheetAnim}]},
             ]}
             {...panResponder.panHandlers}> */}
-          <View style={styles.bottomSheetContainer}>
+          <View
+            style={[styles.bottomSheetContainer, {backgroundColor: colors.bg}]}>
             <TouchableOpacity style={styles.swipeIndicator} onPress={onClose} />
             <View style={styles.headerContainer}>
-              <Text style={styles.title}>Filter</Text>
+              <Text style={[styles.title, {color: colors.text}]}>Filter</Text>
               <TouchableOpacity style={styles.closeButton} onPress={onClose}>
                 <Ionicons name="close" size={24} color="black" />
               </TouchableOpacity>
@@ -235,12 +397,16 @@ const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
               style={styles.scrollContainer}
               contentContainerStyle={styles.scrollContent}>
               {/* Radius */}
-              <Text style={styles.sectionLabel}>Radius</Text>
+              <Text style={[styles.sectionLabel, {color: colors.text}]}>
+                Radius
+              </Text>
               <View style={styles.sliderContainer}>
                 {/* Tooltip */}
                 <Animated.View
-                  style={[styles.tooltip, { left: getTooltipPosition(radius) }]}>
-                  <Text style={styles.tooltipText}>{radius} km</Text>
+                  style={[styles.tooltip, {left: getTooltipPosition(radius)}]}>
+                  <Text style={[styles.tooltipText, {color: '#000'}]}>
+                    {radius} km
+                  </Text>
                 </Animated.View>
 
                 {/* Slider */}
@@ -253,24 +419,30 @@ const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
                   onValueChange={value => setTempRadius(value)}
                   onSlidingComplete={value => setRadius(value)}
                   minimumTrackTintColor="#f36a1d"
-                  maximumTrackTintColor="#ddd"
+                  maximumTrackTintColor={colors.text}
                   thumbTintColor="#f36a1d"
                 />
               </View>
               <View style={styles.sliderLabelRow}>
-                <Text style={styles.sliderLabel}>2 km</Text>
-                <Text style={styles.sliderLabel}>10 km</Text>
+                <Text style={[styles.sliderLabel, {color: colors.info}]}>
+                  2 km
+                </Text>
+                <Text style={[styles.sliderLabel, {color: colors.info}]}>
+                  10 km
+                </Text>
               </View>
 
               {/* Jenis Bencana */}
-              <Text style={styles.sectionLabel}>Jenis Bencana</Text>
+              <Text style={[styles.sectionLabel, {color: colors.text}]}>
+                Jenis Bencana
+              </Text>
               <View style={styles.chipContainer}>
                 {disasterOptions.map(item => {
                   const isSelected = jenisBencana.includes(item.value);
                   const iconSource = item.iconSelected
                     ? isSelected
                       ? item.iconSelected
-                      : item.iconUnselected
+                      : item?.iconUnselected[colorScheme] || null
                     : item.iconUnselected;
                   return (
                     <TouchableOpacity
@@ -288,7 +460,7 @@ const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
                       )}
                       <Text
                         style={{
-                          color: isSelected ? '#F36A1D' : '#232221',
+                          color: isSelected ? '#F36A1D' : colors.text,
                           fontSize: 12,
                         }}>
                         {item.label}
@@ -299,26 +471,32 @@ const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
               </View>
 
               {/* Tipe */}
-              <Text style={styles.sectionLabel}>Tipe</Text>
+              <Text style={[styles.sectionLabel, {color: colors.text}]}>
+                Tipe
+              </Text>
               <View style={styles.chipContainer}>
                 {tipeOptions.map(item => {
                   const isSelected = tipe.includes(item.value);
                   const iconSource = item.iconSelected
                     ? isSelected
                       ? item.iconSelected
-                      : item.iconUnselected
+                      : item?.iconUnselected[colorScheme] || null
                     : item.iconUnselected;
                   return (
                     <TouchableOpacity
                       key={item.value}
-                      style={[styles.chip, isSelected && styles.chipSelected]}
+                      style={[
+                        styles.chip,
+                        isSelected && styles.chipSelected,
+                        // {borderColor: colors.text},
+                      ]}
                       onPress={() => toggleTipe(item.value)}>
                       {iconSource && (
                         <Image source={iconSource} style={styles.iconImage} />
                       )}
                       <Text
                         style={{
-                          color: isSelected ? '#F36A1D' : '#232221',
+                          color: isSelected ? '#F36A1D' : colors.text,
                           fontSize: 12,
                         }}>
                         {item.label}
@@ -328,13 +506,16 @@ const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
                 })}
               </View>
               {/* Tanggal */}
-              <Text style={styles.sectionLabel}>Tanggal</Text>
+              <Text style={[styles.sectionLabel, {color: colors.text}]}>
+                Tanggal
+              </Text>
               <View style={styles.dateRow}>
                 {/* Tanggal Mulai */}
-                <View style={{ width: '45%' }}>
+                <View style={{width: '45%'}}>
                   <Text
                     style={{
                       fontSize: 12,
+                      color: colors.info,
                     }}>
                     Tanggal Mulai
                   </Text>
@@ -352,10 +533,11 @@ const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
                 </View>
 
                 {/* Tanggal Selesai */}
-                <View style={{ width: '45%' }}>
+                <View style={{width: '45%'}}>
                   <Text
                     style={{
                       fontSize: 12,
+                      color: colors.info,
                     }}>
                     Tanggal Selesai
                   </Text>
@@ -397,13 +579,13 @@ const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
               <TouchableOpacity
                 style={styles.resetButton}
                 onPress={resetFilter}>
-                <Text style={{ color: 'black' }}>Reset Filter</Text>
+                <Text style={{color: colors.text}}>Reset Filter</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
                 style={styles.applyButton}
                 onPress={applyFilter}>
-                <Text style={{ color: '#FFFFFF' }}>Terapkan Filter</Text>
+                <Text style={{color: '#FFFFFF'}}>Terapkan Filter</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -415,129 +597,3 @@ const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
 };
 
 export default FilterBottomSheet;
-
-const { width, height } = Dimensions.get('window');
-const styles = StyleSheet.create({
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    justifyContent: 'flex-end',
-  },
-  bottomSheetContainer: {
-    backgroundColor: 'white',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    height: '80%',
-  },
-  swipeIndicator: {
-    width: '30%',
-    height: 5,
-    backgroundColor: '#ccc',
-    borderRadius: 10,
-    alignSelf: 'center',
-    marginVertical: '2%',
-  },
-  headerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-  },
-  closeButton: { position: 'absolute', right: 16 },
-  title: { fontSize: 18, fontWeight: 'bold' },
-  scrollContainer: { flex: 1 },
-  scrollContent: { paddingHorizontal: 16, paddingBottom: 16 },
-  sectionLabel: { fontWeight: 'bold', marginBottom: 6, marginTop: 10 },
-  slider: { width: '100%', height: 40 },
-  chipContainer: { flexDirection: 'row', flexWrap: 'wrap', marginVertical: 5 },
-  chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF00',
-    borderRadius: 10,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    marginRight: 8,
-    marginBottom: 8,
-    borderWidth: 1,
-  },
-  chipSelected: { borderColor: '#f36a1d' },
-  buttonRow: {
-    flexDirection: 'column',
-    justifyContent: 'center',
-    paddingBottom: '2%',
-    width: '100%',
-    alignItems: 'center',
-  },
-  resetButton: {
-    backgroundColor: '#FFFFFF00',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    width: '90%',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  applyButton: {
-    backgroundColor: '#F36A1D',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    width: '90%',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: '2%',
-  },
-  sliderLabelRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginHorizontal: 2,
-  },
-  sliderLabel: {
-    fontSize: 12,
-    color: 'gray',
-  },
-  sliderContainer: {
-    position: 'relative',
-    width: '100%',
-    alignItems: 'center',
-  },
-  tooltip: {
-    position: 'absolute',
-    top: -30,
-    backgroundColor: '#e5e5e5',
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  tooltipText: {
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-  dateRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-    marginTop: '3%',
-  },
-  dateBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F0F0F0',
-    paddingVertical: 10,
-    paddingHorizontal: 10,
-    borderRadius: 8,
-    width: '100%',
-    marginTop: '3%',
-  },
-  dateIcon: {
-    marginRight: 5,
-  },
-  iconImage: {
-    width: 20,
-    height: 15,
-    resizeMode: 'contain',
-  },
-});

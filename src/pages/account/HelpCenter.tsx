@@ -144,7 +144,7 @@ export default function HelpCenterScreen() {
                                 },
                             ]}
                         >
-                            <Text style={[styles.subTitle, { color: colors.tabIconDefault }]}>
+                            <Text style={[styles.subTitle, { color: colors.info }]}>
                                 Cari bantuan terkait aplikasi MHEWS berdasarkan kategori yang
                                 anda butuhkan
                             </Text>
