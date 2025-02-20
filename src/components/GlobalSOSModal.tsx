@@ -5,8 +5,7 @@ import { useAlert } from "./AlertContext";
 import { useColorScheme } from "react-native";
 import COLORS from "../config/COLORS";
 import { postData } from "../services/apiServices";
-import GetLocation from 'react-native-get-location';
-import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
+import { fetchLocation, getLocationDetails } from '../utils/locationUtils';
 
 // Context untuk mengontrol modal
 const SOSModalContext = createContext({
@@ -27,62 +26,18 @@ export const SOSModalProvider = ({ children }: { children: React.ReactNode }) =>
     const countdownRef = useRef<NodeJS.Timeout | null>(null);
     const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
 
-    const requestLocationPermission = async () => {
-        try {
-            if (Platform.OS === 'android') {
-                const granted = await PermissionsAndroid.request(
-                    PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-                );
-                return granted === PermissionsAndroid.RESULTS.GRANTED;
-            }
-            const result = await request(PERMISSIONS.IOS.LOCATION_WHEN_IN_USE);
-            return result === RESULTS.GRANTED;
-        } catch (error) {
-            console.log('Permission Error:', error);
-            return false;
+    const handleGetLocation = async () => {
+        const location = await fetchLocation();
+        if (location) {
+            setLocation(location);
+        } else {
+            console.log('Gagal mendapatkan lokasi.');
         }
-    };
-
-    const fetchLocation = async () => {
-        try {
-            const result = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION)
-            if (result == true) {
-                getLocation();
-            }
-            else if (result == false) {
-                const hasPermission = await requestLocationPermission();
-                if (!hasPermission) {
-                    showAlert('error', 'Izin lokasi diperlukan untuk mengirim SOS.');
-                    return;
-                }
-
-                getLocation();
-            }
-        } catch (error) {
-            console.log(JSON.stringify(error));
-            showAlert('error', 'Gagal mengambil lokasi. Pastikan GPS aktif.');
-        }
-    };
-
-    const getLocation = async () => {
-        GetLocation.getCurrentPosition({
-            enableHighAccuracy: true,
-            timeout: 60000,
-        })
-            .then(location => {
-                console.log(location);
-                const { latitude, longitude } = location;
-                setLocation({ latitude, longitude });
-            })
-            .catch(error => {
-                const { code, message } = error;
-                console.warn(code, message);
-            })
     };
 
     useEffect(() => {
         if (modalVisible) {
-            fetchLocation();
+            handleGetLocation();
             setEmergencyMessage("");
         }
     }, [modalVisible]);

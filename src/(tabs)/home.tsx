@@ -27,6 +27,7 @@ import { RootStackParamList } from "../navigation/types";
 import { request, PERMISSIONS, RESULTS, openSettings } from 'react-native-permissions';
 import DeviceInfo from 'react-native-device-info';
 import { SvgUri } from "react-native-svg";
+import { fetchLocation, getLocationDetails } from '../utils/locationUtils';
 
 export default function HomeScreen() {
   const { showAlert } = useAlert();
@@ -41,6 +42,7 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [locateNow, setLocateNow] = useState("");
 
   const isDarkMode = colorScheme === "dark";
   const colors = {
@@ -115,9 +117,20 @@ export default function HomeScreen() {
     }
   };
 
+  const handleGetLocation = async () => {
+    const location = await fetchLocation();
+    if (location) {
+      const address: any = await getLocationDetails(location.latitude, location.longitude);
+      setLocateNow(address);
+    } else {
+      console.log('Gagal mendapatkan lokasi.');
+    }
+  };
+
   useEffect(() => {
     checkGPS();
     requestAllPermissions();
+    handleGetLocation();
     fetchData();
   }, []);
 
@@ -160,7 +173,7 @@ export default function HomeScreen() {
                 <View style={styles.locationContainer}>
                   <Icon name="map-pin" size={16} color={color.subText} />
                   <Text style={[styles.locationText, { color: color.subText }]}>
-                    Cihapit, Bandung Wetan, Bandung
+                    {locateNow || "-"}
                   </Text>
                 </View>
               </View>
@@ -222,7 +235,7 @@ export default function HomeScreen() {
                 <TouchableOpacity
                   style={[
                     styles.informasiCard,
-                    { backgroundColor: color.background },
+                    { backgroundColor: colors.supportCardBackground },
                   ]}
                   activeOpacity={0.8}
                 >
@@ -320,6 +333,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginTop: 4,
+    width: "80%"
   },
   locationText: {
     fontSize: 14,

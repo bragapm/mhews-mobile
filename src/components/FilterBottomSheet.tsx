@@ -1,4 +1,4 @@
-import React, {useRef, useState} from 'react';
+import React, { useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -19,7 +19,7 @@ import Slider from '@react-native-community/slider';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import COLORS from '../config/COLORS';
 
-const {width, height} = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 function makeStyles(colors: any) {
   return StyleSheet.create({
     modalOverlay: {
@@ -48,12 +48,12 @@ function makeStyles(colors: any) {
       paddingVertical: 10,
       paddingHorizontal: 16,
     },
-    closeButton: {position: 'absolute', right: 16},
-    title: {fontSize: 18, fontWeight: 'bold'},
-    scrollContainer: {flex: 1},
-    scrollContent: {paddingHorizontal: 16, paddingBottom: 16},
-    sectionLabel: {fontWeight: 'bold', marginBottom: 6, marginTop: 10},
-    slider: {width: '100%', height: 40},
+    closeButton: { position: 'absolute', right: 16 },
+    title: { fontSize: 18, fontWeight: 'bold' },
+    scrollContainer: { flex: 1 },
+    scrollContent: { paddingHorizontal: 16, paddingBottom: 16 },
+    sectionLabel: { fontWeight: 'bold', marginBottom: 6, marginTop: 10 },
+    slider: { width: '100%', height: 40 },
     chipContainer: {
       flexDirection: 'row',
       flexWrap: 'wrap',
@@ -71,7 +71,7 @@ function makeStyles(colors: any) {
       borderWidth: 1,
       borderColor: colors.text,
     },
-    chipSelected: {borderColor: '#f36a1d'},
+    chipSelected: { borderColor: '#f36a1d' },
     buttonRow: {
       flexDirection: 'column',
       justifyContent: 'center',
@@ -163,7 +163,7 @@ const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
   onClose,
   onApply,
 }) => {
-  const colorScheme = useColorScheme();
+  const colorScheme = useColorScheme() ?? "light";
   const [radius, setRadius] = useState(2);
   const [tempRadius, setTempRadius] = useState(radius);
   const [jenisBencana, setJenisBencana] = useState<string[]>([]);
@@ -250,8 +250,8 @@ const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
       value: 'semua',
       label: 'Semua Bencana',
       icon: 'earth',
-      iconSelected: '',
-      iconUnselected: '',
+      iconSelected: null,
+      iconUnselected: null,
     },
     {
       value: 'gempa_bumi',
@@ -301,7 +301,7 @@ const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
   ];
 
   const tipeOptions = [
-    {value: 'semua', label: 'Semua Bencana'},
+    { value: 'semua', label: 'Semua Bencana' },
     {
       value: 'potensi_bahaya',
       label: 'Potensi Bahaya',
@@ -384,10 +384,10 @@ const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
             ]}
             {...panResponder.panHandlers}> */}
           <View
-            style={[styles.bottomSheetContainer, {backgroundColor: colors.bg}]}>
+            style={[styles.bottomSheetContainer, { backgroundColor: colors.bg }]}>
             <TouchableOpacity style={styles.swipeIndicator} onPress={onClose} />
             <View style={styles.headerContainer}>
-              <Text style={[styles.title, {color: colors.text}]}>Filter</Text>
+              <Text style={[styles.title, { color: colors.text }]}>Filter</Text>
               <TouchableOpacity style={styles.closeButton} onPress={onClose}>
                 <Ionicons name="close" size={24} color="black" />
               </TouchableOpacity>
@@ -397,14 +397,14 @@ const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
               style={styles.scrollContainer}
               contentContainerStyle={styles.scrollContent}>
               {/* Radius */}
-              <Text style={[styles.sectionLabel, {color: colors.text}]}>
+              <Text style={[styles.sectionLabel, { color: colors.text }]}>
                 Radius
               </Text>
               <View style={styles.sliderContainer}>
                 {/* Tooltip */}
                 <Animated.View
-                  style={[styles.tooltip, {left: getTooltipPosition(radius)}]}>
-                  <Text style={[styles.tooltipText, {color: '#000'}]}>
+                  style={[styles.tooltip, { left: getTooltipPosition(radius) }]}>
+                  <Text style={[styles.tooltipText, { color: '#000' }]}>
                     {radius} km
                   </Text>
                 </Animated.View>
@@ -424,26 +424,29 @@ const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
                 />
               </View>
               <View style={styles.sliderLabelRow}>
-                <Text style={[styles.sliderLabel, {color: colors.info}]}>
+                <Text style={[styles.sliderLabel, { color: colors.info }]}>
                   2 km
                 </Text>
-                <Text style={[styles.sliderLabel, {color: colors.info}]}>
+                <Text style={[styles.sliderLabel, { color: colors.info }]}>
                   10 km
                 </Text>
               </View>
 
               {/* Jenis Bencana */}
-              <Text style={[styles.sectionLabel, {color: colors.text}]}>
+              <Text style={[styles.sectionLabel, { color: colors.text }]}>
                 Jenis Bencana
               </Text>
               <View style={styles.chipContainer}>
                 {disasterOptions.map(item => {
                   const isSelected = jenisBencana.includes(item.value);
-                  const iconSource = item.iconSelected
+                  const currentIconSource = item.iconSelected
                     ? isSelected
                       ? item.iconSelected
-                      : item?.iconUnselected[colorScheme] || null
-                    : item.iconUnselected;
+                      : item?.iconUnselected && colorScheme
+                        ? item.iconUnselected[colorScheme]
+                        : null
+                    : null;
+
                   return (
                     <TouchableOpacity
                       key={item.value}
@@ -455,8 +458,8 @@ const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
                           color={isSelected ? 'white' : 'black'}
                           style={{marginRight: 5}}
                         /> */}
-                      {iconSource && (
-                        <Image source={iconSource} style={styles.iconImage} />
+                      {currentIconSource && (
+                        <Image source={currentIconSource} style={styles.iconImage} />
                       )}
                       <Text
                         style={{
@@ -471,7 +474,7 @@ const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
               </View>
 
               {/* Tipe */}
-              <Text style={[styles.sectionLabel, {color: colors.text}]}>
+              <Text style={[styles.sectionLabel, { color: colors.text }]}>
                 Tipe
               </Text>
               <View style={styles.chipContainer}>
@@ -480,8 +483,11 @@ const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
                   const iconSource = item.iconSelected
                     ? isSelected
                       ? item.iconSelected
-                      : item?.iconUnselected[colorScheme] || null
-                    : item.iconUnselected;
+                      : item?.iconUnselected && colorScheme
+                        ? item.iconUnselected[colorScheme]
+                        : null
+                    : null;
+
                   return (
                     <TouchableOpacity
                       key={item.value}
@@ -506,12 +512,12 @@ const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
                 })}
               </View>
               {/* Tanggal */}
-              <Text style={[styles.sectionLabel, {color: colors.text}]}>
+              <Text style={[styles.sectionLabel, { color: colors.text }]}>
                 Tanggal
               </Text>
               <View style={styles.dateRow}>
                 {/* Tanggal Mulai */}
-                <View style={{width: '45%'}}>
+                <View style={{ width: '45%' }}>
                   <Text
                     style={{
                       fontSize: 12,
@@ -533,7 +539,7 @@ const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
                 </View>
 
                 {/* Tanggal Selesai */}
-                <View style={{width: '45%'}}>
+                <View style={{ width: '45%' }}>
                   <Text
                     style={{
                       fontSize: 12,
@@ -579,13 +585,13 @@ const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
               <TouchableOpacity
                 style={styles.resetButton}
                 onPress={resetFilter}>
-                <Text style={{color: colors.text}}>Reset Filter</Text>
+                <Text style={{ color: colors.text }}>Reset Filter</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
                 style={styles.applyButton}
                 onPress={applyFilter}>
-                <Text style={{color: '#FFFFFF'}}>Terapkan Filter</Text>
+                <Text style={{ color: '#FFFFFF' }}>Terapkan Filter</Text>
               </TouchableOpacity>
             </View>
           </View>
