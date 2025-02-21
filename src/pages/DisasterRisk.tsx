@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import {
   View,
   Text,
@@ -18,65 +18,65 @@ import {
   useColorScheme,
 } from 'react-native';
 // import MapView, { Circle, Marker, PROVIDER_GOOGLE, UrlTile } from "react-native-maps";
-import MapboxGL, { Camera } from '@rnmapbox/maps';
+import MapboxGL, {Camera} from '@rnmapbox/maps';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { useNavigation } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../navigation/types';
+import {useNavigation} from '@react-navigation/native';
+import {StackNavigationProp} from '@react-navigation/stack';
+import {RootStackParamList} from '../navigation/types';
 import GetLocation from 'react-native-get-location';
-import { useAlert } from '../components/AlertContext';
-import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
+import {useAlert} from '../components/AlertContext';
+import {check, request, PERMISSIONS, RESULTS} from 'react-native-permissions';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Feather from 'react-native-vector-icons/Feather';
-import { BASE_URL, getData, postData } from '../services/apiServices';
+import {BASE_URL, getData, postData} from '../services/apiServices';
 import haversine from 'haversine';
 import useAuthStore from '../hooks/auth';
 import FilterBottomSheet from '../components/FilterBottomSheet';
-import { filterDisasterData } from '../utils/filterDisaster';
+import {filterDisasterData} from '../utils/filterDisaster';
 import COLORS from '../config/COLORS';
-import { fetchLocation } from '../utils/locationUtils';
+import {fetchLocation} from '../utils/locationUtils';
 
-const { width, height } = Dimensions.get('window');
+const {width, height} = Dimensions.get('window');
 
 const customMapStyle = [
   {
     featureType: 'landscape',
     elementType: 'geometry',
     stylers: [
-      { color: '#FAD9C3' }, // Warna daratan pastel oranye
+      {color: '#FAD9C3'}, // Warna daratan pastel oranye
     ],
   },
   {
     featureType: 'water',
     elementType: 'geometry.fill',
     stylers: [
-      { color: '#9AC7D4' }, // Warna laut biru kehijauan
+      {color: '#9AC7D4'}, // Warna laut biru kehijauan
     ],
   },
   {
     featureType: 'road',
     elementType: 'geometry',
     stylers: [
-      { color: '#F2B8A9' }, // Warna jalan pastel
+      {color: '#F2B8A9'}, // Warna jalan pastel
     ],
   },
   {
     featureType: 'road',
     elementType: 'labels.text.fill',
     stylers: [
-      { color: '#6B4A3A' }, // Warna teks jalan
+      {color: '#6B4A3A'}, // Warna teks jalan
     ],
   },
   {
     featureType: 'poi',
     elementType: 'labels.text.fill',
-    stylers: [{ color: '#845B47' }],
+    stylers: [{color: '#845B47'}],
   },
   {
     featureType: 'administrative',
     elementType: 'labels.text.fill',
-    stylers: [{ color: '#594536' }],
+    stylers: [{color: '#594536'}],
   },
 ];
 
@@ -85,7 +85,7 @@ const MAPBOX_ACCESS_TOKEN =
 MapboxGL.setAccessToken(MAPBOX_ACCESS_TOKEN);
 
 export default function DisasterRiskScreen() {
-  const colorScheme = useColorScheme() ?? "light";
+  const colorScheme = useColorScheme() ?? 'light';
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const [filterVisible, setFilterVisible] = useState(false);
   const [bottomSheetHeight, setBottomSheetHeight] = useState(300);
@@ -95,7 +95,7 @@ export default function DisasterRiskScreen() {
     longitude: number;
   } | null>(null);
   const pulseAnim = useRef(new Animated.Value(1)).current;
-  const { showAlert } = useAlert();
+  const {showAlert} = useAlert();
   const [alertVisible, setAlertVisible] = useState(false);
   const [nearbyDisasters, setNearbyDisasters] = useState([]);
   const mapRef = useRef<MapboxGL.MapView | null>(null);
@@ -104,7 +104,7 @@ export default function DisasterRiskScreen() {
   const [dataBencana, setDataBencana] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const { token } = useAuthStore();
+  const {token} = useAuthStore();
   const [selectedBencana, setSelectedBencana] = useState<any>(null);
   const [isMapReady, setIsMapReady] = useState(false);
   const [selectedFilterJenisBencana, setSelectedFilterJenisBencana] = useState<
@@ -228,7 +228,11 @@ export default function DisasterRiskScreen() {
   };
 
   useEffect(() => {
-    if (!filterData || filterData?.jenisBencana?.length == 0 || filterData?.tipe?.length == 0) {
+    if (
+      !filterData ||
+      filterData?.jenisBencana?.length == 0 ||
+      filterData?.tipe?.length == 0
+    ) {
       setSelectedFilterJenisBencana(['semua']);
       fetchData();
     } else {
@@ -276,37 +280,40 @@ export default function DisasterRiskScreen() {
     setLoading(true);
     try {
       const data = {
-        "layers": ["bencana_alam"],
-        "points": [[location?.longitude,
-        location?.latitude]],
-        "radius": (filterData?.radius || 0) * 1000,
-        "type": "simple"
-      }
+        layers: ['bencana_alam'],
+        points: [[location?.longitude, location?.latitude]],
+        radius: (filterData?.radius || 0) * 1000,
+        type: 'simple',
+      };
 
-      const [dataBuffer] = await Promise.all([
-        postData('buffer', data),
-      ]);
+      const [dataBuffer] = await Promise.all([postData('buffer', data)]);
 
       if (dataBuffer) {
         const tipeBencanaMap: Record<string, string> = {
-          "resiko bencana": "resiko_bencana",
-          "potensi bahaya": "potensi_bahaya"
+          'resiko bencana': 'resiko_bencana',
+          'potensi bahaya': 'potensi_bahaya',
         };
 
-        const processedData = dataBuffer
-          .filter((item: any) => {
-            const normalizedTipeBencana = item.tipe_bencana?.trim().toLowerCase() || "";
-            const itemDate = new Date(item.waktu).toISOString().split("T")[0];
-            const startDate = new Date(filterData.startDate).toISOString().split("T")[0];
-            const endDate = new Date(filterData.endDate).toISOString().split("T")[0];
+        const processedData = dataBuffer.filter((item: any) => {
+          const normalizedTipeBencana =
+            item.tipe_bencana?.trim().toLowerCase() || '';
+          const itemDate = new Date(item.waktu).toISOString().split('T')[0];
+          const startDate = new Date(filterData.startDate)
+            .toISOString()
+            .split('T')[0];
+          const endDate = new Date(filterData.endDate)
+            .toISOString()
+            .split('T')[0];
 
-            return (
-              filterData?.jenisBencana.includes(item.jenis_bencana) &&
-              filterData?.tipe.includes(tipeBencanaMap[normalizedTipeBencana] || "") &&
-              itemDate >= startDate &&
-              itemDate <= endDate
-            );
-          });
+          return (
+            filterData?.jenisBencana.includes(item.jenis_bencana) &&
+            filterData?.tipe.includes(
+              tipeBencanaMap[normalizedTipeBencana] || '',
+            ) &&
+            itemDate >= startDate &&
+            itemDate <= endDate
+          );
+        });
 
         setDataBencana(processedData || []);
       }
@@ -324,12 +331,12 @@ export default function DisasterRiskScreen() {
   useEffect(() => {
     if (location && dataBencana) {
       const nearbyDisaster = dataBencana.filter((disaster: any) => {
-        const { coordinates } = disaster.geom;
+        const {coordinates} = disaster.geom;
         const disasterLocation = {
           latitude: coordinates[1],
           longitude: coordinates[0],
         };
-        const distance = haversine(location, disasterLocation, { unit: 'meter' });
+        const distance = haversine(location, disasterLocation, {unit: 'meter'});
 
         return distance <= 500; //meter
       });
@@ -491,14 +498,14 @@ export default function DisasterRiskScreen() {
         <View style={styles.headerContainer}>
           {/* Tombol Back */}
           <TouchableOpacity
-            style={[styles.headerBackButton, { backgroundColor: colors.bg }]}
+            style={[styles.headerBackButton, {backgroundColor: colors.bg}]}
             onPress={() => navigation.navigate('Tabs')}>
             <AntDesign name="arrowleft" size={24} color={colors.text} />
           </TouchableOpacity>
 
           {/* Search Bar */}
           <TouchableOpacity
-            style={[styles.headerSearchContainer, { backgroundColor: colors.bg }]}
+            style={[styles.headerSearchContainer, {backgroundColor: colors.bg}]}
             onPress={() => setModalVisible(true)}>
             <Feather
               name="search"
@@ -515,7 +522,7 @@ export default function DisasterRiskScreen() {
 
           {/* Tombol Filter */}
           <TouchableOpacity
-            style={[styles.headerFilterButton, { backgroundColor: colors.bg }]}
+            style={[styles.headerFilterButton, {backgroundColor: colors.bg}]}
             onPress={() => setFilterVisible(true)}>
             <Ionicons name="options" size={24} color={colors.text} />
           </TouchableOpacity>
@@ -534,7 +541,7 @@ export default function DisasterRiskScreen() {
             horizontal
             showsHorizontalScrollIndicator={false}
             keyExtractor={item => item.jenis_bencana}
-            renderItem={({ item }) => {
+            renderItem={({item}) => {
               const isSelected = selectedFilterJenisBencana.includes(
                 item.jenis_bencana,
               );
@@ -542,8 +549,8 @@ export default function DisasterRiskScreen() {
                 ? isSelected
                   ? item.iconSelected
                   : item?.iconUnselected && colorScheme
-                    ? item.iconUnselected[colorScheme]
-                    : null
+                  ? item.iconUnselected[colorScheme]
+                  : null
                 : null;
 
               return (
@@ -551,7 +558,7 @@ export default function DisasterRiskScreen() {
                   style={[
                     styles.chip,
                     isSelected && styles.chipSelected,
-                    { backgroundColor: colors.bg }, // Override backgroundColor
+                    {backgroundColor: colors.bg}, // Override backgroundColor
                   ]}
                   onPress={() => handleFilterPress(item.jenis_bencana)}>
                   {iconSource && (
@@ -591,7 +598,7 @@ export default function DisasterRiskScreen() {
             <TouchableOpacity
               style={[
                 styles.locateMeButton,
-                { bottom: bottomSheetHeight + 10, backgroundColor: colors.bg },
+                {bottom: bottomSheetHeight + 10, backgroundColor: colors.bg},
               ]}>
               <Ionicons
                 name="locate-outline"
@@ -605,16 +612,16 @@ export default function DisasterRiskScreen() {
               {...panResponder.panHandlers}
               style={[
                 styles.bottomSheet,
-                { height: bottomSheetHeight, backgroundColor: colors.bg },
+                {height: bottomSheetHeight, backgroundColor: colors.bg},
               ]}>
               {/* Drag Indicator */}
               <View style={styles.dragIndicator} />
 
               <ScrollView showsVerticalScrollIndicator={false}>
-                <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                <Text style={[styles.sectionTitle, {color: colors.text}]}>
                   Resiko Bencana
                 </Text>
-                <Text style={{ marginBottom: 10, color: colors.info }}>
+                <Text style={{marginBottom: 10, color: colors.info}}>
                   Semua resiko bencana yang berupa potensi bencana yang akan
                   datang dan riwayat bencana yang akan terjadi
                 </Text>
@@ -627,15 +634,15 @@ export default function DisasterRiskScreen() {
                         // Jika status "Potensi Bahaya", pakai styles.cardDanger tapi timpa backgroundColornya:
                         item.status === 'Potensi Bahaya'
                           ? [
-                            styles.cardDanger,
-                            { backgroundColor: colors.danger },
-                          ]
+                              styles.cardDanger,
+                              {backgroundColor: colors.danger},
+                            ]
                           : styles.cardPotential,
                       ]}
                       activeOpacity={0.8}
                       onPress={() => setSelectedBencana(item)}>
                       <View style={styles.cardHeader}>
-                        <Text style={[styles.cardTitle, { color: colors.text }]}>
+                        <Text style={[styles.cardTitle, {color: colors.text}]}>
                           {item.jenis_bencana
                             .replace(/_/g, ' ')
                             .replace(/\b\w/g, (c: any) => c.toUpperCase())}
@@ -651,7 +658,7 @@ export default function DisasterRiskScreen() {
                         </Text>
                       </View>
                       <Text
-                        style={[styles.cardDescription, { color: colors.info }]}>
+                        style={[styles.cardDescription, {color: colors.info}]}>
                         {new Intl.DateTimeFormat('id-ID', {
                           dateStyle: 'full',
                           timeStyle: 'medium',
@@ -667,14 +674,14 @@ export default function DisasterRiskScreen() {
                           <Text
                             style={[
                               styles.cardTitleData,
-                              { color: colors.text },
+                              {color: colors.text},
                             ]}>
                             Wilayah Terdampak
                           </Text>
                           <Text
                             style={[
                               styles.cardDescription,
-                              { color: colors.info },
+                              {color: colors.info},
                             ]}>
                             {item.wilayah || '-'}
                           </Text>
@@ -682,14 +689,14 @@ export default function DisasterRiskScreen() {
                           <Text
                             style={[
                               styles.cardTitleData,
-                              { color: colors.text },
+                              {color: colors.text},
                             ]}>
                             Magnitudo Gempa
                           </Text>
                           <Text
                             style={[
                               styles.cardDescription,
-                              { color: colors.info },
+                              {color: colors.info},
                             ]}>
                             {item.kekuatan_gempa || 0} M
                           </Text>
@@ -697,14 +704,14 @@ export default function DisasterRiskScreen() {
                           <Text
                             style={[
                               styles.cardTitleData,
-                              { color: colors.text },
+                              {color: colors.text},
                             ]}>
                             Kedalaman (km)
                           </Text>
                           <Text
                             style={[
                               styles.cardDescription,
-                              { color: colors.info },
+                              {color: colors.info},
                             ]}>
                             {item.kedalaman_gempa || 0}
                           </Text>
@@ -716,14 +723,14 @@ export default function DisasterRiskScreen() {
                           <Text
                             style={[
                               styles.cardTitleData,
-                              { color: colors.text },
+                              {color: colors.text},
                             ]}>
                             Wilayah Terdampak
                           </Text>
                           <Text
                             style={[
                               styles.cardDescription,
-                              { color: colors.info },
+                              {color: colors.info},
                             ]}>
                             {item.wilayah || '-'}
                           </Text>
@@ -731,14 +738,14 @@ export default function DisasterRiskScreen() {
                           <Text
                             style={[
                               styles.cardTitleData,
-                              { color: colors.text },
+                              {color: colors.text},
                             ]}>
                             Gunung Berapi
                           </Text>
                           <Text
                             style={[
                               styles.cardDescription,
-                              { color: colors.info },
+                              {color: colors.info},
                             ]}>
                             {item.nama_gunung || '-'}
                           </Text>
@@ -746,14 +753,14 @@ export default function DisasterRiskScreen() {
                           <Text
                             style={[
                               styles.cardTitleData,
-                              { color: colors.text },
+                              {color: colors.text},
                             ]}>
                             Ketinggian Kolom Abu (m)
                           </Text>
                           <Text
                             style={[
                               styles.cardDescription,
-                              { color: colors.info },
+                              {color: colors.info},
                             ]}>
                             {item.tinggi_col_abu || '-'}
                           </Text>
@@ -761,14 +768,14 @@ export default function DisasterRiskScreen() {
                           <Text
                             style={[
                               styles.cardTitleData,
-                              { color: colors.text },
+                              {color: colors.text},
                             ]}>
                             Status Aktivitas
                           </Text>
                           <Text
                             style={[
                               styles.cardDescription,
-                              { color: colors.info },
+                              {color: colors.info},
                             ]}>
                             {item.status_aktifitas || '-'}
                           </Text>
@@ -780,14 +787,14 @@ export default function DisasterRiskScreen() {
                           <Text
                             style={[
                               styles.cardTitleData,
-                              { color: colors.text },
+                              {color: colors.text},
                             ]}>
                             Wilayah Terdampak
                           </Text>
                           <Text
                             style={[
                               styles.cardDescription,
-                              { color: colors.info },
+                              {color: colors.info},
                             ]}>
                             {item.wilayah || '-'}
                           </Text>
@@ -795,14 +802,14 @@ export default function DisasterRiskScreen() {
                           <Text
                             style={[
                               styles.cardTitleData,
-                              { color: colors.text },
+                              {color: colors.text},
                             ]}>
                             Volume Material Longsor (m³)
                           </Text>
                           <Text
                             style={[
                               styles.cardDescription,
-                              { color: colors.info },
+                              {color: colors.info},
                             ]}>
                             {item.vol_mat_longsor || 0}
                           </Text>
@@ -810,14 +817,14 @@ export default function DisasterRiskScreen() {
                           <Text
                             style={[
                               styles.cardTitleData,
-                              { color: colors.text },
+                              {color: colors.text},
                             ]}>
                             Kemiringan Lereng (°)
                           </Text>
                           <Text
                             style={[
                               styles.cardDescription,
-                              { color: colors.info },
+                              {color: colors.info},
                             ]}>
                             {item.sudut_mir_longsor || 0}
                           </Text>
@@ -829,14 +836,14 @@ export default function DisasterRiskScreen() {
                           <Text
                             style={[
                               styles.cardTitleData,
-                              { color: colors.text },
+                              {color: colors.text},
                             ]}>
                             Wilayah Terdampak
                           </Text>
                           <Text
                             style={[
                               styles.cardDescription,
-                              { color: colors.info },
+                              {color: colors.info},
                             ]}>
                             {item.wilayah || '-'}
                           </Text>
@@ -844,14 +851,14 @@ export default function DisasterRiskScreen() {
                           <Text
                             style={[
                               styles.cardTitleData,
-                              { color: colors.text },
+                              {color: colors.text},
                             ]}>
                             Ketinggian Gelombang (m)
                           </Text>
                           <Text
                             style={[
                               styles.cardDescription,
-                              { color: colors.info },
+                              {color: colors.info},
                             ]}>
                             {item.tinggi_gel_air || 0}
                           </Text>
@@ -859,14 +866,14 @@ export default function DisasterRiskScreen() {
                           <Text
                             style={[
                               styles.cardTitleData,
-                              { color: colors.text },
+                              {color: colors.text},
                             ]}>
                             Kecepatan Gelombang (m/s)
                           </Text>
                           <Text
                             style={[
                               styles.cardDescription,
-                              { color: colors.info },
+                              {color: colors.info},
                             ]}>
                             {item.cepat_gel_air || 0}
                           </Text>
@@ -878,14 +885,14 @@ export default function DisasterRiskScreen() {
                           <Text
                             style={[
                               styles.cardTitleData,
-                              { color: colors.text },
+                              {color: colors.text},
                             ]}>
                             Wilayah Terdampak
                           </Text>
                           <Text
                             style={[
                               styles.cardDescription,
-                              { color: colors.info },
+                              {color: colors.info},
                             ]}>
                             {item.wilayah || '-'}
                           </Text>
@@ -893,14 +900,14 @@ export default function DisasterRiskScreen() {
                           <Text
                             style={[
                               styles.cardTitleData,
-                              { color: colors.text },
+                              {color: colors.text},
                             ]}>
                             Ketinggian Air (cm)
                           </Text>
                           <Text
                             style={[
                               styles.cardDescription,
-                              { color: colors.info },
+                              {color: colors.info},
                             ]}>
                             {item.ketinggian_banjir || 0}
                           </Text>
@@ -908,14 +915,14 @@ export default function DisasterRiskScreen() {
                           <Text
                             style={[
                               styles.cardTitleData,
-                              { color: colors.text },
+                              {color: colors.text},
                             ]}>
                             Kecepatan Arus (m/s)
                           </Text>
                           <Text
                             style={[
                               styles.cardDescription,
-                              { color: colors.info },
+                              {color: colors.info},
                             ]}>
                             {item.kecepatan_banjir || 0}
                           </Text>
@@ -924,18 +931,18 @@ export default function DisasterRiskScreen() {
 
                       {/* Saran & Arahan */}
                       <Text
-                        style={[styles.cardTitleData, { color: colors.text }]}>
+                        style={[styles.cardTitleData, {color: colors.text}]}>
                         Rekomendasi BMKG
                       </Text>
-                      <Text style={[styles.cardDetails, { color: colors.info }]}>
+                      <Text style={[styles.cardDetails, {color: colors.info}]}>
                         {item.saran_bmkg || '-'}
                       </Text>
 
                       <Text
-                        style={[styles.cardTitleData, { color: colors.text }]}>
+                        style={[styles.cardTitleData, {color: colors.text}]}>
                         Arahan Evakuasi
                       </Text>
-                      <Text style={[styles.cardDetails, { color: colors.info }]}>
+                      <Text style={[styles.cardDetails, {color: colors.info}]}>
                         {item.arahan || '-'}
                       </Text>
                     </TouchableOpacity>
@@ -955,19 +962,19 @@ export default function DisasterRiskScreen() {
         {/* Modal Detail Bencana */}
         <Modal visible={!!selectedBencana} transparent animationType="slide">
           <View style={styles.modalContainer}>
-            <View style={styles.modalContent}>
+            <View style={[styles.modalContent, {backgroundColor: colors.bg}]}>
               {/* Garis Tarik untuk Swipe */}
               <View style={styles.swipeIndicator} />
 
               {/* Header Modal */}
               <View style={styles.modalHeaderDetail}>
-                <Text style={styles.modalTitle}>
+                <Text style={[styles.modalTitle, {color: colors.text}]}>
                   {selectedBencana?.jenis_bencana
                     .replace(/_/g, ' ')
                     .replace(/\b\w/g, (c: any) => c.toUpperCase())}
                 </Text>
                 <TouchableOpacity onPress={() => setSelectedBencana(null)}>
-                  <AntDesign name="close" size={24} color="black" />
+                  <AntDesign name="close" size={24} color={colors.text} />
                 </TouchableOpacity>
               </View>
 
@@ -1055,26 +1062,26 @@ export default function DisasterRiskScreen() {
                 {selectedBencana?.jenis_bencana === 'tanah_longsor' && (
                   <>
                     <View style={styles.infoBox}>
-                      <Text style={[styles.infoTitle, { color: colors.text }]}>
+                      <Text style={[styles.infoTitle, {color: colors.text}]}>
                         Volume Material Longsor
                       </Text>
-                      <Text style={[styles.infoValue, { color: colors.info }]}>
+                      <Text style={[styles.infoValue, {color: colors.info}]}>
                         {selectedBencana?.vol_mat_longsor || 0} m³
                       </Text>
                     </View>
                     <View style={styles.infoBox}>
-                      <Text style={[styles.infoTitle, { color: colors.text }]}>
+                      <Text style={[styles.infoTitle, {color: colors.text}]}>
                         Kemiringan Lereng
                       </Text>
-                      <Text style={[styles.infoValue, { color: colors.info }]}>
+                      <Text style={[styles.infoValue, {color: colors.info}]}>
                         {selectedBencana?.sudut_mir_longsor || 0}°
                       </Text>
                     </View>
                     <View style={styles.infoBox}>
-                      <Text style={[styles.infoTitle, { color: colors.text }]}>
+                      <Text style={[styles.infoTitle, {color: colors.text}]}>
                         Waktu
                       </Text>
-                      <Text style={[styles.infoValue, { color: colors.info }]}>
+                      <Text style={[styles.infoValue, {color: colors.info}]}>
                         {new Intl.DateTimeFormat('id-ID', {
                           dateStyle: 'full',
                           timeStyle: 'medium',
@@ -1114,32 +1121,42 @@ export default function DisasterRiskScreen() {
               {/* Scrollable Content */}
               <ScrollView style={styles.detailContainer}>
                 {/* Lokasi */}
-                <Text style={styles.cardTitleData}>Lokasi</Text>
-                <Text style={styles.cardDescription}>
+                <Text style={[styles.cardTitleData, {color: colors.text}]}>
+                  Lokasi
+                </Text>
+                <Text style={[styles.cardDescription, , {color: colors.info}]}>
                   {selectedBencana?.geom?.coordinates?.[1]},{' '}
                   {selectedBencana?.geom?.coordinates?.[0]}
                 </Text>
 
                 {/* Tipe Bencana */}
-                <Text style={styles.cardTitleData}>Tipe Bencana</Text>
+                <Text style={[styles.cardTitleData, {color: colors.text}]}>
+                  Tipe Bencana
+                </Text>
                 <View style={styles.badge}>
                   <Text style={styles.badgeText}>Resiko Bencana</Text>
                 </View>
 
                 {/* Wilayah Terdampak */}
-                <Text style={styles.cardTitleData}>Wilayah Terdampak</Text>
-                <Text style={styles.cardDescription}>
+                <Text style={[styles.cardTitleData, {color: colors.text}]}>
+                  Wilayah Terdampak
+                </Text>
+                <Text style={[styles.cardDescription, {color: colors.info}]}>
                   {selectedBencana?.wilayah || '-'}
                 </Text>
 
                 {/* Saran & Arahan */}
-                <Text style={styles.cardTitleData}>Rekomendasi BMKG</Text>
-                <Text style={styles.cardDetails}>
+                <Text style={[styles.cardTitleData, {color: colors.text}]}>
+                  Rekomendasi BMKG
+                </Text>
+                <Text style={[styles.cardDetails, {color: colors.info}]}>
                   {selectedBencana?.saran_bmkg || '-'}
                 </Text>
 
-                <Text style={styles.cardTitleData}>Arahan Evakuasi</Text>
-                <Text style={styles.cardDetails}>
+                <Text style={[styles.cardTitleData, {color: colors.text}]}>
+                  Arahan Evakuasi
+                </Text>
+                <Text style={[styles.cardDetails, {color: colors.info}]}>
                   {selectedBencana?.arahan || '-'}
                 </Text>
               </ScrollView>
@@ -1186,7 +1203,7 @@ export default function DisasterRiskScreen() {
               ListHeaderComponent={() => (
                 <Text style={styles.resultHeader}>Hasil Pencarian</Text>
               )}
-              renderItem={({ item }) => (
+              renderItem={({item}) => (
                 <TouchableOpacity
                   style={styles.resultItem}
                   onPress={() => handleSelectLocation(item)}>
@@ -1318,7 +1335,7 @@ const styles = StyleSheet.create({
     zIndex: 999,
     flexDirection: 'column',
     alignItems: 'center',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.2,
     shadowRadius: 4,
   },
@@ -1371,7 +1388,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     marginHorizontal: 5,
   },
-  chipSelected: { borderColor: '#f36a1d' },
+  chipSelected: {borderColor: '#f36a1d'},
   headerAlertContainer: {
     flexDirection: 'row',
     backgroundColor: '#e74c3c',
