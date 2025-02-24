@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, {useEffect, useRef, useState} from 'react';
 import {
   View,
   Text,
@@ -11,49 +11,56 @@ import {
   ScrollView,
   StatusBar,
   Platform,
-  RefreshControl
-} from "react-native";
-import Icon from "react-native-vector-icons/Feather";
-import { useNavigation } from '@react-navigation/native'; // Update here
-import Modal from "react-native-modal";
-import { ASSET_URL, getData } from "../services/apiServices";
-import useAuthStore from "../hooks/auth";
-import COLORS from "../config/COLORS";
-import { useAlert } from "../components/AlertContext";
-import FloatingSOSButton from "../components/FloatingSOSButton";
-import LinearGradient from "react-native-linear-gradient";
-import { StackNavigationProp } from "@react-navigation/stack";
-import { RootStackParamList } from "../navigation/types";
-import { request, PERMISSIONS, RESULTS, openSettings } from 'react-native-permissions';
+  RefreshControl,
+  Dimensions,
+} from 'react-native';
+import Icon from 'react-native-vector-icons/Feather';
+import {useNavigation} from '@react-navigation/native'; // Update here
+import Modal from 'react-native-modal';
+import {ASSET_URL, getData} from '../services/apiServices';
+import useAuthStore from '../hooks/auth';
+import COLORS from '../config/COLORS';
+import {useAlert} from '../components/AlertContext';
+import FloatingSOSButton from '../components/FloatingSOSButton';
+import LinearGradient from 'react-native-linear-gradient';
+import {StackNavigationProp} from '@react-navigation/stack';
+import {RootStackParamList} from '../navigation/types';
+import {
+  request,
+  PERMISSIONS,
+  RESULTS,
+  openSettings,
+} from 'react-native-permissions';
 import DeviceInfo from 'react-native-device-info';
-import { SvgUri } from "react-native-svg";
-import { fetchLocation, getLocationDetails } from '../utils/locationUtils';
+import {SvgUri} from 'react-native-svg';
+import {fetchLocation, getLocationDetails} from '../utils/locationUtils';
 
 export default function HomeScreen() {
-  const { showAlert } = useAlert();
+  const {width, height} = Dimensions.get('window');
+  const {showAlert} = useAlert();
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const colorScheme = useColorScheme();
   const [modalVisible, setModalVisible] = useState(false);
-  const { profile, getProfile } = useAuthStore();
-  const [emergencyMessage, setEmergencyMessage] = useState("");
+  const {profile, getProfile} = useAuthStore();
+  const [emergencyMessage, setEmergencyMessage] = useState('');
   const [siagaBencana, setSiagaBencana] = useState([]);
   const [fiturPendukung, setFiturPendukung] = useState([]);
   const [infoTerkait, setInfoTerkait] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [locateNow, setLocateNow] = useState("");
+  const [locateNow, setLocateNow] = useState('');
 
-  const isDarkMode = colorScheme === "dark";
+  const isDarkMode = colorScheme === 'dark';
   const colors = {
-    background: isDarkMode ? "#121212" : "#E2E1DF",
-    textPrimary: isDarkMode ? "#FFFFFF" : "#161414",
-    textSecondary: isDarkMode ? "#CCCCCC" : "#777674",
-    cardGradientStart: isDarkMode ? "#1E1E1E" : "#F36A1D",
-    cardGradientEnd: isDarkMode ? "#333333" : "#D95B12",
-    supportCardBackground: isDarkMode ? "#2A2A2A" : "#FFFFFF",
-    textCardPrimary: "#FFFFFF",
-    textCardSecondary: "#EAEAEA",
+    background: isDarkMode ? '#121212' : '#E2E1DF',
+    textPrimary: isDarkMode ? '#FFFFFF' : '#161414',
+    textSecondary: isDarkMode ? '#CCCCCC' : '#777674',
+    cardGradientStart: isDarkMode ? '#1E1E1E' : '#F36A1D',
+    cardGradientEnd: isDarkMode ? '#333333' : '#D95B12',
+    supportCardBackground: isDarkMode ? '#2A2A2A' : '#FFFFFF',
+    textCardPrimary: '#FFFFFF',
+    textCardSecondary: '#EAEAEA',
   };
   const color = COLORS();
   async function requestAllPermissions() {
@@ -93,17 +100,17 @@ export default function HomeScreen() {
   };
 
   const backgroundSource =
-    colorScheme === "dark"
-      ? require("../assets/images/bg-home-dark.png")
-      : require("../assets/images/bg-home.png");
+    colorScheme === 'dark'
+      ? require('../assets/images/bg-home-dark.png')
+      : require('../assets/images/bg-home.png');
 
   const fetchData = async () => {
     setLoading(true);
     try {
       const [siaga, fitur, info] = await Promise.all([
-        getData("items/siaga_bencana"),
-        getData("items/fitur_pendukung"),
-        getData("items/info_terkait"),
+        getData('items/siaga_bencana'),
+        getData('items/fitur_pendukung'),
+        getData('items/info_terkait'),
       ]);
 
       setSiagaBencana(siaga?.data || []);
@@ -111,7 +118,7 @@ export default function HomeScreen() {
       setInfoTerkait(info?.data || []);
     } catch (err: any) {
       setError(err.message);
-      console.error("Gagal mengambil data:", err);
+      console.error('Gagal mengambil data:', err);
     } finally {
       setLoading(false);
     }
@@ -120,7 +127,10 @@ export default function HomeScreen() {
   const handleGetLocation = async () => {
     const location = await fetchLocation();
     if (location) {
-      const address: any = await getLocationDetails(location.latitude, location.longitude);
+      const address: any = await getLocationDetails(
+        location.latitude,
+        location.longitude,
+      );
       setLocateNow(address);
     }
   };
@@ -139,8 +149,8 @@ export default function HomeScreen() {
   };
 
   const handleClickDisaster = (item: any) => {
-    if (item?.title == "Resiko Bencana") {
-      navigation.navigate("DisasterRisk");
+    if (item?.title == 'Resiko Bencana') {
+      navigation.navigate('DisasterRisk');
     }
   };
 
@@ -154,24 +164,24 @@ export default function HomeScreen() {
       <ImageBackground
         source={backgroundSource}
         style={styles.background}
-        resizeMode="cover"
-      >
+        resizeMode="cover">
         <ScrollView
           contentContainerStyle={styles.scrollContainer}
           showsVerticalScrollIndicator={false}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        >
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }>
           <View style={styles.overlay} />
           <View style={styles.container}>
             <View style={styles.header}>
               <View style={styles.headerTextContainer}>
-                <Text style={[styles.greeting, { color: color.text }]}>
+                <Text style={[styles.greeting, {color: color.text}]}>
                   Hi, {profile?.first_name} {profile?.last_name}
                 </Text>
                 <View style={styles.locationContainer}>
                   <Icon name="map-pin" size={16} color={color.subText} />
-                  <Text style={[styles.locationText, { color: color.subText }]}>
-                    {locateNow || "-"}
+                  <Text style={[styles.locationText, {color: color.subText}]}>
+                    {locateNow || '-'}
                   </Text>
                 </View>
               </View>
@@ -180,40 +190,62 @@ export default function HomeScreen() {
               </TouchableOpacity>
             </View>
 
-            <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+            <Text style={[styles.sectionTitle, {color: colors.textPrimary}]}>
               Siaga Bencana
             </Text>
             <FlatList
               data={siagaBencana}
               horizontal
               showsHorizontalScrollIndicator={false}
-              renderItem={({ item }: { item: any }) => (
+              renderItem={({item}: {item: any}) => (
                 <TouchableOpacity
                   style={styles.card}
                   activeOpacity={0.8}
-                  onPress={() => handleClickDisaster(item)}
-                >
+                  onPress={() => handleClickDisaster(item)}>
                   <LinearGradient
                     colors={[color.gradientCardStart, color.gradientCardEnd]}
-                    style={styles.gradient}
-                  >
-                    <View style={styles.iconContainer}>
+                    style={[
+                      styles.gradient,
+                      {
+                        height: Platform.OS === 'ios' ? height * 0.195 : null,
+                      },
+                    ]}>
+                    <View
+                      style={[
+                        styles.iconContainer,
+                        {marginRight: Platform.OS === 'ios' ? '15%' : '0%'},
+                      ]}>
                       {(() => {
                         const iconUri = `${ASSET_URL}${item.icon}/${item.id}.png`;
                         return (
-                          <SvgUri width="20" height="20" uri={iconUri || "../assets/weather.svg"} />
+                          <SvgUri
+                            width="20"
+                            height="20"
+                            uri={iconUri || '../assets/weather.svg'}
+                          />
                         );
                       })()}
                     </View>
 
                     <Text
-                      style={[styles.cardTitle, { color: colors.textCardPrimary }]}
-                    >
+                      style={[
+                        styles.cardTitle,
+                        {
+                          color: colors.textCardPrimary,
+                          marginRight: Platform.OS === 'ios' ? '15%' : '0%',
+                        },
+                      ]}>
                       {item.title}
                     </Text>
                     <Text
-                      style={[styles.cardSubtitle, { color: colors.textCardSecondary }]}
-                    >
+                      style={[
+                        styles.cardSubtitle,
+                        {
+                          color: colors.textCardSecondary,
+                          fontSize: Platform.OS === 'ios' ? 12 : 14,
+                          marginRight: Platform.OS === 'ios' ? '15%' : '0%',
+                        },
+                      ]}>
                       {item.description}
                     </Text>
                   </LinearGradient>
@@ -222,25 +254,24 @@ export default function HomeScreen() {
               keyExtractor={(item: any) => item.id}
             />
 
-            <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+            <Text style={[styles.sectionTitle, {color: colors.textPrimary}]}>
               Informasi Terkait
             </Text>
             <FlatList
               data={infoTerkait}
               horizontal
               showsHorizontalScrollIndicator={false}
-              renderItem={({ item }: { item: any }) => (
+              renderItem={({item}: {item: any}) => (
                 <TouchableOpacity
                   style={[
                     styles.informasiCard,
-                    { backgroundColor: colors.supportCardBackground },
+                    {backgroundColor: colors.supportCardBackground},
                   ]}
-                  activeOpacity={0.8}
-                >
+                  activeOpacity={0.8}>
                   <LinearGradient
-                    colors={["#CD541B", "transparent"]}
-                    start={{ x: 0, y: 1 }}
-                    end={{ x: 0.1, y: 0.1 }}
+                    colors={['#CD541B', 'transparent']}
+                    start={{x: 0, y: 1}}
+                    end={{x: 0.1, y: 0.1}}
                     style={styles.gradientBackground}
                   />
 
@@ -250,54 +281,67 @@ export default function HomeScreen() {
                     {(() => {
                       const iconUri = `${ASSET_URL}${item.icon}/${item.id}.png`;
                       return (
-                        <SvgUri width="40" height="40" uri={iconUri || "../assets/weather.svg"} />
+                        <SvgUri
+                          width="40"
+                          height="40"
+                          uri={iconUri || '../assets/weather.svg'}
+                        />
                       );
                     })()}
                   </View>
                   <View style={styles.textContainer}>
-                    <Text style={[styles.cardTitleSec, { color: color.text }]}>
+                    <Text style={[styles.cardTitleSec, {color: color.text}]}>
                       {item.title}
                     </Text>
                     <Text
-                      style={[styles.cardSubtitleSec, { color: color.tabIconDefault }]}
-                    >
+                      style={[
+                        styles.cardSubtitleSec,
+                        {color: color.tabIconDefault},
+                      ]}>
                       {item.description}
                     </Text>
                   </View>
                 </TouchableOpacity>
               )}
-              keyExtractor={(item) => item.id}
+              keyExtractor={item => item.id}
             />
 
-            <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+            <Text style={[styles.sectionTitle, {color: colors.textPrimary}]}>
               Fitur Pendukung
             </Text>
             <FlatList
               data={fiturPendukung}
               numColumns={2}
               scrollEnabled={false}
-              renderItem={({ item }: { item: any }) => (
+              renderItem={({item}: {item: any}) => (
                 <TouchableOpacity
                   style={[
                     styles.supportCard,
-                    { backgroundColor: colors.supportCardBackground },
-                  ]}
-                >
+                    {backgroundColor: colors.supportCardBackground},
+                  ]}>
                   {(() => {
                     let iconUri = `${ASSET_URL}${item.icon}/${item.id}.png`;
                     return (
-                      <SvgUri width="20" height="20" uri={iconUri || "../assets/weather.svg"} />
+                      <SvgUri
+                        width="20"
+                        height="20"
+                        uri={iconUri || '../assets/weather.svg'}
+                      />
                     );
                   })()}
-                  <Text style={[styles.cardTitleSec, { color: color.text }]}>
+                  <Text style={[styles.cardTitleSec, {color: color.text}]}>
                     {item.title}
                   </Text>
-                  <Text style={[styles.cardSubtitleSec, { color: color.tabIconDefault }]}>
+                  <Text
+                    style={[
+                      styles.cardSubtitleSec,
+                      {color: color.tabIconDefault},
+                    ]}>
                     {item.description}
                   </Text>
                 </TouchableOpacity>
               )}
-              keyExtractor={(item) => item.id}
+              keyExtractor={item => item.id}
             />
           </View>
         </ScrollView>
@@ -312,20 +356,20 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingBottom: 20,
   },
-  container: { flex: 1, padding: 16, marginTop: "5%" },
+  container: {flex: 1, padding: 16, marginTop: '5%'},
   background: {
     flex: 1,
-    width: "100%",
-    height: "100%",
+    width: '100%',
+    height: '100%',
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
   header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 16,
     paddingHorizontal: 8,
   },
@@ -334,13 +378,13 @@ const styles = StyleSheet.create({
   },
   greeting: {
     fontSize: 22,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   locationContainer: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     marginTop: 4,
-    width: "80%"
+    width: '80%',
   },
   locationText: {
     fontSize: 14,
@@ -351,7 +395,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     marginVertical: 10,
   },
   card: {
@@ -359,32 +403,32 @@ const styles = StyleSheet.create({
     marginRight: 14,
     width: 220,
     height: 150,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 10,
   },
   gradient: {
     borderRadius: 12,
     padding: 16,
-    width: "100%",
-    alignItems: "flex-end",
-    justifyContent: "center",
+    width: '100%',
+    alignItems: 'flex-end',
+    justifyContent: 'center',
   },
   iconContainer: {
     marginBottom: 12,
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     padding: 10,
     borderRadius: 10,
-    alignSelf: "flex-end",
+    alignSelf: 'flex-end',
   },
   iconInfoContainer: {
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     padding: 15,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#ccc",
-    justifyContent: "center",
-    alignItems: "center",
+    borderColor: '#ccc',
+    justifyContent: 'center',
+    alignItems: 'center',
     width: 60,
     height: 60,
   },
@@ -395,55 +439,60 @@ const styles = StyleSheet.create({
     minWidth: 300,
     maxWidth: 300,
     flexGrow: 1,
-    textAlign: "left",
-    flexDirection: "row",
-    alignItems: "center",
-    overflow: "hidden",
+    textAlign: 'left',
+    flexDirection: 'row',
+    alignItems: 'center',
+    overflow: 'hidden',
   },
   gradientBackground: {
-    position: "absolute",
+    position: 'absolute',
     left: 0,
     bottom: 0,
-    width: "100%",
-    height: "100%",
+    width: '100%',
+    height: '100%',
     borderRadius: 10,
-    opacity: 0.1
+    opacity: 0.1,
   },
   topRightBox: {
-    position: "absolute",
+    position: 'absolute',
     top: -40,
     right: -10,
     width: 100,
     height: 100,
-    borderColor: "#F36A1D",
+    borderColor: '#F36A1D',
     borderWidth: 3,
     borderRadius: 20,
     opacity: 0.2,
-    transform: [{ rotate: "-95deg" }],
+    transform: [{rotate: '-95deg'}],
   },
   supportCard: {
     borderRadius: 10,
     padding: 16,
     margin: 5,
     flex: 1,
-    textAlign: "left",
+    textAlign: 'left',
   },
   cardTitle: {
     fontSize: 18,
-    fontWeight: "bold",
-    textAlign: "right",
+    fontWeight: 'bold',
+    textAlign: 'right',
   },
   cardSubtitle: {
     fontSize: 14,
     marginTop: 4,
-    color: "#4F4D4A",
-    textAlign: "right",
+    color: '#4F4D4A',
+    textAlign: 'right',
   },
   textContainer: {
     flex: 1,
     marginLeft: 10,
-    justifyContent: "center",
+    justifyContent: 'center',
   },
-  cardTitleSec: { fontSize: 18, fontWeight: "bold", marginTop: 5 },
-  cardSubtitleSec: { fontSize: 14, marginTop: 4, marginBottom: 4, color: "#4F4D4A" },
+  cardTitleSec: {fontSize: 18, fontWeight: 'bold', marginTop: 5},
+  cardSubtitleSec: {
+    fontSize: 14,
+    marginTop: 4,
+    marginBottom: 4,
+    color: '#4F4D4A',
+  },
 });
