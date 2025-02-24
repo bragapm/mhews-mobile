@@ -157,7 +157,7 @@ const DisasterAlertScreen = () => {
         <View style={styles.dragIndicator} />
         {!isShowServices ? (
           <>
-            {isDanger ? (
+            {!isDanger ? (
               <>
                 <TouchableOpacity
                   style={styles.buttonPrimary}
@@ -175,8 +175,9 @@ const DisasterAlertScreen = () => {
             ) : (
               <TouchableOpacity
                 style={styles.buttonDanger}
-                // onPress={() => actionStatus("not_safe")}
-                onPress={() => navigation.navigate('EvacuationLocation')}>
+                onPress={() => navigation.navigate('EvacuationLocation')}
+                // onPress={() => actionStatus('not_safe')}
+              >
                 <Text style={styles.buttonTextDanger}>Lihat Peta Evakuasi</Text>
               </TouchableOpacity>
             )}
