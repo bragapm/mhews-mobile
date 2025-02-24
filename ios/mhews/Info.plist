@@ -49,7 +49,11 @@
 	<key>NSCameraUsageDescription</key>
 	<string>MHEWS needs access to your Camera for Scan QR.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>MHEWS need access to your location even when the app is in the background.</string>
+	<key>NSLocationAccuracyUsageDescription</key>
 	<string>MHEWS needs access to your Location</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>MHEWS need access to your location even when the app is in the background.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>MHEWS needs access to your Gallery.</string>
 	<key>NSNotificationsUsageDescription</key>
