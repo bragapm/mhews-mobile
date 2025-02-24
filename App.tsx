@@ -5,8 +5,8 @@ import {
   useColorScheme,
   StyleSheet,
 } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
+import {NavigationContainer} from '@react-navigation/native';
+import {createStackNavigator} from '@react-navigation/stack';
 import SplashScreen from './src/splash';
 import AlertProvider from './src/components/AlertContext';
 import TabNavigator from './src/(tabs)/_layout';
@@ -24,6 +24,7 @@ import HelpCenterScreen from './src/pages/account/HelpCenter';
 import FamilyListScreen from './src/pages/account/FamilyList';
 import FindFamilyScreen from './src/pages/account/FindFamily';
 import DisasterAlertScreen from './src/pages/DisasterAlert';
+import EvacuationLocationScreen from './src/pages/EvacuationLocation';
 
 const Stack = createStackNavigator();
 
@@ -41,13 +42,12 @@ function App() {
             barStyle={isDarkMode ? 'light-content' : 'dark-content'}
             backgroundColor={backgroundStyle.backgroundColor}
           />
-          <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Navigator screenOptions={{headerShown: false}}>
             <Stack.Screen name="Splash" component={SplashScreen} />
             <Stack.Screen name="Login" component={Login} />
             <Stack.Screen name="Signup" component={Signup} />
             <Stack.Screen name="Otp" component={OTPConfirmation} />
             <Stack.Screen name="Tabs" component={TabNavigator} />
-
             <Stack.Screen name="Profile" component={ProfileScreen} />
             <Stack.Screen name="EditProfile" component={EditProfileScreen} />
             <Stack.Screen
@@ -64,9 +64,15 @@ function App() {
             <Stack.Screen name="AboutUs" component={AboutUsScreen} />
             <Stack.Screen name="HelpCenter" component={HelpCenterScreen} />
             <Stack.Screen name="DisasterRisk" component={DisasterRiskScreen} />
-
             {/* Full screen notif */}
-            <Stack.Screen name="DisasterAlert" component={DisasterAlertScreen} />
+            <Stack.Screen
+              name="DisasterAlert"
+              component={DisasterAlertScreen}
+            />
+            <Stack.Screen
+              name="EvacuationLocation"
+              component={EvacuationLocationScreen}
+            />
           </Stack.Navigator>
         </SafeAreaView>
       </NavigationContainer>
