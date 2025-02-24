@@ -23,7 +23,7 @@ setup_permissions([
   'LocationAlways',
   'LocationWhenInUse',
   'MediaLibrary',
-  # 'Microphone',
+  'Microphone',
   # 'Motion',
   'Notifications',
   'PhotoLibrary',
