@@ -28,3 +28,5 @@ class AppDelegate: RCTAppDelegate {
 #endif
   }
 }
+
+// -8.2325, 114.35755
