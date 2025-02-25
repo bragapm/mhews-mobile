@@ -104,6 +104,7 @@ const useAuthStore = create<AuthState>()(
         userId = userId ? userId : decoded?.id;
 
         if (!token || !userId) return;
+        console.log('Bearer Token:', token);
 
         try {
           const response = await getData(`users/${userId}`, {

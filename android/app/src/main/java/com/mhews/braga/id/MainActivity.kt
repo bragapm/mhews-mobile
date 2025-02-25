@@ -1,4 +1,4 @@
-package com.mhews
+package com.mhews.braga.id
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate

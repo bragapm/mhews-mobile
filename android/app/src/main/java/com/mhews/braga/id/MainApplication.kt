@@ -1,4 +1,4 @@
-package com.mhews
+package com.mhews.braga.id
 
 import android.app.Application
 import com.facebook.react.PackageList

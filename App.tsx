@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   SafeAreaView,
   StatusBar,
   useColorScheme,
   StyleSheet,
+  Alert,
 } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -26,7 +27,8 @@ import FindFamilyScreen from './src/pages/account/FindFamily';
 import DisasterAlertScreen from './src/pages/DisasterAlert';
 import EvacuationLocationScreen from './src/pages/EvacuationLocation';
 import ManageLocationsScreen from './src/pages/ManageLocations';
-
+import { checkInitialNotification, getFcmToken, listenForForegroundNotifications, listenForTokenRefresh, requestUserPermissionFCM, setupBackgroundMessageHandler } from './src/utils/fcm';
+import notifee, { AndroidImportance, EventType } from "@notifee/react-native";
 const Stack = createStackNavigator();
 
 function App() {
@@ -34,6 +36,20 @@ function App() {
   const backgroundStyle = {
     backgroundColor: isDarkMode ? '#000' : '#fff',
   };
+
+  useEffect(() => {
+    requestUserPermissionFCM();
+
+    checkInitialNotification((remoteMessage: any) => {
+      console.log('App dibuka dari notifikasi:', remoteMessage);
+    });
+
+    const unsubscribe = listenForForegroundNotifications((remoteMessage: any) => {
+      console.log('Notifikasi diterima di foreground:', remoteMessage);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   return (
     <AlertProvider>

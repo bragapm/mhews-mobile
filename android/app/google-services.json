@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "205553627601",
+    "project_id": "mhews-admin",
+    "storage_bucket": "mhews-admin.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:205553627601:android:4a480c4e9b9ad17f2bb0f0",
+        "android_client_info": {
+          "package_name": "com.mhews.braga.id"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD-8YvaKcCi5OYYN05UXYCEB1R_nDwjYkk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

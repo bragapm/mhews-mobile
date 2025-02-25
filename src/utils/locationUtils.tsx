@@ -1,5 +1,5 @@
-import {Platform, PermissionsAndroid} from 'react-native';
-import {request, check, PERMISSIONS, RESULTS} from 'react-native-permissions';
+import { Platform, PermissionsAndroid } from 'react-native';
+import { request, check, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import GetLocation from 'react-native-get-location';
 
 const MAPBOX_ACCESS_TOKEN =
@@ -61,7 +61,8 @@ export const fetchLocation = async (): Promise<{
       timeout: 60000,
     });
 
-    return {latitude: location.latitude, longitude: location.longitude};
+    console.log('location:', location);
+    return { latitude: location.latitude, longitude: location.longitude };
   } catch (error: any) {
     console.warn('Error fetching location:', error.code, error.message);
     return null;
