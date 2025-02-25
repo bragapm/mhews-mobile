@@ -1,4 +1,4 @@
-import React, {useRef, useState, useEffect, useCallback} from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -13,18 +13,21 @@ import {
   Image,
   useColorScheme,
 } from 'react-native';
-import MapboxGL, {Camera} from '@rnmapbox/maps';
+import MapboxGL, { Camera } from '@rnmapbox/maps';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import GetLocation from 'react-native-get-location';
 import COLORS from '../config/COLORS';
+import { useNavigation, NavigationContainer } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../navigation/types';
 
 // Ganti dengan token Mapbox Anda
 const MAPBOX_ACCESS_TOKEN =
   'sk.eyJ1Ijoid2hvaXNhcnZpYW4iLCJhIjoiY203YjJkajRtMDk3cDJtczlxMDRrOTExNiJ9.61sU5Z9qNoRfQ22qdcAMzQ';
 MapboxGL.setAccessToken(MAPBOX_ACCESS_TOKEN);
 
-const {width, height} = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 interface EvacuationLocation {
   id: number;
@@ -82,6 +85,7 @@ const EvacuationLocationScreen = () => {
       type: 'kp', // akan kita tampilkan icon default
     },
   ]);
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
 
   // Lokasi evakuasi yang dipilih => menampilkan modal detail
   const [selectedCenter, setSelectedCenter] =
@@ -264,7 +268,7 @@ const EvacuationLocationScreen = () => {
           zIndex: 2,
         }}>
         <Text
-          style={{color: '#FFF', fontWeight: 'bold', fontSize: 12, zIndex: -2}}>
+          style={{ color: '#FFF', fontWeight: 'bold', fontSize: 12, zIndex: -2 }}>
           {label}
         </Text>
       </View>
@@ -314,6 +318,10 @@ const EvacuationLocationScreen = () => {
       iconActive: require('../assets/images/jalanKaki-active.png'),
     },
   ];
+
+  const goBack = () => {
+    navigation.goBack();
+  };
 
   return (
     <View style={styles.container}>
@@ -464,7 +472,7 @@ const EvacuationLocationScreen = () => {
 
       {/* Tombol Locate Me */}
       <TouchableOpacity
-        style={[styles.locateMeButton, {bottom: bottomSheetHeight + 10}]}
+        style={[styles.locateMeButton, { bottom: bottomSheetHeight + 10 }]}
         onPress={locateMe}>
         <Ionicons name="locate-outline" size={24} color="#000" />
       </TouchableOpacity>
@@ -474,7 +482,7 @@ const EvacuationLocationScreen = () => {
       {!selectedCenter && !showRoutePanel && (
         <Animated.View
           {...panResponder.panHandlers}
-          style={[styles.bottomSheet, {height: bottomSheetHeight}]}>
+          style={[styles.bottomSheet, { height: bottomSheetHeight }]}>
           <View style={styles.dragIndicator} />
           <View
             style={{
@@ -486,10 +494,11 @@ const EvacuationLocationScreen = () => {
               style={{
                 alignItems: 'center',
                 justifyContent: 'center',
-              }}>
+              }}
+              onPress={goBack}>
               <Image
                 source={require('../assets/images/chevLeft.png')}
-                style={{width: 25, height: 40, resizeMode: 'contain'}}
+                style={{ width: 25, height: 40, resizeMode: 'contain' }}
               />
             </TouchableOpacity>
             <View
@@ -501,7 +510,7 @@ const EvacuationLocationScreen = () => {
               <Text
                 style={[
                   styles.sheetTitle,
-                  {marginLeft: '2%', alignItems: 'center'},
+                  { marginLeft: '2%', alignItems: 'center' },
                 ]}>
                 Daftar Lokasi Evakuasi
               </Text>
@@ -513,7 +522,7 @@ const EvacuationLocationScreen = () => {
             keyExtractor={item => item.id.toString()}
             horizontal
             showsHorizontalScrollIndicator={false}
-            renderItem={({item}) => (
+            renderItem={({ item }) => (
               <TouchableOpacity onPress={() => setSelectedCenter(item)}>
                 <View style={styles.evacCard}>
                   <View
@@ -535,7 +544,7 @@ const EvacuationLocationScreen = () => {
                           item.status === 'Tersedia' ? '#189E59' : '#c0392b',
                         borderWidth: 1,
                       }}>
-                      <Text style={[styles.evacStatus, {color: '#000'}]}>
+                      <Text style={[styles.evacStatus, { color: '#000' }]}>
                         {item.status}
                       </Text>
                     </View>
@@ -556,7 +565,7 @@ const EvacuationLocationScreen = () => {
         animationType="slide"
         onRequestClose={() => setSelectedCenter(null)}>
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, {height: 250}]}>
+          <View style={[styles.modalContent, { height: 250 }]}>
             <View style={styles.dragIndicator} />
             {/* Tombol Tutup Modal */}
             {/* <TouchableOpacity
@@ -582,7 +591,7 @@ const EvacuationLocationScreen = () => {
                 }}>
                 <Image
                   source={require('../assets/images/chevLeft.png')}
-                  style={{width: 25, height: 40, resizeMode: 'contain'}}
+                  style={{ width: 25, height: 40, resizeMode: 'contain' }}
                 />
               </TouchableOpacity>
               <View
@@ -650,7 +659,7 @@ const EvacuationLocationScreen = () => {
               }}>
               <Image
                 source={require('../assets/images/chevLeft.png')}
-                style={{width: 25, height: 40, resizeMode: 'contain'}}
+                style={{ width: 25, height: 40, resizeMode: 'contain' }}
               />
             </TouchableOpacity>
             <View
@@ -698,7 +707,7 @@ const EvacuationLocationScreen = () => {
             contentContainerStyle={{
               paddingRight: '5%',
             }}
-            renderItem={({item}) => {
+            renderItem={({ item }) => {
               const isSelected = selectedMode === item.mode;
               return (
                 <TouchableOpacity
@@ -719,7 +728,7 @@ const EvacuationLocationScreen = () => {
                   <Text
                     style={[
                       styles.transportModeText,
-                      isSelected && {color: '#f57c00'},
+                      isSelected && { color: '#f57c00' },
                     ]}>
                     {item.label}
                   </Text>
@@ -730,7 +739,7 @@ const EvacuationLocationScreen = () => {
 
           {/* Tombol Mulai Arahan */}
           <TouchableOpacity
-            style={[styles.routeButton, {marginTop: 10}]}
+            style={[styles.routeButton, { marginTop: 10 }]}
             onPress={() => console.log('Mulai Arahan ke Lokasi Evakuasi')}>
             <Text style={styles.routeButtonText}>
               Mulai Arahan ke Lokasi Evakuasi
@@ -745,9 +754,9 @@ const EvacuationLocationScreen = () => {
 export default EvacuationLocationScreen;
 
 const styles = StyleSheet.create({
-  container: {flex: 1},
-  mapContainer: {flex: 1},
-  map: {flex: 1},
+  container: { flex: 1 },
+  mapContainer: { flex: 1 },
+  map: { flex: 1 },
   backButton: {
     position: 'absolute',
     top: 50,
@@ -770,22 +779,6 @@ const styles = StyleSheet.create({
     height: 18,
     borderRadius: 9,
     backgroundColor: '#CD531B',
-    borderWidth: 2,
-    borderColor: '#fff',
-  },
-  markerContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  markerIcon: {
-    width: 25,
-    height: 25,
-    resizeMode: 'contain',
-  },
-  circleMarker: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
     borderWidth: 2,
     borderColor: '#fff',
   },
@@ -849,12 +842,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     overflow: 'hidden',
   },
-  statusAvailable: {
-    backgroundColor: '#27ae60',
-  },
-  statusFull: {
-    backgroundColor: '#c0392b',
-  },
 
   // Modal
   modalOverlay: {
@@ -867,13 +854,6 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
     padding: 20,
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    padding: 6,
-    zIndex: 2,
   },
   modalTitle: {
     fontSize: 18,
@@ -914,22 +894,6 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 16,
     padding: 16,
     zIndex: 999,
-  },
-  closeRouteButton: {
-    position: 'absolute',
-    top: 10,
-    right: 15,
-  },
-  routePanelTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginTop: 5,
-    marginBottom: 8,
-    color: '#333',
-  },
-  transportModeContainer: {
-    flexDirection: 'row',
-    marginBottom: 10,
   },
   transportModeButton: {
     backgroundColor: '#FFFF',

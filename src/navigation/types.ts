@@ -11,5 +11,6 @@ export type RootStackParamList = {
   Login: undefined;
   Signup: undefined;
   EvacuationLocation: undefined;
-  Otp: {email: string; phone: string | null; sendTo: string; from: string};
+  ManageLocations: undefined;
+  Otp: { email: string; phone: string | null; sendTo: string; from: string };
 };

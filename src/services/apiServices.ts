@@ -2,6 +2,8 @@ import axios from "axios";
 
 export const BASE_URL = "https://mhewsmobile.braga.co.id/";
 export const ASSET_URL = "https://mhewsmobile.braga.co.id/assets/";
+export const MAPBOX_ACCESS_TOKEN =
+    'sk.eyJ1Ijoid2hvaXNhcnZpYW4iLCJhIjoiY203YjJkajRtMDk3cDJtczlxMDRrOTExNiJ9.61sU5Z9qNoRfQ22qdcAMzQ';
 
 const api = axios.create({
     baseURL: BASE_URL,
