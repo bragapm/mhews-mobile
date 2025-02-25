@@ -27,8 +27,7 @@ import FindFamilyScreen from './src/pages/account/FindFamily';
 import DisasterAlertScreen from './src/pages/DisasterAlert';
 import EvacuationLocationScreen from './src/pages/EvacuationLocation';
 import ManageLocationsScreen from './src/pages/ManageLocations';
-import { checkInitialNotification, getFcmToken, listenForForegroundNotifications, listenForTokenRefresh, requestUserPermissionFCM, setupBackgroundMessageHandler } from './src/utils/fcm';
-import notifee, { AndroidImportance, EventType } from "@notifee/react-native";
+import { checkInitialNotification, listenForForegroundNotifications, requestUserPermissionFCM } from './src/utils/fcm';
 const Stack = createStackNavigator();
 
 function App() {

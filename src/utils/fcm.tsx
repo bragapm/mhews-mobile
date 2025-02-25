@@ -1,5 +1,6 @@
 import messaging from '@react-native-firebase/messaging';
 import notifee, { AndroidImportance } from '@notifee/react-native';
+import { AppState } from 'react-native';
 
 /**
  * Meminta izin untuk menerima notifikasi push
@@ -52,13 +53,14 @@ export function listenForTokenRefresh() {
  * @param {Object} remoteMessage Notifikasi yang diterima
  */
 async function displayNotification(remoteMessage: any) {
+    const selectSound = remoteMessage.notification?.title?.includes("Warning:") ? "notif_sound_danger" : "notif_sound";
     const channelId = await notifee.createChannel({
         id: "MHEWS",
         name: "MHEWS NOTIFICATIONS",
         vibration: true,
         importance: AndroidImportance.HIGH,
         vibrationPattern: [300, 500],
-        sound: "notif_sound",
+        sound: selectSound,
     });
 
     await notifee.displayNotification({
@@ -67,8 +69,7 @@ async function displayNotification(remoteMessage: any) {
         android: {
             channelId: channelId,
             importance: AndroidImportance.HIGH,
-            smallIcon: 'ic_stat_notification',
-            sound: "notif_sound",
+            sound: selectSound,
             pressAction: {
                 id: 'default',
             },
@@ -83,8 +84,9 @@ async function displayNotification(remoteMessage: any) {
  */
 export function listenForForegroundNotifications(onMessage: any) {
     return messaging().onMessage(async remoteMessage => {
-        console.log('Notifikasi diterima di foreground:', remoteMessage);
-        await displayNotification(remoteMessage);
+        if (remoteMessage.notification) {
+            await displayNotification(remoteMessage);
+        }
         if (onMessage) onMessage(remoteMessage);
     });
 }
@@ -111,6 +113,13 @@ export function checkInitialNotification(onNotification: any) {
 export function setupBackgroundMessageHandler() {
     messaging().setBackgroundMessageHandler(async remoteMessage => {
         console.log('Notifikasi diterima di background:', remoteMessage);
-        await displayNotification(remoteMessage);
+
+        if (AppState.currentState !== 'active') {
+            if (remoteMessage.notification) {
+                await displayNotification(remoteMessage);
+            }
+        } else {
+            console.log("Notifikasi tidak ditampilkan karena aplikasi di foreground.");
+        }
     });
 }
