@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useCallback } from 'react';
+import React, {useRef, useState, useEffect, useCallback} from 'react';
 import {
   View,
   Text,
@@ -13,30 +13,33 @@ import {
   Image,
   useColorScheme,
 } from 'react-native';
-import MapboxGL, { Camera } from '@rnmapbox/maps';
+import MapboxGL, {Camera} from '@rnmapbox/maps';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import GetLocation from 'react-native-get-location';
 import COLORS from '../config/COLORS';
-import { useNavigation, NavigationContainer } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../navigation/types';
+import {useNavigation, NavigationContainer} from '@react-navigation/native';
+import {StackNavigationProp} from '@react-navigation/stack';
+import {RootStackParamList} from '../navigation/types';
+import useAuthStore from '../hooks/auth';
+import {getData} from '../services/apiServices';
 
 // Ganti dengan token Mapbox Anda
 const MAPBOX_ACCESS_TOKEN =
   'sk.eyJ1Ijoid2hvaXNhcnZpYW4iLCJhIjoiY203YjJkajRtMDk3cDJtczlxMDRrOTExNiJ9.61sU5Z9qNoRfQ22qdcAMzQ';
 MapboxGL.setAccessToken(MAPBOX_ACCESS_TOKEN);
 
-const { width, height } = Dimensions.get('window');
+const {width, height} = Dimensions.get('window');
 
 interface EvacuationLocation {
   id: number;
   name: string;
-  distance: string;
+  distance: string; // misalnya "1.4 km"
+  duration?: string; // misalnya "10 Menit"
   status: 'Tersedia' | 'Penuh';
   address: string;
   coordinate: [number, number];
-  type: 'rs' | 'kp' | 'other';
+  type: string;
 }
 
 interface TransportModeItem {
@@ -49,42 +52,16 @@ interface TransportModeItem {
 type TransportMode = 'mobil' | 'motor' | 'umum' | 'jalan';
 
 const EvacuationLocationScreen = () => {
-  // Posisi user
+  const token = useAuthStore(state => state.token);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(
     null,
   );
   const backIcon = '<';
   // Data lokasi evakuasi
-  const [evacuationCenters] = useState<EvacuationLocation[]>([
-    {
-      id: 1,
-      name: 'Rumah Sakit Cilacap',
-      distance: '1.4 km (10 menit)',
-      status: 'Tersedia',
-      address:
-        'Jl. Karang No.39, Sentolokawat, Cilacap, Kec. Cilacap Sel, Kabupaten Cilacap, Jawa Tengah 53211',
-      coordinate: [109.014, -7.728],
-      type: 'rs', // akan kita tampilkan lingkaran hijau
-    },
-    {
-      id: 2,
-      name: 'Kantor Kecamatan Lainnya',
-      distance: '2.1 km (15 menit)',
-      status: 'Tersedia',
-      address: 'Jl. Pemuda No. XX, Cilacap',
-      coordinate: [109.0135, -7.7275],
-      type: 'kp', // akan kita tampilkan lingkaran biru
-    },
-    {
-      id: 3,
-      name: 'Posko Evakuasi Umum',
-      distance: '3.5 km (20 menit)',
-      status: 'Penuh',
-      address: 'Jl. Siliwangi No. 99, Cilacap',
-      coordinate: [109.02, -7.725],
-      type: 'kp', // akan kita tampilkan icon default
-    },
-  ]);
+  const [evacuationCenters, setEvacuationCenters] = useState<
+    EvacuationLocation[]
+  >([]);
+
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
 
   // Lokasi evakuasi yang dipilih => menampilkan modal detail
@@ -228,23 +205,33 @@ const EvacuationLocationScreen = () => {
   };
 
   // Konversi detik -> "XX Menit"
-  const getDurationText = (seconds: number) => {
-    const minutes = Math.ceil(seconds / 60);
-    return `${minutes} Menit Perjalanan`;
-  };
-
-  // Konversi meter -> "X.X km"
   const getDistanceText = (meters: number) => {
     if (meters < 1000) return `${meters.toFixed(0)} m`;
     const km = meters / 1000;
     return `${km.toFixed(1)} km`;
   };
 
+  const getDurationText = (seconds: number) => {
+    if (seconds >= 3600) {
+      const hours = Math.floor(seconds / 3600);
+      const remainingSeconds = seconds % 3600;
+      const minutes = Math.floor(remainingSeconds / 60);
+      return minutes > 0
+        ? `${hours} Jam ${minutes} Menit Perjalanan`
+        : `${hours} Jam Perjalanan`;
+    } else if (seconds >= 60) {
+      const minutes = Math.floor(seconds / 60);
+      return `${minutes} Menit Perjalanan`;
+    } else {
+      return `${seconds} Detik Perjalanan`;
+    }
+  };
+
   // Fungsi render marker sesuai type
   const renderMarker = (item: EvacuationLocation) => {
     // Tentukan warna dan teks berdasarkan type
     let bgColor = '#999'; // default abu-abu
-    let label = 'OTHER'; // default tulisan
+    let label = item.type.toUpperCase();
 
     if (item.type === 'kp') {
       bgColor = '#189E59'; // hijau
@@ -268,7 +255,7 @@ const EvacuationLocationScreen = () => {
           zIndex: 2,
         }}>
         <Text
-          style={{ color: '#FFF', fontWeight: 'bold', fontSize: 12, zIndex: -2 }}>
+          style={{color: '#FFF', fontWeight: 'bold', fontSize: 12, zIndex: -2}}>
           {label}
         </Text>
       </View>
@@ -322,6 +309,86 @@ const EvacuationLocationScreen = () => {
   const goBack = () => {
     navigation.goBack();
   };
+
+  const updateDistancesForCenters = async () => {
+    if (!userLocation || evacuationCenters.length === 0) return;
+
+    // Hanya update jika masih terdapat data jarak kosong agar tidak terjadi loop update
+    if (!evacuationCenters.some(center => center.distance === '')) return;
+
+    const updatedCenters = await Promise.all(
+      evacuationCenters.map(async center => {
+        const start = `${userLocation[0]},${userLocation[1]}`;
+        const end = `${center.coordinate[0]},${center.coordinate[1]}`;
+        const url = `https://api.mapbox.com/directions/v5/mapbox/driving-traffic/${start};${end}?geometries=geojson&overview=full&language=id&access_token=${MAPBOX_ACCESS_TOKEN}`;
+        try {
+          const response = await fetch(url);
+          const json = await response.json();
+          if (json.routes && json.routes.length > 0) {
+            const route = json.routes[0];
+            return {
+              ...center,
+              distance: getDistanceText(route.distance), // misal "1.4 km"
+              duration: getDurationText(route.duration), // misal "10 Menit"
+            };
+          }
+          return center;
+        } catch (error) {
+          console.log('Error fetching route for center', center.id, error);
+          return center;
+        }
+      }),
+    );
+    setEvacuationCenters(updatedCenters);
+  };
+
+  const getAbbreviation = (jenis: string | null): string => {
+    if (!jenis) return 'OT'; // OT = Other (default) jika tidak ada nilai
+    const words = jenis.trim().split(/\s+/); // Hilangkan spasi ekstra dan pisahkan berdasarkan spasi
+    if (words.length >= 2) {
+      return (words[0].charAt(0) + words[1].charAt(0)).toUpperCase();
+    } else {
+      return words[0].slice(0, 2).toUpperCase();
+    }
+  };
+
+  const [data, setData] = useState('');
+  // console.log('DATTA', JSON.stringify(data?.data));
+
+  const fetchData = async () => {
+    try {
+      const response = await getData(`items/titik_evakuasi`, {
+        headers: {Authorization: `Bearer ${token}`},
+      });
+      if (!response) throw new Error('Gagal mengambil data');
+
+      // Asumsikan response adalah array data
+      const transformedData = response?.data.map((item: any) => ({
+        id: item.id,
+        name: item.nama,
+        distance: '', // nanti akan dihitung
+        duration: '', // nanti akan dihitung
+        status: 'Tersedia', // Default status, sesuaikan jika perlu
+        address: item.alamat,
+        coordinate: item.geom.coordinates, // Pastikan format [longitude, latitude]
+        type: getAbbreviation(item.jenis_titik_kumpul),
+      }));
+      setEvacuationCenters(transformedData);
+    } catch (error) {
+      console.error('Gagal mengambil data:', error);
+      setEvacuationCenters([]);
+    }
+  };
+
+  useEffect(() => {
+    if (userLocation && evacuationCenters.length > 0) {
+      updateDistancesForCenters();
+    }
+  }, [userLocation, evacuationCenters]);
+
+  useEffect(() => {
+    fetchData();
+  }, [userLocation]);
 
   return (
     <View style={styles.container}>
@@ -472,7 +539,7 @@ const EvacuationLocationScreen = () => {
 
       {/* Tombol Locate Me */}
       <TouchableOpacity
-        style={[styles.locateMeButton, { bottom: bottomSheetHeight + 10 }]}
+        style={[styles.locateMeButton, {bottom: bottomSheetHeight + 10}]}
         onPress={locateMe}>
         <Ionicons name="locate-outline" size={24} color="#000" />
       </TouchableOpacity>
@@ -482,7 +549,7 @@ const EvacuationLocationScreen = () => {
       {!selectedCenter && !showRoutePanel && (
         <Animated.View
           {...panResponder.panHandlers}
-          style={[styles.bottomSheet, { height: bottomSheetHeight }]}>
+          style={[styles.bottomSheet, {height: bottomSheetHeight}]}>
           <View style={styles.dragIndicator} />
           <View
             style={{
@@ -498,7 +565,7 @@ const EvacuationLocationScreen = () => {
               onPress={goBack}>
               <Image
                 source={require('../assets/images/chevLeft.png')}
-                style={{ width: 25, height: 40, resizeMode: 'contain' }}
+                style={{width: 25, height: 40, resizeMode: 'contain'}}
               />
             </TouchableOpacity>
             <View
@@ -510,7 +577,7 @@ const EvacuationLocationScreen = () => {
               <Text
                 style={[
                   styles.sheetTitle,
-                  { marginLeft: '2%', alignItems: 'center' },
+                  {marginLeft: '2%', alignItems: 'center'},
                 ]}>
                 Daftar Lokasi Evakuasi
               </Text>
@@ -522,7 +589,7 @@ const EvacuationLocationScreen = () => {
             keyExtractor={item => item.id.toString()}
             horizontal
             showsHorizontalScrollIndicator={false}
-            renderItem={({ item }) => (
+            renderItem={({item}) => (
               <TouchableOpacity onPress={() => setSelectedCenter(item)}>
                 <View style={styles.evacCard}>
                   <View
@@ -544,12 +611,14 @@ const EvacuationLocationScreen = () => {
                           item.status === 'Tersedia' ? '#189E59' : '#c0392b',
                         borderWidth: 1,
                       }}>
-                      <Text style={[styles.evacStatus, { color: '#000' }]}>
+                      <Text style={[styles.evacStatus, {color: '#000'}]}>
                         {item.status}
                       </Text>
                     </View>
                   </View>
-                  <Text style={styles.evacDistance}>{item.distance}</Text>
+                  <Text style={styles.evacDistance}>
+                    {item.distance} ({item.duration})
+                  </Text>
                   <Text style={styles.evacAddress}>{item.address}</Text>
                 </View>
               </TouchableOpacity>
@@ -565,7 +634,7 @@ const EvacuationLocationScreen = () => {
         animationType="slide"
         onRequestClose={() => setSelectedCenter(null)}>
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { height: 250 }]}>
+          <View style={[styles.modalContent, {height: 250}]}>
             <View style={styles.dragIndicator} />
             {/* Tombol Tutup Modal */}
             {/* <TouchableOpacity
@@ -591,7 +660,7 @@ const EvacuationLocationScreen = () => {
                 }}>
                 <Image
                   source={require('../assets/images/chevLeft.png')}
-                  style={{ width: 25, height: 40, resizeMode: 'contain' }}
+                  style={{width: 25, height: 40, resizeMode: 'contain'}}
                 />
               </TouchableOpacity>
               <View
@@ -613,7 +682,7 @@ const EvacuationLocationScreen = () => {
                   {selectedCenter?.name}
                 </Text>
                 <Text style={styles.modalDistance}>
-                  {selectedCenter?.distance}
+                  {selectedCenter?.distance}({selectedCenter?.duration})
                 </Text>
               </View>
             </View>
@@ -659,7 +728,7 @@ const EvacuationLocationScreen = () => {
               }}>
               <Image
                 source={require('../assets/images/chevLeft.png')}
-                style={{ width: 25, height: 40, resizeMode: 'contain' }}
+                style={{width: 25, height: 40, resizeMode: 'contain'}}
               />
             </TouchableOpacity>
             <View
@@ -707,7 +776,7 @@ const EvacuationLocationScreen = () => {
             contentContainerStyle={{
               paddingRight: '5%',
             }}
-            renderItem={({ item }) => {
+            renderItem={({item}) => {
               const isSelected = selectedMode === item.mode;
               return (
                 <TouchableOpacity
@@ -728,7 +797,7 @@ const EvacuationLocationScreen = () => {
                   <Text
                     style={[
                       styles.transportModeText,
-                      isSelected && { color: '#f57c00' },
+                      isSelected && {color: '#f57c00'},
                     ]}>
                     {item.label}
                   </Text>
@@ -739,7 +808,7 @@ const EvacuationLocationScreen = () => {
 
           {/* Tombol Mulai Arahan */}
           <TouchableOpacity
-            style={[styles.routeButton, { marginTop: 10 }]}
+            style={[styles.routeButton, {marginTop: 10}]}
             onPress={() => console.log('Mulai Arahan ke Lokasi Evakuasi')}>
             <Text style={styles.routeButtonText}>
               Mulai Arahan ke Lokasi Evakuasi
@@ -754,9 +823,9 @@ const EvacuationLocationScreen = () => {
 export default EvacuationLocationScreen;
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  mapContainer: { flex: 1 },
-  map: { flex: 1 },
+  container: {flex: 1},
+  mapContainer: {flex: 1},
+  map: {flex: 1},
   backButton: {
     position: 'absolute',
     top: 50,
