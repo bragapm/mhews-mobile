@@ -279,6 +279,11 @@ const EvacuationLocationScreen = () => {
       ? require('../assets/images/jalanKaki-dark.png')
       : require('../assets/images/jalanKaki-light.png');
 
+  const chevLeft =
+    colorScheme === 'dark'
+      ? require('../assets/images/chevLeft-dark.png')
+      : require('../assets/images/chevLeft.png');
+
   const transportModesData: TransportModeItem[] = [
     {
       mode: 'mobil',
@@ -310,36 +315,38 @@ const EvacuationLocationScreen = () => {
     navigation.goBack();
   };
 
-  const updateDistancesForCenters = async () => {
+  const updateDistancesForCenters = () => {
     if (!userLocation || evacuationCenters.length === 0) return;
 
-    // Hanya update jika masih terdapat data jarak kosong agar tidak terjadi loop update
-    if (!evacuationCenters.some(center => center.distance === '')) return;
+    evacuationCenters.forEach(async center => {
+      // Jika sudah memiliki nilai (tidak kosong), lewati update ulang
+      if (center.distance !== '') return;
 
-    const updatedCenters = await Promise.all(
-      evacuationCenters.map(async center => {
-        const start = `${userLocation[0]},${userLocation[1]}`;
-        const end = `${center.coordinate[0]},${center.coordinate[1]}`;
-        const url = `https://api.mapbox.com/directions/v5/mapbox/driving-traffic/${start};${end}?geometries=geojson&overview=full&language=id&access_token=${MAPBOX_ACCESS_TOKEN}`;
-        try {
-          const response = await fetch(url);
-          const json = await response.json();
-          if (json.routes && json.routes.length > 0) {
-            const route = json.routes[0];
-            return {
-              ...center,
-              distance: getDistanceText(route.distance), // misal "1.4 km"
-              duration: getDurationText(route.duration), // misal "10 Menit"
-            };
-          }
-          return center;
-        } catch (error) {
-          console.log('Error fetching route for center', center.id, error);
-          return center;
+      const start = `${userLocation[0]},${userLocation[1]}`;
+      const end = `${center.coordinate[0]},${center.coordinate[1]}`;
+      const url = `https://api.mapbox.com/directions/v5/mapbox/driving-traffic/${start};${end}?geometries=geojson&overview=full&language=id&access_token=${MAPBOX_ACCESS_TOKEN}`;
+
+      try {
+        const response = await fetch(url);
+        const json = await response.json();
+        if (json.routes && json.routes.length > 0) {
+          const route = json.routes[0];
+          const newDistance = getDistanceText(route.distance); // misal "1.4 km"
+          const newDuration = getDurationText(route.duration); // misal "10 Menit Perjalanan"
+
+          // Update state untuk lokasi ini saja
+          setEvacuationCenters(prev =>
+            prev.map(item =>
+              item.id === center.id
+                ? {...item, distance: newDistance, duration: newDuration}
+                : item,
+            ),
+          );
         }
-      }),
-    );
-    setEvacuationCenters(updatedCenters);
+      } catch (error) {
+        console.log('Error fetching route for center', center.id, error);
+      }
+    });
   };
 
   const getAbbreviation = (jenis: string | null): string => {
@@ -399,7 +406,11 @@ const EvacuationLocationScreen = () => {
         <MapboxGL.MapView
           ref={mapRef}
           style={styles.map}
-          styleURL={MapboxGL.StyleURL.Street}
+          styleURL={
+            colorScheme === 'dark'
+              ? MapboxGL.StyleURL.Dark
+              : MapboxGL.StyleURL.Street
+          }
           onDidFinishLoadingMap={() => console.log('Map Loaded')}>
           <Camera ref={cameraRef} minZoomLevel={4} />
 
@@ -539,9 +550,12 @@ const EvacuationLocationScreen = () => {
 
       {/* Tombol Locate Me */}
       <TouchableOpacity
-        style={[styles.locateMeButton, {bottom: bottomSheetHeight + 10}]}
+        style={[
+          styles.locateMeButton,
+          {bottom: bottomSheetHeight + 10, backgroundColor: colors.bg},
+        ]}
         onPress={locateMe}>
-        <Ionicons name="locate-outline" size={24} color="#000" />
+        <Ionicons name="locate-outline" size={24} color={colors.text} />
       </TouchableOpacity>
 
       {/* Bottom Sheet 
@@ -549,7 +563,10 @@ const EvacuationLocationScreen = () => {
       {!selectedCenter && !showRoutePanel && (
         <Animated.View
           {...panResponder.panHandlers}
-          style={[styles.bottomSheet, {height: bottomSheetHeight}]}>
+          style={[
+            styles.bottomSheet,
+            {height: bottomSheetHeight, backgroundColor: colors.bg},
+          ]}>
           <View style={styles.dragIndicator} />
           <View
             style={{
@@ -564,7 +581,7 @@ const EvacuationLocationScreen = () => {
               }}
               onPress={goBack}>
               <Image
-                source={require('../assets/images/chevLeft.png')}
+                source={chevLeft}
                 style={{width: 25, height: 40, resizeMode: 'contain'}}
               />
             </TouchableOpacity>
@@ -577,7 +594,7 @@ const EvacuationLocationScreen = () => {
               <Text
                 style={[
                   styles.sheetTitle,
-                  {marginLeft: '2%', alignItems: 'center'},
+                  {marginLeft: '2%', alignItems: 'center', color: colors.text},
                 ]}>
                 Daftar Lokasi Evakuasi
               </Text>
@@ -591,13 +608,19 @@ const EvacuationLocationScreen = () => {
             showsHorizontalScrollIndicator={false}
             renderItem={({item}) => (
               <TouchableOpacity onPress={() => setSelectedCenter(item)}>
-                <View style={styles.evacCard}>
+                <View
+                  style={[
+                    styles.evacCard,
+                    {backgroundColor: colors.bg, borderColor: colors.info},
+                  ]}>
                   <View
                     style={{
                       flexDirection: 'row',
                       justifyContent: 'space-between',
                     }}>
-                    <Text style={styles.evacName}>{item.name}</Text>
+                    <Text style={[styles.evacName, {color: colors.text}]}>
+                      {item.name}
+                    </Text>
                     <View
                       style={{
                         backgroundColor:
@@ -611,15 +634,18 @@ const EvacuationLocationScreen = () => {
                           item.status === 'Tersedia' ? '#189E59' : '#c0392b',
                         borderWidth: 1,
                       }}>
-                      <Text style={[styles.evacStatus, {color: '#000'}]}>
+                      <Text style={[styles.evacStatus, {color: colors.text}]}>
                         {item.status}
                       </Text>
                     </View>
                   </View>
-                  <Text style={styles.evacDistance}>
-                    {item.distance} ({item.duration})
+                  <Text style={[styles.evacDistance, {color: colors.info}]}>
+                    {item.distance || ''} (
+                    {item.duration || 'Menghitung Jarak...'})
                   </Text>
-                  <Text style={styles.evacAddress}>{item.address}</Text>
+                  <Text style={[styles.evacAddress, {color: colors.info}]}>
+                    {item.address}
+                  </Text>
                 </View>
               </TouchableOpacity>
             )}
@@ -634,7 +660,11 @@ const EvacuationLocationScreen = () => {
         animationType="slide"
         onRequestClose={() => setSelectedCenter(null)}>
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, {height: 250}]}>
+          <View
+            style={[
+              styles.modalContent,
+              {height: 250, backgroundColor: colors.bg},
+            ]}>
             <View style={styles.dragIndicator} />
             {/* Tombol Tutup Modal */}
             {/* <TouchableOpacity
@@ -659,7 +689,7 @@ const EvacuationLocationScreen = () => {
                   justifyContent: 'center',
                 }}>
                 <Image
-                  source={require('../assets/images/chevLeft.png')}
+                  source={chevLeft}
                   style={{width: 25, height: 40, resizeMode: 'contain'}}
                 />
               </TouchableOpacity>
@@ -677,17 +707,20 @@ const EvacuationLocationScreen = () => {
                       alignItems: 'center',
                       fontSize: 16,
                       marginTop: 0,
+                      color: colors.text,
                     },
                   ]}>
                   {selectedCenter?.name}
                 </Text>
-                <Text style={styles.modalDistance}>
+                <Text style={[styles.modalDistance, {color: colors.info}]}>
                   {selectedCenter?.distance}({selectedCenter?.duration})
                 </Text>
               </View>
             </View>
 
-            <Text style={styles.modalAddress}>{selectedCenter?.address}</Text>
+            <Text style={[styles.modalAddress, {color: colors.info}]}>
+              {selectedCenter?.address}
+            </Text>
 
             {/* Tombol Rute */}
             <TouchableOpacity
@@ -701,7 +734,7 @@ const EvacuationLocationScreen = () => {
 
       {/* Panel Rute (memilih moda, menampilkan estimasi, dsb) */}
       {selectedCenter && showRoutePanel && (
-        <View style={styles.routePanel}>
+        <View style={[styles.routePanel, {backgroundColor: colors.bg}]}>
           {/* Tombol Tutup Panel */}
           {/* <TouchableOpacity
             style={styles.closeRouteButton}
@@ -721,13 +754,13 @@ const EvacuationLocationScreen = () => {
               marginTop: '3%',
             }}>
             <TouchableOpacity
-              onPress={() => setSelectedCenter(null)}
+              onPress={() => setShowRoutePanel(false)}
               style={{
                 alignItems: 'center',
                 justifyContent: 'center',
               }}>
               <Image
-                source={require('../assets/images/chevLeft.png')}
+                source={chevLeft}
                 style={{width: 25, height: 40, resizeMode: 'contain'}}
               />
             </TouchableOpacity>
@@ -745,11 +778,12 @@ const EvacuationLocationScreen = () => {
                     alignItems: 'center',
                     fontSize: 16,
                     marginTop: 0,
+                    color: colors.text,
                   },
                 ]}>
                 {selectedCenter?.name}
               </Text>
-              <Text style={styles.modalDistance}>
+              <Text style={[styles.modalDistance, {color: colors.info}]}>
                 {routeDistance > 0 ? getDistanceText(routeDistance) : ''}
               </Text>
             </View>
@@ -760,7 +794,7 @@ const EvacuationLocationScreen = () => {
           <Text
             style={{
               fontSize: 14,
-              color: '#000',
+              color: colors.info,
               marginBottom: 10,
               fontWeight: '600',
             }}>
@@ -774,7 +808,8 @@ const EvacuationLocationScreen = () => {
             showsHorizontalScrollIndicator={false}
             keyExtractor={item => item.mode}
             contentContainerStyle={{
-              paddingRight: '5%',
+              paddingRight: '8%',
+              marginBottom: '2%',
             }}
             renderItem={({item}) => {
               const isSelected = selectedMode === item.mode;
@@ -783,6 +818,7 @@ const EvacuationLocationScreen = () => {
                   style={[
                     styles.transportModeButton,
                     isSelected && styles.transportModeActive,
+                    {backgroundColor: colors.bg},
                   ]}
                   onPress={() => handleChangeMode(item.mode)}>
                   <Image
@@ -796,7 +832,7 @@ const EvacuationLocationScreen = () => {
                   />
                   <Text
                     style={[
-                      styles.transportModeText,
+                      styles.transportModeText && {color: colors.info},
                       isSelected && {color: '#f57c00'},
                     ]}>
                     {item.label}
@@ -808,7 +844,7 @@ const EvacuationLocationScreen = () => {
 
           {/* Tombol Mulai Arahan */}
           <TouchableOpacity
-            style={[styles.routeButton, {marginTop: 10}]}
+            style={[styles.routeButton, {marginTop: '2%', marginBottom: '2%'}]}
             onPress={() => console.log('Mulai Arahan ke Lokasi Evakuasi')}>
             <Text style={styles.routeButtonText}>
               Mulai Arahan ke Lokasi Evakuasi
