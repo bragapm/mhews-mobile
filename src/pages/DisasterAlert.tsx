@@ -100,7 +100,7 @@ const DisasterAlertScreen = () => {
         <View
           style={[
             styles.container,
-            { backgroundColor: !isDanger ? '#F36A1D' : '#C4432C' },
+            {backgroundColor: !isDanger ? '#F36A1D' : '#C4432C'},
           ]}>
           <View style={styles.backgroundContainer}>
             <View style={styles.circleLarge}>
@@ -128,7 +128,9 @@ const DisasterAlertScreen = () => {
           <ScrollView showsVerticalScrollIndicator={false}>
             <View style={styles.cardContainer}>
               {isDanger && (
-                <Text style={styles.titleDanger}>Tsunami akan terjadi dalam :</Text>
+                <Text style={styles.titleDanger}>
+                  Tsunami akan terjadi dalam :
+                </Text>
               )}
 
               {!isDanger ? (
@@ -140,7 +142,9 @@ const DisasterAlertScreen = () => {
                         -7.72145772, 109.00724549
                       </Text>
                     </View>
-                    <TouchableOpacity style={styles.button} onPress={showDisasterDetailMaps}>
+                    <TouchableOpacity
+                      style={styles.button}
+                      onPress={showDisasterDetailMaps}>
                       <Text style={styles.buttonTextLokasi}>
                         Peta Lokasi Bencana
                       </Text>
@@ -185,7 +189,7 @@ const DisasterAlertScreen = () => {
 
           <View
             {...panResponder.panHandlers}
-            style={[styles.bottomSheet, { height: bottomSheetHeight }]}>
+            style={[styles.bottomSheet, {height: bottomSheetHeight}]}>
             <View style={styles.dragIndicator} />
             {!isShowServices ? (
               <>
@@ -194,7 +198,9 @@ const DisasterAlertScreen = () => {
                     <TouchableOpacity
                       style={styles.buttonPrimary}
                       onPress={() => actionStatus('safe')}>
-                      <Text style={styles.buttonText}>Saya Tidak Terdampak</Text>
+                      <Text style={styles.buttonText}>
+                        Saya Tidak Terdampak
+                      </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                       style={styles.buttonSecondary}
@@ -208,9 +214,12 @@ const DisasterAlertScreen = () => {
                   <>
                     <TouchableOpacity
                       style={styles.buttonDanger}
-                      onPress={() => navigation.navigate('EvacuationLocation')}
-                    >
-                      <Text style={styles.buttonTextDanger}>Lihat Peta Evakuasi</Text>
+                      onPress={() =>
+                        navigation.navigate('NotifEvacuateLocationScreen')
+                      }>
+                      <Text style={styles.buttonTextDanger}>
+                        Lihat Peta Evakuasi
+                      </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                       style={styles.buttonSecondary}
@@ -230,7 +239,7 @@ const DisasterAlertScreen = () => {
                     alignItems: 'center',
                     justifyContent: 'space-between',
                   }}>
-                  <View style={{ flexDirection: 'column' }}>
+                  <View style={{flexDirection: 'column'}}>
                     <Text style={styles.modalTitle}>Pilih Layanan</Text>
                     <Text style={styles.modalSubtitle}>
                       Silahkan pilih layanan yang anda butuhkan
@@ -245,20 +254,20 @@ const DisasterAlertScreen = () => {
                       name="x"
                       size={24}
                       color="#000"
-                      style={{ padding: 8, marginBottom: 20 }}
+                      style={{padding: 8, marginBottom: 20}}
                     />
                   </Pressable>
                 </View>
 
                 <Pressable
-                  style={({ pressed }) => [
+                  style={({pressed}) => [
                     styles.methodOption,
                     {
                       opacity: pressed ? 0.9 : 1,
-                      transform: [{ scale: pressed ? 0.98 : 1 }],
+                      transform: [{scale: pressed ? 0.98 : 1}],
                     },
                   ]}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <View style={{flexDirection: 'row', alignItems: 'center'}}>
                     <Image
                       source={iconPhone}
                       style={{
@@ -268,7 +277,7 @@ const DisasterAlertScreen = () => {
                         marginRight: 8,
                       }}
                     />
-                    <View style={{ flexDirection: 'column', width: '90%' }}>
+                    <View style={{flexDirection: 'column', width: '90%'}}>
                       <Text style={styles.methodTitle}>
                         Nomor Kontak Center Bencana
                       </Text>
@@ -280,20 +289,20 @@ const DisasterAlertScreen = () => {
                     <Feather
                       name="chevron-right"
                       size={20}
-                      style={{ marginRight: 8 }}
+                      style={{marginRight: 8}}
                     />
                   </View>
                 </Pressable>
 
                 <Pressable
-                  style={({ pressed }) => [
+                  style={({pressed}) => [
                     styles.methodOption,
                     {
                       opacity: pressed ? 0.9 : 1,
-                      transform: [{ scale: pressed ? 0.98 : 1 }],
+                      transform: [{scale: pressed ? 0.98 : 1}],
                     },
                   ]}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <View style={{flexDirection: 'row', alignItems: 'center'}}>
                     <Image
                       source={iconMegaphone}
                       style={{
@@ -303,7 +312,7 @@ const DisasterAlertScreen = () => {
                         marginRight: 8,
                       }}
                     />
-                    <View style={{ flexDirection: 'column', width: '90%' }}>
+                    <View style={{flexDirection: 'column', width: '90%'}}>
                       <Text style={styles.methodTitle}>Lapor Bencana</Text>
                       <Text style={styles.methodDesc}>
                         Laporkan kejadian bencana atau situasi darurat yang anda
@@ -313,7 +322,7 @@ const DisasterAlertScreen = () => {
                     <Feather
                       name="chevron-right"
                       size={20}
-                      style={{ marginRight: 8 }}
+                      style={{marginRight: 8}}
                     />
                   </View>
                 </Pressable>
@@ -322,7 +331,6 @@ const DisasterAlertScreen = () => {
           </View>
         </View>
       ) : (
-
         <View style={styles.containerMap}>
           <StatusBar translucent backgroundColor="transparent" />
           <View style={styles.mapContainer}>
@@ -402,7 +410,7 @@ const DisasterAlertScreen = () => {
 
           <Animated.View
             {...panResponder.panHandlers}
-            style={[styles.bottomSheet, { height: bottomSheetHeight }]}>
+            style={[styles.bottomSheet, {height: bottomSheetHeight}]}>
             <View style={styles.dragIndicator} />
             <View
               style={{
@@ -414,10 +422,11 @@ const DisasterAlertScreen = () => {
                 style={{
                   alignItems: 'center',
                   justifyContent: 'center',
-                }} onPress={() => setIsShowDisasterMaps(false)}>
+                }}
+                onPress={() => setIsShowDisasterMaps(false)}>
                 <Image
                   source={require('../assets/images/chevLeft.png')}
-                  style={{ width: 25, height: 40, resizeMode: 'contain' }}
+                  style={{width: 25, height: 40, resizeMode: 'contain'}}
                 />
               </TouchableOpacity>
               <View
@@ -429,11 +438,11 @@ const DisasterAlertScreen = () => {
                 <Text
                   style={[
                     styles.sheetTitle,
-                    { marginLeft: '2%', alignItems: 'center' },
+                    {marginLeft: '2%', alignItems: 'center'},
                   ]}>
                   {detailBencana?.jenis_bencana
                     .replace(/_/g, ' ')
-                    .replace(/\b\w/g, (c: any) => c.toUpperCase()) || "-"}
+                    .replace(/\b\w/g, (c: any) => c.toUpperCase()) || '-'}
                 </Text>
               </View>
             </View>
@@ -522,26 +531,26 @@ const DisasterAlertScreen = () => {
               {detailBencana?.jenis_bencana === 'tanah_longsor' && (
                 <>
                   <View style={styles.infoBox}>
-                    <Text style={[styles.infoTitle, { color: colors.text }]}>
+                    <Text style={[styles.infoTitle, {color: colors.text}]}>
                       Volume Material Longsor
                     </Text>
-                    <Text style={[styles.infoValue, { color: colors.info }]}>
+                    <Text style={[styles.infoValue, {color: colors.info}]}>
                       {detailBencana?.vol_mat_longsor || 0} m³
                     </Text>
                   </View>
                   <View style={styles.infoBox}>
-                    <Text style={[styles.infoTitle, { color: colors.text }]}>
+                    <Text style={[styles.infoTitle, {color: colors.text}]}>
                       Kemiringan Lereng
                     </Text>
-                    <Text style={[styles.infoValue, { color: colors.info }]}>
+                    <Text style={[styles.infoValue, {color: colors.info}]}>
                       {detailBencana?.sudut_mir_longsor || 0}°
                     </Text>
                   </View>
                   <View style={styles.infoBox}>
-                    <Text style={[styles.infoTitle, { color: colors.text }]}>
+                    <Text style={[styles.infoTitle, {color: colors.text}]}>
                       Waktu
                     </Text>
-                    <Text style={[styles.infoValue, { color: colors.info }]}>
+                    <Text style={[styles.infoValue, {color: colors.info}]}>
                       {new Intl.DateTimeFormat('id-ID', {
                         dateStyle: 'full',
                         timeStyle: 'medium',
@@ -581,16 +590,16 @@ const DisasterAlertScreen = () => {
             {/* Scrollable Content */}
             <ScrollView style={styles.detailContainer}>
               {/* Lokasi */}
-              <Text style={[styles.cardTitleData, { color: colors.text }]}>
+              <Text style={[styles.cardTitleData, {color: colors.text}]}>
                 Lokasi
               </Text>
-              <Text style={[styles.cardDescription, , { color: colors.info }]}>
+              <Text style={[styles.cardDescription, , {color: colors.info}]}>
                 {detailBencana?.geom?.coordinates?.[1]},{' '}
                 {detailBencana?.geom?.coordinates?.[0]}
               </Text>
 
               {/* Tipe Bencana */}
-              <Text style={[styles.cardTitleData, { color: colors.text }]}>
+              <Text style={[styles.cardTitleData, {color: colors.text}]}>
                 Tipe Bencana
               </Text>
               <View style={styles.badge}>
@@ -598,25 +607,25 @@ const DisasterAlertScreen = () => {
               </View>
 
               {/* Wilayah Terdampak */}
-              <Text style={[styles.cardTitleData, { color: colors.text }]}>
+              <Text style={[styles.cardTitleData, {color: colors.text}]}>
                 Wilayah Terdampak
               </Text>
-              <Text style={[styles.cardDescription, { color: colors.info }]}>
+              <Text style={[styles.cardDescription, {color: colors.info}]}>
                 {detailBencana?.wilayah || '-'}
               </Text>
 
               {/* Saran & Arahan */}
-              <Text style={[styles.cardTitleData, { color: colors.text }]}>
+              <Text style={[styles.cardTitleData, {color: colors.text}]}>
                 Rekomendasi BMKG
               </Text>
-              <Text style={[styles.cardDetails, { color: colors.info }]}>
+              <Text style={[styles.cardDetails, {color: colors.info}]}>
                 {detailBencana?.saran_bmkg || '-'}
               </Text>
 
-              <Text style={[styles.cardTitleData, { color: colors.text }]}>
+              <Text style={[styles.cardTitleData, {color: colors.text}]}>
                 Arahan Evakuasi
               </Text>
-              <Text style={[styles.cardDetails, { color: colors.info }]}>
+              <Text style={[styles.cardDetails, {color: colors.info}]}>
                 {detailBencana?.arahan || '-'}
               </Text>
             </ScrollView>

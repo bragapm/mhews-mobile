@@ -13,7 +13,6 @@ import {
   Image,
   useColorScheme,
 } from 'react-native';
-import Feather from 'react-native-vector-icons/Feather';
 import MapboxGL, {Camera} from '@rnmapbox/maps';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -61,7 +60,7 @@ interface MapboxStep {
 
 type TransportMode = 'mobil' | 'motor' | 'umum' | 'jalan';
 
-const EvacuationLocationScreen = () => {
+const NotifEvacuateLocationScreen = () => {
   const token = useAuthStore(state => state.token);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(
     null,
@@ -79,10 +78,6 @@ const EvacuationLocationScreen = () => {
     useState<EvacuationLocation | null>(null);
   const colorScheme = useColorScheme();
   const colors = COLORS();
-  const [filterVisible, setFilterVisible] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
-  const [modalVisible, setModalVisible] = useState(false);
   // State untuk menampilkan panel rute
   const [showRoutePanel, setShowRoutePanel] = useState(false);
   // State untuk menyimpan data rute
@@ -505,10 +500,6 @@ const EvacuationLocationScreen = () => {
     return arrowIcons.straight; // fallback
   }
 
-  // const goBack = () => {
-  //   navigation.replace('Tabs');
-  // };
-
   return (
     <View style={styles.container}>
       <StatusBar translucent backgroundColor="transparent" />
@@ -654,38 +645,11 @@ const EvacuationLocationScreen = () => {
       </View>
 
       {/* Tombol Back */}
-      <View style={styles.headerContainer}>
-        <TouchableOpacity
-          style={[styles.headerBackButton, {backgroundColor: colors.bg}]}
-          onPress={goBack}>
-          <AntDesign name="arrowleft" size={24} color={colors.text} />
-        </TouchableOpacity>
-        {/* Search Bar */}
-        <TouchableOpacity
-          style={[styles.headerSearchContainer, {backgroundColor: colors.bg}]}
-          onPress={() => setModalVisible(true)}>
-          <Feather
-            name="search"
-            size={18}
-            color={colors.tabIconDefault}
-            style={styles.headerSearchIcon}
-          />
-          <View style={styles.headerSearchInput}>
-            <Text style={styles.searchText}>
-              {searchQuery || 'Cari Lokasi'}
-            </Text>
-          </View>
-        </TouchableOpacity>
-
-        {/* Tombol Filter */}
-        <TouchableOpacity
-          style={[styles.headerFilterButton, {backgroundColor: colors.bg}]}
-          onPress={() => setFilterVisible(true)}>
-          <Ionicons name="options" size={24} color={colors.text} />
-        </TouchableOpacity>
-
-        {/* Filter Bencana */}
-      </View>
+      {/* <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => console.log('Back')}>
+        <AntDesign name="arrowleft" size={24} color="#000" />
+      </TouchableOpacity> */}
 
       {/* Tombol Locate Me */}
       <TouchableOpacity
@@ -713,27 +677,29 @@ const EvacuationLocationScreen = () => {
               flexDirection: 'row',
               alignItems: 'center',
             }}>
+            <TouchableOpacity
+              style={{
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+              onPress={goBack}>
+              <Image
+                source={chevLeft}
+                style={{width: 25, height: 40, resizeMode: 'contain'}}
+              />
+            </TouchableOpacity>
             <View
               style={{
-                alignItems: 'flex-start',
+                alignItems: 'center',
                 justifyContent: 'center',
                 marginTop: '3%',
-                marginBottom: '5%',
               }}>
               <Text
                 style={[
                   styles.sheetTitle,
-                  {
-                    marginLeft: '0%',
-                    alignItems: 'flex-start',
-                    color: colors.text,
-                  },
+                  {marginLeft: '2%', alignItems: 'center', color: colors.text},
                 ]}>
-                Lokasi Evakuasi
-              </Text>
-              <Text style={[styles.evacDistance, {color: colors.info}]}>
-                Daftar lokasi evakuasi yang dapat diakses ketika terjadi bencana
-                berdasarkan lokasi anda
+                Daftar Lokasi Evakuasi
               </Text>
             </View>
           </View>
@@ -741,10 +707,10 @@ const EvacuationLocationScreen = () => {
           <FlatList
             data={evacuationCenters}
             keyExtractor={item => item.id.toString()}
-            // horizontal
+            horizontal
             showsHorizontalScrollIndicator={false}
             renderItem={({item}) => (
-              <View>
+              <TouchableOpacity onPress={() => setSelectedCenter(item)}>
                 <View
                   style={[
                     styles.evacCard,
@@ -758,48 +724,33 @@ const EvacuationLocationScreen = () => {
                     <Text style={[styles.evacName, {color: colors.text}]}>
                       {item.name}
                     </Text>
+                    <View
+                      style={{
+                        backgroundColor:
+                          item.status === 'Tersedia' ? '#7ADC98' : '#DC7A7C',
+                        borderRadius: 10,
+                        padding: '1%',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        height: 30,
+                        borderColor:
+                          item.status === 'Tersedia' ? '#189E59' : '#c0392b',
+                        borderWidth: 1,
+                      }}>
+                      <Text style={[styles.evacStatus, {color: colors.text}]}>
+                        {item.status}
+                      </Text>
+                    </View>
                   </View>
                   <Text style={[styles.evacDistance, {color: colors.info}]}>
                     {item.distance || ''} (
                     {item.duration || 'Menghitung Jarak...'})
                   </Text>
-                  <View
-                    style={{
-                      width: '100%',
-                      alignItems: 'flex-start',
-                      justifyContent: 'center',
-                      marginTop: '2%',
-                    }}>
-                    <Text style={[styles.evacAddress, {color: colors.info}]}>
-                      {item.address}
-                    </Text>
-                  </View>
-
-                  <TouchableOpacity
-                    style={{
-                      width: '100%',
-                      backgroundColor: colors.bg,
-                      borderWidth: 1,
-                      borderColor: '#CD541B',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      paddingVertical: '3%',
-                      paddingHorizontal: '2%',
-                      borderRadius: 8,
-                      marginTop: '5%',
-                    }}
-                    onPress={() => setSelectedCenter(item)}>
-                    <Text
-                      style={{
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: '#CD541B',
-                      }}>
-                      Simulasi Rute Evakuasi
-                    </Text>
-                  </TouchableOpacity>
+                  <Text style={[styles.evacAddress, {color: colors.info}]}>
+                    {item.address}
+                  </Text>
                 </View>
-              </View>
+              </TouchableOpacity>
             )}
           />
         </Animated.View>
@@ -830,71 +781,56 @@ const EvacuationLocationScreen = () => {
             <View
               style={{
                 width: '100%',
-                borderRadius: 10,
-                borderWidth: 1,
-                borderColor: colors.info,
-                paddingHorizontal: '3%',
-                paddingVertical: '3%',
+                flexDirection: 'row',
+                alignItems: 'center',
+                marginTop: '3%',
               }}>
+              <TouchableOpacity
+                onPress={() => setSelectedCenter(null)}
+                style={{
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                <Image
+                  source={chevLeft}
+                  style={{width: 25, height: 40, resizeMode: 'contain'}}
+                />
+              </TouchableOpacity>
               <View
                 style={{
-                  width: '100%',
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  marginTop: '3%',
+                  alignItems: 'flex-start',
+                  justifyContent: 'center',
+                  marginLeft: '2%',
                 }}>
-                <View
-                  style={{
-                    alignItems: 'flex-start',
-                    justifyContent: 'center',
-                    marginLeft: '2%',
-                  }}>
-                  <Text
-                    style={[
-                      styles.modalTitle,
-                      {
-                        marginLeft: '0%',
-                        alignItems: 'center',
-                        fontSize: 16,
-                        marginTop: 0,
-                        color: colors.text,
-                      },
-                    ]}>
-                    {selectedCenter?.name}
-                  </Text>
-                  <Text style={[styles.modalDistance, {color: colors.info}]}>
-                    {selectedCenter?.distance}({selectedCenter?.duration})
-                  </Text>
-                </View>
-              </View>
-
-              <Text style={[styles.modalAddress, {color: colors.info}]}>
-                {selectedCenter?.address}
-              </Text>
-
-              {/* Tombol Rute */}
-              <TouchableOpacity
-                style={[
-                  styles.routeButton,
-                  {
-                    width: '100%',
-                    backgroundColor: colors.bg,
-                    borderWidth: 1,
-                    borderColor: '#CD541B',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    paddingVertical: '3%',
-                    paddingHorizontal: '3%',
-                    borderRadius: 8,
-                    marginTop: '5%',
-                  },
-                ]}
-                onPress={handleShowRoute}>
-                <Text style={styles.routeButtonText}>
-                  Simulasi Rute Evakuasi
+                <Text
+                  style={[
+                    styles.modalTitle,
+                    {
+                      marginLeft: '0%',
+                      alignItems: 'center',
+                      fontSize: 16,
+                      marginTop: 0,
+                      color: colors.text,
+                    },
+                  ]}>
+                  {selectedCenter?.name}
                 </Text>
-              </TouchableOpacity>
+                <Text style={[styles.modalDistance, {color: colors.info}]}>
+                  {selectedCenter?.distance}({selectedCenter?.duration})
+                </Text>
+              </View>
             </View>
+
+            <Text style={[styles.modalAddress, {color: colors.info}]}>
+              {selectedCenter?.address}
+            </Text>
+
+            {/* Tombol Rute */}
+            <TouchableOpacity
+              style={styles.routeButton}
+              onPress={handleShowRoute}>
+              <Text style={styles.routeButtonText}>Lihat Rute Evakuasi</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
@@ -1009,40 +945,14 @@ const EvacuationLocationScreen = () => {
             }}
           />
 
-          <Text
-            style={{
-              fontSize: 16,
-              fontWeight: 'bold',
-              marginBottom: 6,
-              color: colors.text,
-            }}>
-            Rute
-          </Text>
-          <FlatList
-            data={routeSteps}
-            keyExtractor={(_, index) => index.toString()}
-            renderItem={({item}) => (
-              <View style={styles.stepItemContainer}>
-                {/* Icon Arah (opsional) */}
-                <Image
-                  source={getChevronIcon(item.maneuver?.modifier)}
-                  style={{width: 20, height: 20, marginRight: 8}}
-                />
-                {/* Teks Deskripsi Langkah */}
-                <View style={{flex: 1}}>
-                  <Text style={styles.stepInstruction}>
-                    {getCustomStepDescription(item)}
-                  </Text>
-                  {/* Jika ingin menampilkan jarak step secara terpisah */}
-                  <Text style={styles.stepDistance}>
-                    {item.distance < 1000
-                      ? `${item.distance.toFixed(0)} m`
-                      : `${(item.distance / 1000).toFixed(1)} km`}
-                  </Text>
-                </View>
-              </View>
-            )}
-          />
+          {/* Tombol Mulai Arahan */}
+          <TouchableOpacity
+            style={[styles.routeButton, {marginTop: '2%', marginBottom: '2%'}]}
+            onPress={handleStartGuidance}>
+            <Text style={styles.routeButtonText}>
+              Mulai Arahan ke Lokasi Evakuasi
+            </Text>
+          </TouchableOpacity>
         </View>
       )}
 
@@ -1182,7 +1092,7 @@ const EvacuationLocationScreen = () => {
   );
 };
 
-export default EvacuationLocationScreen;
+export default NotifEvacuateLocationScreen;
 
 const styles = StyleSheet.create({
   container: {flex: 1},
@@ -1239,7 +1149,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   evacCard: {
-    width: '100%',
+    width: 250,
     backgroundColor: '#FAFAFA',
     borderRadius: 8,
     padding: 12,
@@ -1247,7 +1157,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#EEE',
     height: 150,
-    marginBottom: '5%',
   },
 
   evacName: {
@@ -1451,69 +1360,5 @@ const styles = StyleSheet.create({
   nextStepText: {
     fontSize: 14,
     color: '#666',
-  },
-  headerContainer: {
-    position: 'absolute',
-    top: 50,
-    left: 0,
-    right: 0,
-    padding: 10,
-    zIndex: 999,
-    flexDirection: 'column',
-    alignItems: 'center',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-  },
-  headerFilterButton: {
-    position: 'absolute',
-    top: 20,
-    right: 15,
-    backgroundColor: 'rgb(255, 255, 255)',
-    padding: 8,
-    borderRadius: 10,
-  },
-  headerSearchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgb(255, 255, 255)',
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    width: '70%',
-    marginVertical: 10,
-  },
-  headerSearchIcon: {
-    marginRight: 5,
-  },
-  headerSearchInput: {
-    flex: 1,
-    height: 40,
-    justifyContent: 'center',
-  },
-  searchText: {
-    fontSize: 16,
-    color: 'gray',
-  },
-  headerBackButton: {
-    position: 'absolute',
-    top: 20,
-    left: 15,
-    backgroundColor: 'rgb(255, 255, 255)',
-    padding: 8,
-    borderRadius: 10,
-  },
-  stepItemContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: 8,
-  },
-  stepInstruction: {
-    fontSize: 14,
-    color: '#444',
-    marginBottom: 2,
-  },
-  stepDistance: {
-    fontSize: 12,
-    color: '#888',
   },
 });

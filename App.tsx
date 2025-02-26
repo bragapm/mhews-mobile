@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, {useEffect} from 'react';
 import {
   SafeAreaView,
   StatusBar,
@@ -6,8 +6,8 @@ import {
   StyleSheet,
   Alert,
 } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
+import {NavigationContainer} from '@react-navigation/native';
+import {createStackNavigator} from '@react-navigation/stack';
 import SplashScreen from './src/splash';
 import AlertProvider from './src/components/AlertContext';
 import TabNavigator from './src/(tabs)/_layout';
@@ -27,7 +27,12 @@ import FindFamilyScreen from './src/pages/account/FindFamily';
 import DisasterAlertScreen from './src/pages/DisasterAlert';
 import EvacuationLocationScreen from './src/pages/EvacuationLocation';
 import ManageLocationsScreen from './src/pages/ManageLocations';
-import { checkInitialNotification, listenForForegroundNotifications, requestUserPermissionFCM } from './src/utils/fcm';
+import {
+  checkInitialNotification,
+  listenForForegroundNotifications,
+  requestUserPermissionFCM,
+} from './src/utils/fcm';
+import NotifEvacuateLocationScreen from './src/pages/NotifEvacuateLocation';
 const Stack = createStackNavigator();
 
 function App() {
@@ -43,9 +48,11 @@ function App() {
       console.log('App dibuka dari notifikasi:', remoteMessage);
     });
 
-    const unsubscribe = listenForForegroundNotifications((remoteMessage: any) => {
-      console.log('Notifikasi diterima di foreground:', remoteMessage);
-    });
+    const unsubscribe = listenForForegroundNotifications(
+      (remoteMessage: any) => {
+        console.log('Notifikasi diterima di foreground:', remoteMessage);
+      },
+    );
 
     return () => unsubscribe();
   }, []);
@@ -58,7 +65,7 @@ function App() {
             barStyle={isDarkMode ? 'light-content' : 'dark-content'}
             backgroundColor={backgroundStyle.backgroundColor}
           />
-          <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Navigator screenOptions={{headerShown: false}}>
             <Stack.Screen name="Splash" component={SplashScreen} />
             <Stack.Screen name="Login" component={Login} />
             <Stack.Screen name="Signup" component={Signup} />
@@ -80,8 +87,10 @@ function App() {
             <Stack.Screen name="AboutUs" component={AboutUsScreen} />
             <Stack.Screen name="HelpCenter" component={HelpCenterScreen} />
             <Stack.Screen name="DisasterRisk" component={DisasterRiskScreen} />
-            <Stack.Screen name="ManageLocations" component={ManageLocationsScreen} />
-
+            <Stack.Screen
+              name="ManageLocations"
+              component={ManageLocationsScreen}
+            />
             {/* Full screen notif */}
             <Stack.Screen
               name="DisasterAlert"
@@ -90,6 +99,10 @@ function App() {
             <Stack.Screen
               name="EvacuationLocation"
               component={EvacuationLocationScreen}
+            />
+            <Stack.Screen
+              name="NotifEvacuateLocationScreen"
+              component={NotifEvacuateLocationScreen}
             />
           </Stack.Navigator>
         </SafeAreaView>
