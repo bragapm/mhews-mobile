@@ -49,6 +49,15 @@ interface TransportModeItem {
   iconActive: any;
 }
 
+interface MapboxStep {
+  distance: number;
+  name?: string;
+  maneuver?: {
+    instruction?: string;
+    modifier?: string;
+  };
+}
+
 type TransportMode = 'mobil' | 'motor' | 'umum' | 'jalan';
 
 const EvacuationLocationScreen = () => {
@@ -76,6 +85,9 @@ const EvacuationLocationScreen = () => {
   const [routeDistance, setRouteDistance] = useState<number>(0); // meter
   const [routeDuration, setRouteDuration] = useState<number>(0); // detik
   const [selectedMode, setSelectedMode] = useState<TransportMode>('mobil');
+  // STEPS RUTE
+  const [routeSteps, setRouteSteps] = useState<any[]>([]);
+  const [isGuidanceActive, setIsGuidanceActive] = useState(false);
 
   // Map & Camera
   const mapRef = useRef<MapboxGL.MapView | null>(null);
@@ -160,7 +172,7 @@ const EvacuationLocationScreen = () => {
     try {
       const start = `${userLocation[0]},${userLocation[1]}`;
       const end = `${selectedCenter.coordinate[0]},${selectedCenter.coordinate[1]}`;
-      const url = `https://api.mapbox.com/directions/v5/mapbox/${profile}/${start};${end}?geometries=geojson&overview=full&language=id&access_token=${MAPBOX_ACCESS_TOKEN}`;
+      const url = `https://api.mapbox.com/directions/v5/mapbox/${profile}/${start};${end}?geometries=geojson&overview=full&steps=true&language=id&access_token=${MAPBOX_ACCESS_TOKEN}`;
 
       const response = await fetch(url);
       const json = await response.json();
@@ -174,6 +186,9 @@ const EvacuationLocationScreen = () => {
         setRouteDistance(route.distance); // meter
         setRouteDuration(route.duration); // detik
 
+        if (route.legs && route.legs.length > 0) {
+          setRouteSteps(route.legs[0].steps); // simpan steps ke state
+        }
         // Zoom map agar keseluruhan rute terlihat
         cameraRef.current?.fitBounds(
           [userLocation[0], userLocation[1]],
@@ -225,6 +240,12 @@ const EvacuationLocationScreen = () => {
     } else {
       return `${seconds} Detik Perjalanan`;
     }
+  };
+
+  const handleStartGuidance = () => {
+    // Di sini kita menutup panel rute & membuka panel/overlay “arah jalan”
+    setShowRoutePanel(false);
+    setIsGuidanceActive(true);
   };
 
   // Fungsi render marker sesuai type
@@ -283,6 +304,11 @@ const EvacuationLocationScreen = () => {
     colorScheme === 'dark'
       ? require('../assets/images/chevLeft-dark.png')
       : require('../assets/images/chevLeft.png');
+
+  const iconMobilActive = require('../assets/images/mobile-active.png');
+  const iconMotorActive = require('../assets/images/motor-active.png');
+  const iconTransportUmumActive = require('../assets/images/transportUmum-active.png');
+  const iconJalanKakiActive = require('../assets/images/jalanKaki-active.png');
 
   const transportModesData: TransportModeItem[] = [
     {
@@ -397,6 +423,92 @@ const EvacuationLocationScreen = () => {
     fetchData();
   }, [userLocation]);
 
+  // Misal di atas komponen
+  // Misal di atas komponen
+  const getCustomStepDescription = step => {
+    if (!step) return '';
+
+    // Ambil jarak (meter) => ubah jadi "xxx Meter" atau "x.x km"
+    const distanceText =
+      step.distance < 1000
+        ? `${step.distance.toFixed(0)} Meter`
+        : `${(step.distance / 1000).toFixed(1)} km`;
+
+    // Ambil instruksi maneuver => "Belok kiri", "Lanjut lurus", dll
+    // Mapbox sering beri "Turn left onto XXX", "Continue", dsb
+    // Kita bisa pakai step.maneuver.modifier
+    const modifier = step.maneuver?.modifier; // "left", "right", "straight", etc.
+    let directionLabel = '';
+
+    switch (modifier) {
+      case 'left':
+        directionLabel = 'Belok kiri';
+        break;
+      case 'right':
+        directionLabel = 'Belok kanan';
+        break;
+      case 'straight':
+        directionLabel = 'Jalan lurus';
+        break;
+      // dsb, silakan tambah logic
+      default:
+        directionLabel = step.maneuver?.instruction || 'Lanjut';
+        break;
+    }
+
+    return `${directionLabel} ${distanceText}`;
+  };
+  function extractRoadName(instruction = '') {
+    // Contoh: "Turn left onto Jl. Karang" => kita ambil "Jl. Karang"
+    const match = instruction.match(/onto\s(.+)/i);
+    if (match && match[1]) {
+      return match[1].trim();
+    }
+    return instruction;
+  }
+
+  const getChevronRotation = modifier => {
+    if (!modifier) return '0deg';
+    const mod = modifier.toLowerCase();
+    if (mod.includes('left')) return '180deg'; // default arrow (kanan) diputar 180° jadi menunjuk ke kiri
+    if (mod.includes('right')) return '0deg'; // biarkan arrow tetap menunjuk ke kanan
+    if (mod.includes('uturn')) return '180deg';
+    return '0deg';
+  };
+
+  const arrowIcons = {
+    left: require('../assets/images/left.png'),
+    right: require('../assets/images/right.png'),
+    uturn: require('../assets/images/uturn.png'),
+    straight: require('../assets/images/up.png'),
+  };
+
+  const arrowIconsSm = {
+    left: require('../assets/images/left-grey.png'),
+    right: require('../assets/images/reight-grey.png'),
+    uturn: require('../assets/images/uturn.png'),
+    straight: require('../assets/images/up-grey.png'),
+  };
+
+  // Fungsi pilih ikon
+  function getChevronIcon(modifier: string | undefined) {
+    if (!modifier) return arrowIcons.straight;
+    const mod = modifier.toLowerCase();
+    if (mod.includes('left')) return arrowIcons.left;
+    if (mod.includes('right')) return arrowIcons.right;
+    if (mod.includes('uturn')) return arrowIcons.uturn;
+    return arrowIcons.straight; // fallback
+  }
+
+  function getChevronIconSm(modifier: string | undefined) {
+    if (!modifier) return arrowIconsSm.straight;
+    const mod = modifier.toLowerCase();
+    if (mod.includes('left')) return arrowIconsSm.left;
+    if (mod.includes('right')) return arrowIconsSm.right;
+    if (mod.includes('uturn')) return arrowIconsSm.uturn;
+    return arrowIcons.straight; // fallback
+  }
+
   return (
     <View style={styles.container}>
       <StatusBar translucent backgroundColor="transparent" />
@@ -417,7 +529,7 @@ const EvacuationLocationScreen = () => {
           {/* Lingkaran radius user */}
           {userLocation && (
             <MapboxGL.ShapeSource
-              id="userLocationCircle"
+              id="userLocationCircleLarge"
               shape={{
                 type: 'Feature',
                 geometry: {
@@ -441,7 +553,7 @@ const EvacuationLocationScreen = () => {
           {userLocation && (
             <>
               <MapboxGL.ShapeSource
-                id="userLocationCircle"
+                id="userLocationCircleSmall"
                 shape={{
                   type: 'Feature',
                   geometry: {
@@ -481,7 +593,7 @@ const EvacuationLocationScreen = () => {
 
           {/* Marker evakuasi */}
           {evacuationCenters.map(item => (
-            <>
+            <React.Fragment key={item.id}>
               <MapboxGL.ShapeSource
                 id={`markerEvacuate-${item.id}`}
                 shape={{
@@ -523,7 +635,7 @@ const EvacuationLocationScreen = () => {
                 }}>
                 {renderMarker(item)}
               </MapboxGL.PointAnnotation>
-            </>
+            </React.Fragment>
           ))}
           {/* GARIS RUTE */}
           {routeCoords && (
@@ -655,7 +767,7 @@ const EvacuationLocationScreen = () => {
 
       {/* Modal Detail Evakuasi */}
       <Modal
-        visible={!!selectedCenter && !showRoutePanel}
+        visible={!!selectedCenter && !showRoutePanel && !isGuidanceActive}
         transparent
         animationType="slide"
         onRequestClose={() => setSelectedCenter(null)}>
@@ -845,11 +957,144 @@ const EvacuationLocationScreen = () => {
           {/* Tombol Mulai Arahan */}
           <TouchableOpacity
             style={[styles.routeButton, {marginTop: '2%', marginBottom: '2%'}]}
-            onPress={() => console.log('Mulai Arahan ke Lokasi Evakuasi')}>
+            onPress={handleStartGuidance}>
             <Text style={styles.routeButtonText}>
               Mulai Arahan ke Lokasi Evakuasi
             </Text>
           </TouchableOpacity>
+        </View>
+      )}
+
+      {isGuidanceActive && (
+        <View style={styles.guidanceOverlay}>
+          {/* BAGIAN ATAS: INFORMASI LANGKAH SAAT INI */}
+
+          <View style={styles.customGuidanceContainer}>
+            {/* Baris pertama: Nama Jalan + Ikon Transportasi */}
+            <View style={styles.guidanceHeader}>
+              <View
+                style={{
+                  width: '20%',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                <Image
+                  source={getChevronIcon(routeSteps[0]?.maneuver?.modifier)}
+                  style={{width: 20, height: 20}}
+                />
+              </View>
+              <View
+                style={{
+                  width: '60%',
+                  alignItems: 'flex-start',
+                  justifyContent: 'center',
+                }}>
+                <Text style={styles.currentRoad}>
+                  {routeSteps[0]?.name && routeSteps[0].name.trim() !== ''
+                    ? routeSteps[0].name
+                    : extractRoadName(routeSteps[0]?.maneuver?.instruction) ||
+                      'Jalan Tidak Diketahui'}
+                </Text>
+                <Text style={styles.currentInstruction}>
+                  {getCustomStepDescription(routeSteps[0])}
+                </Text>
+              </View>
+              <View
+                style={{
+                  width: '20%',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                <Image
+                  source={
+                    selectedMode === 'mobil'
+                      ? iconMobilActive
+                      : selectedMode === 'motor'
+                      ? iconMotorActive
+                      : selectedMode === 'umum'
+                      ? iconTransportUmumActive
+                      : iconJalanKakiActive
+                  }
+                  style={styles.transportIcon}
+                />
+              </View>
+            </View>
+          </View>
+
+          {/* BAGIAN “LANGKAH BERIKUTNYA” */}
+          {routeSteps[1] && (
+            <View style={styles.nextStepContainer}>
+              <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                <Image
+                  source={getChevronIconSm(routeSteps[1]?.maneuver?.modifier)}
+                  style={{width: 15, height: 15, marginRight: '2%'}}
+                />
+
+                <Text style={styles.nextStepText}>
+                  {routeSteps[1]?.maneuver?.instruction ||
+                    'Langkah berikutnya...'}
+                </Text>
+              </View>
+            </View>
+          )}
+
+          {/* BAGIAN BAWAH: Info tujuan akhir + tombol */}
+          <View
+            style={[styles.guidanceBottomCard, {backgroundColor: colors.bg}]}>
+            <View style={styles.dragIndicator} />
+            <View
+              style={{
+                width: '100%',
+                justifyContent: 'center',
+                alignItems: 'flex-start',
+              }}>
+              <Text
+                style={{
+                  fontSize: 16,
+                  fontWeight: 'bold',
+                  marginBottom: 4,
+                  color: colors.text,
+                  textAlign: 'left',
+                }}>
+                {selectedCenter?.name}
+              </Text>
+              <Text style={{fontSize: 14, marginBottom: 8, color: colors.info}}>
+                {routeDistance > 0 ? getDistanceText(routeDistance) : ''}
+              </Text>
+            </View>
+
+            <View
+              style={{
+                width: '100%',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '2%',
+              }}>
+              <TouchableOpacity
+                style={styles.arrivedButton}
+                onPress={() => {
+                  // Jika ditekan "Saya Sudah Sampai"
+                  setIsGuidanceActive(false);
+                  setRouteSteps([]);
+                  setSelectedCenter(null);
+                  setRouteCoords(null);
+                }}>
+                <Text style={styles.arrivedButtonText}>Saya Sudah Sampai</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.sosButton,
+                  {
+                    backgroundColor: colors.bg,
+                    borderWidth: 1,
+                    borderColor: '#C4432C',
+                  },
+                ]}>
+                <Text style={styles.sosButtonText}>S.O.S</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
       )}
     </View>
@@ -1019,5 +1264,110 @@ const styles = StyleSheet.create({
   transportModeText: {
     fontSize: 12,
     color: '#333',
+  },
+  guidanceOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    // Bisa pakai backgroundColor 'rgba(255,255,255,0.8)' jika mau semi-transparan
+    justifyContent: 'flex-start',
+  },
+  guidanceTopCard: {
+    backgroundColor: '#FFF',
+    marginTop: 50,
+    marginHorizontal: 16,
+    padding: 12,
+    borderRadius: 8,
+    elevation: 2,
+  },
+  guidanceInstruction: {
+    fontSize: 14,
+    marginBottom: 4,
+    color: '#333',
+  },
+  guidanceBottomCard: {
+    backgroundColor: '#FFF',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: 16,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    elevation: 3,
+    alignItems: 'center',
+  },
+  arrivedButton: {
+    backgroundColor: '#F36A1D',
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    marginBottom: 10,
+    width: '100%',
+    alignItems: 'center',
+  },
+  arrivedButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  sosButton: {
+    backgroundColor: '#ff5555',
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    width: '100%',
+    alignItems: 'center',
+  },
+  sosButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  customGuidanceContainer: {
+    backgroundColor: '#FFF',
+    marginHorizontal: 16,
+    marginTop: 50,
+    padding: 12,
+    borderRadius: 8,
+    elevation: 2,
+  },
+  guidanceHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  currentRoad: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+    maxWidth: '80%',
+  },
+  transportIcon: {
+    width: 24,
+    height: 24,
+    resizeMode: 'contain',
+  },
+  currentInstruction: {
+    marginTop: 4,
+    fontSize: 14,
+    color: '#444',
+  },
+  nextStepContainer: {
+    backgroundColor: '#FFF',
+    marginHorizontal: 16,
+    marginTop: 10,
+    borderRadius: 8,
+    elevation: 2,
+    width: 'auto',
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+    paddingHorizontal: '2%',
+    paddingVertical: '2%',
+    maxWidth: '80%',
+  },
+  nextStepText: {
+    fontSize: 14,
+    color: '#666',
   },
 });
