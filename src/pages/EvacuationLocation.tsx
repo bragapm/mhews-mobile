@@ -425,7 +425,7 @@ const EvacuationLocationScreen = () => {
 
   // Misal di atas komponen
   // Misal di atas komponen
-  const getCustomStepDescription = step => {
+  const getCustomStepDescription = (step: any) => {
     if (!step) return '';
 
     // Ambil jarak (meter) => ubah jadi "xxx Meter" atau "x.x km"
@@ -466,15 +466,6 @@ const EvacuationLocationScreen = () => {
     }
     return instruction;
   }
-
-  const getChevronRotation = modifier => {
-    if (!modifier) return '0deg';
-    const mod = modifier.toLowerCase();
-    if (mod.includes('left')) return '180deg'; // default arrow (kanan) diputar 180° jadi menunjuk ke kiri
-    if (mod.includes('right')) return '0deg'; // biarkan arrow tetap menunjuk ke kanan
-    if (mod.includes('uturn')) return '180deg';
-    return '0deg';
-  };
 
   const arrowIcons = {
     left: require('../assets/images/left.png'),
