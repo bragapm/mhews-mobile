@@ -1,12 +1,22 @@
 import messaging from '@react-native-firebase/messaging';
 import notifee, { AndroidImportance } from '@notifee/react-native';
-import { AppState } from 'react-native';
+import { AppState, PermissionsAndroid, Platform } from 'react-native';
+import { navigate } from '../navigation/RootNavigation';
+import BackgroundFetch from 'react-native-background-fetch';
+import { fetchLocation, getLocationDetails, watchLocation } from './locationUtils';
+import BackgroundService from 'react-native-background-actions';
 
 /**
  * Meminta izin untuk menerima notifikasi push
  */
 export async function requestUserPermissionFCM() {
     try {
+        if (Platform.OS === "android" && Platform.Version >= 33) {
+            await PermissionsAndroid.request(
+                PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
+            );
+        }
+
         await notifee.requestPermission();
         const authStatus = await messaging().requestPermission();
         const enabled =
@@ -53,7 +63,7 @@ export function listenForTokenRefresh() {
  * @param {Object} remoteMessage Notifikasi yang diterima
  */
 async function displayNotification(remoteMessage: any) {
-    const selectSound = remoteMessage.notification?.title?.includes("Warning:") ? "notif_sound_danger" : "notif_sound";
+    const selectSound = remoteMessage.notification.title.includes("Warning:") ? "notif_sound_danger" : "notif_sound";
     const channelId = await notifee.createChannel({
         id: "MHEWS",
         name: "MHEWS NOTIFICATIONS",
@@ -69,6 +79,7 @@ async function displayNotification(remoteMessage: any) {
         android: {
             channelId: channelId,
             importance: AndroidImportance.HIGH,
+            vibrationPattern: [300, 500],
             sound: selectSound,
             pressAction: {
                 id: 'default',
@@ -83,9 +94,13 @@ async function displayNotification(remoteMessage: any) {
  * @returns {Function} Fungsi unsubscribe untuk berhenti mendengarkan
  */
 export function listenForForegroundNotifications(onMessage: any) {
-    return messaging().onMessage(async remoteMessage => {
+    return messaging().onMessage(async (remoteMessage: any) => {
+        console.log('Notifikasi diterima di foreground:', remoteMessage);
         if (remoteMessage.notification) {
             await displayNotification(remoteMessage);
+            if (remoteMessage.notification?.title.includes("Warning:")) {
+                navigate('DisasterAlert');
+            }
         }
         if (onMessage) onMessage(remoteMessage);
     });
@@ -111,15 +126,112 @@ export function checkInitialNotification(onNotification: any) {
  * Handler untuk notifikasi yang diterima saat aplikasi di background/terminated
  */
 export function setupBackgroundMessageHandler() {
-    messaging().setBackgroundMessageHandler(async remoteMessage => {
+    messaging().setBackgroundMessageHandler(async (remoteMessage: any) => {
         console.log('Notifikasi diterima di background:', remoteMessage);
+        if (remoteMessage.notification) {
+            console.log(remoteMessage.notification?.title.includes("Warning:"));
 
-        if (AppState.currentState !== 'active') {
-            if (remoteMessage.notification) {
-                await displayNotification(remoteMessage);
+            if (remoteMessage.notification?.title.includes("Warning:")) {
+                navigate('DisasterAlert');
             }
-        } else {
-            console.log("Notifikasi tidak ditampilkan karena aplikasi di foreground.");
+            await displayNotification(remoteMessage);
         }
     });
+}
+
+/**
+ * Kebutuhan running background
+ */
+export async function initBackgroundFetch() {
+    try {
+        console.log("🔹 Initializing Background Fetch...");
+        await BackgroundFetch.configure(
+            {
+                minimumFetchInterval: 15,
+                stopOnTerminate: false,
+                startOnBoot: true,
+                enableHeadless: true,
+                requiredNetworkType: BackgroundFetch.NETWORK_TYPE_ANY,
+            },
+            async (taskId) => {
+                console.log(`🔹 Background task executed: ${taskId}`);
+                await fetchDataInBackground();
+                BackgroundFetch.finish(taskId);
+            },
+            (error) => {
+                console.error("❌ Background Fetch failed to start:", error);
+            }
+        );
+
+        console.log("✅ Background Fetch started!");
+        await BackgroundFetch.start();
+        await createBackgroundTask();
+    } catch (error) {
+        console.error("❌ Error initializing background fetch:", error);
+    }
+}
+
+export const stopBackgroundTask = async () => {
+    try {
+        await BackgroundFetch.stop();
+        console.log("Background Fetch stopped");
+    } catch (error) {
+        console.error("Error stopping background fetch:", error);
+    }
+};
+
+export async function createBackgroundTask() {
+    try {
+        console.log("📝 Creating Background Task...");
+
+        await BackgroundFetch.scheduleTask({
+            taskId: "com.mhews.braga.id.fetchinbackground",
+            delay: 60000,
+            periodic: true,
+            stopOnTerminate: false,
+            startOnBoot: true,
+            requiredNetworkType: BackgroundFetch.NETWORK_TYPE_ANY,
+        });
+
+        console.log("✅ Background Task Scheduled!");
+    } catch (error) {
+        console.error("❌ Error creating background task:", error);
+    }
+}
+
+export async function fetchDataInBackground() {
+    try {
+        console.log("📡 Fetching data in background...");
+        showSyncNotification();
+
+        watchLocation(async (location) => {
+            console.log("📍 Location fetched:", location);
+            const address = await getLocationDetails(location.latitude, location.longitude);
+            console.log("🏠 Address fetched:", address);
+        });
+    } catch (error) {
+        console.error("❌ Error fetching background data:", error);
+    }
+}
+
+export async function showSyncNotification() {
+    const channelId = await notifee.createChannel({
+        id: "sync-channel",
+        name: "Sync Notifications",
+        importance: 4,
+    });
+
+    const notificationId = await notifee.displayNotification({
+        title: "Sedang Mensinkronkan Data...",
+        body: "Mohon tunggu, sedang mengambil lokasi...",
+        android: {
+            channelId,
+            importance: 4,
+        },
+    });
+
+    setTimeout(async () => {
+        await notifee.cancelNotification(notificationId);
+        console.log("🔔 Notifikasi dihapus setelah 5 detik");
+    }, 5000);
 }

@@ -1,6 +1,7 @@
 import { Platform, PermissionsAndroid } from 'react-native';
 import { request, check, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import GetLocation from 'react-native-get-location';
+import Geolocation from '@react-native-community/geolocation';
 
 const MAPBOX_ACCESS_TOKEN =
   'sk.eyJ1Ijoid2hvaXNhcnZpYW4iLCJhIjoiY203YjJkajRtMDk3cDJtczlxMDRrOTExNiJ9.61sU5Z9qNoRfQ22qdcAMzQ';
@@ -58,15 +59,41 @@ export const fetchLocation = async (): Promise<{
 
     const location = await GetLocation.getCurrentPosition({
       enableHighAccuracy: true,
-      timeout: 60000,
+      timeout: 30000,
     });
 
-    console.log('location:', location);
-    return { latitude: location.latitude, longitude: location.longitude };
+    if (location) {
+      return { latitude: location.latitude, longitude: location.longitude };
+    } else {
+      console.warn('Error fetching location');
+      return null;
+    }
   } catch (error: any) {
     console.warn('Error fetching location:', error.code, error.message);
     return null;
   }
+};
+
+export const watchLocation = (callback: (location: { latitude: number; longitude: number }) => void) => {
+  const watchId = Geolocation.watchPosition(
+    (position) => {
+      const location = { latitude: position.coords.latitude, longitude: position.coords.longitude };
+      console.log("📍 New Location:", location);
+      callback(location);
+    },
+    (error) => {
+      console.log("❌ Error watching location:", error);
+    },
+    {
+      distanceFilter: 10,
+      interval: 900000,
+      fastestInterval: 300000,
+      enableHighAccuracy: true,
+      useSignificantChanges: false,
+    }
+  );
+
+  return () => Geolocation.clearWatch(watchId);
 };
 
 export const getLocationDetails = async (

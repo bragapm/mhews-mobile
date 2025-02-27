@@ -44,6 +44,13 @@ allprojects {
                 password = project.hasProperty('MAPBOX_DOWNLOADS_TOKEN') ? project.MAPBOX_DOWNLOADS_TOKEN : ""
             }
         }
+        mavenLocal()
+        maven {
+            url("$rootDir/../node_modules/react-native/android")
+        }
+        maven {
+            url("${project(':react-native-background-fetch').projectDir}/libs")
+        }
     }
 }
 

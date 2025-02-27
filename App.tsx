@@ -1,13 +1,14 @@
-import React, {useEffect} from 'react';
+import React, { useEffect } from 'react';
 import {
   SafeAreaView,
   StatusBar,
   useColorScheme,
   StyleSheet,
   Alert,
+  Platform,
 } from 'react-native';
-import {NavigationContainer} from '@react-navigation/native';
-import {createStackNavigator} from '@react-navigation/stack';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
 import SplashScreen from './src/splash';
 import AlertProvider from './src/components/AlertContext';
 import TabNavigator from './src/(tabs)/_layout';
@@ -28,11 +29,11 @@ import DisasterAlertScreen from './src/pages/DisasterAlert';
 import EvacuationLocationScreen from './src/pages/EvacuationLocation';
 import ManageLocationsScreen from './src/pages/ManageLocations';
 import {
-  checkInitialNotification,
-  listenForForegroundNotifications,
+  initBackgroundFetch,
   requestUserPermissionFCM,
 } from './src/utils/fcm';
 import NotifEvacuateLocationScreen from './src/pages/NotifEvacuateLocation';
+import { check, PERMISSIONS, RESULTS } from 'react-native-permissions';
 const Stack = createStackNavigator();
 
 function App() {
@@ -43,18 +44,25 @@ function App() {
 
   useEffect(() => {
     requestUserPermissionFCM();
+    const requestLocationPermission = async () => {
+      const permission = Platform.select({
+        ios: PERMISSIONS.IOS.LOCATION_WHEN_IN_USE,
+        android: PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION,
+      });
 
-    checkInitialNotification((remoteMessage: any) => {
-      console.log('App dibuka dari notifikasi:', remoteMessage);
-    });
+      if (!permission) return;
 
-    const unsubscribe = listenForForegroundNotifications(
-      (remoteMessage: any) => {
-        console.log('Notifikasi diterima di foreground:', remoteMessage);
-      },
-    );
+      const result = await check(permission);
 
-    return () => unsubscribe();
+      if (result === RESULTS.GRANTED) {
+        console.log('✅ Izin lokasi sudah diberikan.');
+        await initBackgroundFetch();
+      } else {
+        console.warn('⚠ Izin lokasi belum diberikan.');
+      }
+    };
+
+    requestLocationPermission();
   }, []);
 
   return (
@@ -65,7 +73,7 @@ function App() {
             barStyle={isDarkMode ? 'light-content' : 'dark-content'}
             backgroundColor={backgroundStyle.backgroundColor}
           />
-          <Stack.Navigator screenOptions={{headerShown: false}}>
+          <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen name="Splash" component={SplashScreen} />
             <Stack.Screen name="Login" component={Login} />
             <Stack.Screen name="Signup" component={Signup} />
