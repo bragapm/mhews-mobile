@@ -60,14 +60,12 @@ const Login = () => {
           response?.data?.refresh_token,
         );
         setLoading(false);
-        // navigation.navigate("Otp", {
-        //   email: data?.email,
-        //   phone: null,
-        //   sendTo: "email",
-        //   from: "signin"
-        // });
-
-        navigation.replace('Tabs');
+        navigation.navigate('Otp', {
+          email: data?.email,
+          phone: null,
+          sendTo: 'email',
+          from: 'signin',
+        });
       } else {
         setLoading(false);
         showAlert('error', 'Login Gagal!');
