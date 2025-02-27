@@ -74,20 +74,34 @@ export const fetchLocation = async (): Promise<{
   }
 };
 
-export const watchLocation = (callback: (location: { latitude: number; longitude: number }) => void) => {
-  const watchId = Geolocation.watchPosition(
+export const watchLocation = async (callback: (location: { latitude: number; longitude: number }) => void) => {
+  const watchId = await Geolocation.watchPosition(
     (position) => {
       const location = { latitude: position.coords.latitude, longitude: position.coords.longitude };
       console.log("📍 New Location:", location);
       callback(location);
     },
-    (error) => {
+    async (error) => {
       console.log("❌ Error watching location:", error);
+
+      await Geolocation.getCurrentPosition(
+        (position) => {
+          const location = { latitude: position.coords.latitude, longitude: position.coords.longitude };
+          console.log("📍 Fallback Location:", location);
+          callback(location);
+        },
+        (err) => {
+          console.log("❌ Error getting current position:", err);
+        },
+        {
+          enableHighAccuracy: true,
+        }
+      );
     },
     {
-      distanceFilter: 10,
-      interval: 900000,
-      fastestInterval: 300000,
+      distanceFilter: 1,
+      interval: 60000,
+      fastestInterval: 30000,
       enableHighAccuracy: true,
       useSignificantChanges: false,
     }

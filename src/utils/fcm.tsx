@@ -147,7 +147,7 @@ export async function initBackgroundFetch() {
         console.log("🔹 Initializing Background Fetch...");
         await BackgroundFetch.configure(
             {
-                minimumFetchInterval: 15,
+                minimumFetchInterval: 120,
                 stopOnTerminate: false,
                 startOnBoot: true,
                 enableHeadless: true,
@@ -202,9 +202,9 @@ export async function createBackgroundTask() {
 export async function fetchDataInBackground() {
     try {
         console.log("📡 Fetching data in background...");
-        showSyncNotification();
+        await showSyncNotification();
 
-        watchLocation(async (location) => {
+        await watchLocation(async (location) => {
             console.log("📍 Location fetched:", location);
             const address = await getLocationDetails(location.latitude, location.longitude);
             console.log("🏠 Address fetched:", address);
@@ -218,7 +218,7 @@ export async function showSyncNotification() {
     const channelId = await notifee.createChannel({
         id: "sync-channel",
         name: "Sync Notifications",
-        importance: 4,
+        importance: AndroidImportance.HIGH,
     });
 
     const notificationId = await notifee.displayNotification({
@@ -226,12 +226,18 @@ export async function showSyncNotification() {
         body: "Mohon tunggu, sedang mengambil lokasi...",
         android: {
             channelId,
-            importance: 4,
+            importance: AndroidImportance.HIGH,
+            // asForegroundService: true,
+            autoCancel: true,
+            progress: {
+                indeterminate: true,
+            },
+            ticker: "Sedang memperbarui data...",
         },
     });
 
     setTimeout(async () => {
         await notifee.cancelNotification(notificationId);
-        console.log("🔔 Notifikasi dihapus setelah 5 detik");
+        console.log("📢 Notifikasi sinkronisasi dihapus.");
     }, 5000);
 }
