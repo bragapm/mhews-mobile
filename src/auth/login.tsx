@@ -10,26 +10,26 @@ import {
   ActivityIndicator,
   useColorScheme,
   StatusBar,
-} from "react-native";
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import React, { useState } from "react";
-import MaterialIcons from "react-native-vector-icons/MaterialIcons";
-import Feather from "react-native-vector-icons/Feather";
-import { useNavigation } from "@react-navigation/native";
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { postData } from "../services/apiServices";
-import COLORS from "../config/COLORS";
-import useAuthStore from "../hooks/auth";
-import { useAlert } from "../components/AlertContext";
-import { StackNavigationProp } from "@react-navigation/stack";
-import { RootStackParamList } from "../navigation/types";
+} from 'react-native';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+import React, {useState} from 'react';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import Feather from 'react-native-vector-icons/Feather';
+import {useNavigation} from '@react-navigation/native';
+import {useForm, Controller} from 'react-hook-form';
+import {zodResolver} from '@hookform/resolvers/zod';
+import {z} from 'zod';
+import {postData} from '../services/apiServices';
+import COLORS from '../config/COLORS';
+import useAuthStore from '../hooks/auth';
+import {useAlert} from '../components/AlertContext';
+import {StackNavigationProp} from '@react-navigation/stack';
+import {RootStackParamList} from '../navigation/types';
 
 // Skema validasi dengan Zod
 const signinSchema = z.object({
-  email: z.string().email("Format email tidak valid"),
-  password: z.string().min(6, "Password minimal 6 karakter"),
+  email: z.string().email('Format email tidak valid'),
+  password: z.string().min(6, 'Password minimal 6 karakter'),
 });
 
 const Login = () => {
@@ -38,14 +38,14 @@ const Login = () => {
   const colors = COLORS();
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { setAuthData, getProfile } = useAuthStore();
-  const { showAlert } = useAlert();
+  const {setAuthData, getProfile} = useAuthStore();
+  const {showAlert} = useAlert();
 
   const {
     control,
     handleSubmit,
     setError,
-    formState: { errors },
+    formState: {errors},
   } = useForm({
     resolver: zodResolver(signinSchema),
   });
@@ -53,74 +53,77 @@ const Login = () => {
   const handleSignin = async (data: any) => {
     setLoading(true);
     try {
-      const response = await postData("/auth/login", data);
+      const response = await postData('/auth/login', data);
       if (response?.data) {
-        setAuthData(response?.data?.access_token, response?.data?.refresh_token);
+        setAuthData(
+          response?.data?.access_token,
+          response?.data?.refresh_token,
+        );
         setLoading(false);
-        navigation.navigate("Otp", {
-          email: data?.email,
-          phone: null,
-          sendTo: "email",
-          from: "signin"
-        });
+        // navigation.navigate("Otp", {
+        //   email: data?.email,
+        //   phone: null,
+        //   sendTo: "email",
+        //   from: "signin"
+        // });
+
+        navigation.replace('Tabs');
       } else {
         setLoading(false);
-        showAlert("error", "Login Gagal!");
+        showAlert('error', 'Login Gagal!');
       }
     } catch (error: any) {
-      showAlert("error", error.message);
+      showAlert('error', error.message);
     }
   };
 
   const backgroundSource =
-    colorScheme === "dark"
-      ? require("../assets/images/overlay-dark.png")
-      : require("../assets/images/overlay-light.png");
+    colorScheme === 'dark'
+      ? require('../assets/images/overlay-dark.png')
+      : require('../assets/images/overlay-light.png');
   const logoSource =
-    colorScheme === "dark"
-      ? require("../assets/images/logo-dark.png")
-      : require("../assets/images/braga-logo.png");
+    colorScheme === 'dark'
+      ? require('../assets/images/logo-dark.png')
+      : require('../assets/images/braga-logo.png');
 
   return (
     <>
       <StatusBar
         translucent={true}
         backgroundColor="transparent"
-        barStyle={colorScheme === "dark" ? "light-content" : "dark-content"}
+        barStyle={colorScheme === 'dark' ? 'light-content' : 'dark-content'}
       />
       <ImageBackground
         source={backgroundSource}
         style={styles.background}
-        resizeMode="cover"
-      >
+        resizeMode="cover">
         <View style={styles.container}>
           <KeyboardAwareScrollView
-            contentContainerStyle={{ flexGrow: 1 }}
+            contentContainerStyle={{flexGrow: 1}}
             keyboardShouldPersistTaps="handled"
             enableOnAndroid={true}
-            extraScrollHeight={20}
-          >
+            extraScrollHeight={20}>
             {/* Header */}
-            <View style={{ marginLeft: 15, marginTop: 25 }}>
+            <View style={{marginLeft: 15, marginTop: 25}}>
               <Image
                 source={logoSource}
-                style={{ width: 150, height: 50, resizeMode: "contain" }}
+                style={{width: 150, height: 50, resizeMode: 'contain'}}
               />
             </View>
 
             {/* Title */}
-            <View style={{ marginBottom: 20 }}>
-              <Text style={[styles.title, { color: colors.text }]}>
+            <View style={{marginBottom: 20}}>
+              <Text style={[styles.title, {color: colors.text}]}>
                 Selamat datang di
               </Text>
-              <Text style={[styles.title, { color: colors.text }]}>
+              <Text style={[styles.title, {color: colors.text}]}>
                 Aplikasi MHEWS
               </Text>
             </View>
 
             {/* Form Login */}
-            <View style={[styles.card, { backgroundColor: colors.background }]}>
-              <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            <View style={[styles.card, {backgroundColor: colors.background}]}>
+              <Text style={[styles.sectionTitle, {color: colors.text}]}>
                 Masuk
               </Text>
 
@@ -128,7 +131,7 @@ const Login = () => {
               <Controller
                 control={control}
                 name="email"
-                render={({ field: { onChange, value } }) => (
+                render={({field: {onChange, value}}) => (
                   <View
                     style={[
                       styles.inputContainer,
@@ -136,8 +139,7 @@ const Login = () => {
                         borderColor: colors.border,
                         backgroundColor: colors.background,
                       },
-                    ]}
-                  >
+                    ]}>
                     <MaterialIcons
                       name="email"
                       size={24}
@@ -171,7 +173,7 @@ const Login = () => {
               <Controller
                 control={control}
                 name="password"
-                render={({ field: { onChange, value } }) => (
+                render={({field: {onChange, value}}) => (
                   <View
                     style={[
                       styles.inputContainer,
@@ -179,8 +181,7 @@ const Login = () => {
                         borderColor: colors.border,
                         backgroundColor: colors.background,
                       },
-                    ]}
-                  >
+                    ]}>
                     <MaterialIcons
                       name="lock"
                       size={24}
@@ -202,10 +203,9 @@ const Login = () => {
                       placeholderTextColor={colors.text}
                     />
                     <TouchableOpacity
-                      onPress={() => setIsPasswordVisible(!isPasswordVisible)}
-                    >
+                      onPress={() => setIsPasswordVisible(!isPasswordVisible)}>
                       <Feather
-                        name={isPasswordVisible ? "eye" : "eye-off"}
+                        name={isPasswordVisible ? 'eye' : 'eye-off'}
                         size={24}
                         color={colors.text}
                       />
@@ -222,8 +222,7 @@ const Login = () => {
               <TouchableOpacity
                 style={styles.button}
                 onPress={handleSubmit(handleSignin)}
-                disabled={loading}
-              >
+                disabled={loading}>
                 {loading ? (
                   <ActivityIndicator size="small" color="#fff" />
                 ) : (
@@ -234,37 +233,34 @@ const Login = () => {
               {/* Additional Buttons */}
               <View
                 style={{
-                  flexDirection: "row",
-                  alignItems: "center",
+                  flexDirection: 'row',
+                  alignItems: 'center',
                   marginVertical: 10,
-                }}
-              >
-                <View style={{ flex: 1, height: 1, backgroundColor: "#ccc" }} />
+                }}>
+                <View style={{flex: 1, height: 1, backgroundColor: '#ccc'}} />
                 <Text
                   style={[
                     styles.orText,
                     {
                       marginHorizontal: 10,
-                      textAlign: "center",
+                      textAlign: 'center',
                       color: colors.text,
                     },
-                  ]}
-                >
+                  ]}>
                   atau
                 </Text>
-                <View style={{ flex: 1, height: 1, backgroundColor: "#ccc" }} />
+                <View style={{flex: 1, height: 1, backgroundColor: '#ccc'}} />
               </View>
 
               {/* Tombol Masuk dengan Google */}
               <TouchableOpacity
                 style={[
                   styles.altButton,
-                  { backgroundColor: colors.background },
-                ]}
-              >
+                  {backgroundColor: colors.background},
+                ]}>
                 {/* <AntDesign name="google" size={24} color="#DB4437" /> */}
                 <Image
-                  source={require("../assets/images/google.png")}
+                  source={require('../assets/images/google.png')}
                   style={styles.iconImage}
                 />
                 <Text style={styles.altText}>Masuk dengan Google</Text>
@@ -274,11 +270,10 @@ const Login = () => {
               <TouchableOpacity
                 style={[
                   styles.altButton,
-                  { backgroundColor: colors.background },
-                ]}
-              >
+                  {backgroundColor: colors.background},
+                ]}>
                 <Image
-                  source={require("../assets/icons/bnpb-logo.png")}
+                  source={require('../assets/icons/bnpb-logo.png')}
                   style={styles.iconImage}
                 />
                 <Text style={styles.altText}>Masuk dengan SSO BNPB</Text>
@@ -288,11 +283,10 @@ const Login = () => {
               <TouchableOpacity
                 style={[
                   styles.altButton,
-                  { backgroundColor: colors.background },
-                ]}
-              >
+                  {backgroundColor: colors.background},
+                ]}>
                 <Image
-                  source={require("../assets/images/guest.png")}
+                  source={require('../assets/images/guest.png')}
                   style={styles.iconImage}
                 />
                 {/* <MaterialIcons name="person-outline" size={24} color="black" /> */}
@@ -302,15 +296,14 @@ const Login = () => {
               {/* Link Daftar */}
               <View
                 style={{
-                  flexDirection: "row",
-                  justifyContent: "center",
+                  flexDirection: 'row',
+                  justifyContent: 'center',
                   marginTop: 20,
-                }}
-              >
-                <Text style={{ fontSize: 16, color: colors.text }}>
+                }}>
+                <Text style={{fontSize: 16, color: colors.text}}>
                   Belum punya akun?
                 </Text>
-                <TouchableOpacity onPress={() => navigation.navigate("Signup")}>
+                <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
                   <Text style={styles.registerText}> Daftar Disini</Text>
                 </TouchableOpacity>
               </View>
@@ -327,51 +320,51 @@ export default Login;
 const styles = StyleSheet.create({
   background: {
     flex: 1,
-    width: "100%",
-    height: "100%",
+    width: '100%',
+    height: '100%',
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(255, 255, 255, 0.8)",
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
   },
   container: {
     flex: 1,
   },
   logo: {
     fontSize: 20,
-    fontWeight: "bold",
-    color: "black",
+    fontWeight: 'bold',
+    color: 'black',
   },
   title: {
     fontSize: 24,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     marginLeft: 15,
   },
   card: {
-    position: "absolute",
+    position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: "rgba(255, 255, 255, 0.9)",
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
     padding: 20,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    width: "100%",
+    width: '100%',
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     marginBottom: 10,
   },
   inputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "white",
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'white',
     borderRadius: 10,
     marginBottom: 10,
     paddingHorizontal: 10,
     borderWidth: 1,
-    borderColor: "#E0E0E0",
+    borderColor: '#E0E0E0',
   },
   inputIcon: {
     marginRight: 10,
@@ -385,51 +378,51 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   button: {
-    backgroundColor: "#F36A1D",
+    backgroundColor: '#F36A1D',
     paddingVertical: 15,
     borderRadius: 10,
     marginTop: 10,
   },
   textButton: {
-    color: "white",
-    fontWeight: "bold",
-    textAlign: "center",
+    color: 'white',
+    fontWeight: 'bold',
+    textAlign: 'center',
     fontSize: 18,
   },
   orText: {
-    textAlign: "center",
+    textAlign: 'center',
     marginVertical: 10,
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   altButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "white",
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'white',
     paddingVertical: 12,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: "#F36A1D",
+    borderColor: '#F36A1D',
     marginTop: 10,
     paddingHorizontal: 10,
   },
   altText: {
     flex: 1,
     fontSize: 16,
-    fontWeight: "bold",
-    textAlign: "center",
-    color: "#F36A1D",
+    fontWeight: 'bold',
+    textAlign: 'center',
+    color: '#F36A1D',
   },
   iconImage: {
     width: 24,
     height: 24,
-    resizeMode: "contain",
-    alignSelf: "flex-start",
+    resizeMode: 'contain',
+    alignSelf: 'flex-start',
   },
   registerText: {
     fontSize: 16,
-    color: "#F36A1D",
-    fontWeight: "bold",
+    color: '#F36A1D',
+    fontWeight: 'bold',
   },
-  errorText: { color: "red", fontSize: 14, marginBottom: 10 },
+  errorText: {color: 'red', fontSize: 14, marginBottom: 10},
 });

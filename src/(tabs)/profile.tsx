@@ -13,20 +13,20 @@ import {
 } from 'react-native';
 import COLORS from '../config/COLORS';
 import LinearGradient from 'react-native-linear-gradient';
-import { useEffect, useState } from 'react';
+import {useEffect, useState} from 'react';
 import Modal from 'react-native-modal';
 import useAuthStore from '../hooks/auth';
-import { useNavigation } from '@react-navigation/native';
+import {useNavigation} from '@react-navigation/native';
 import FloatingSOSButton from '../components/FloatingSOSButton';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../navigation/types';
+import {StackNavigationProp} from '@react-navigation/stack';
+import {RootStackParamList} from '../navigation/types';
 
 export default function ProfileScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [emergencyMessage, setEmergencyMessage] = useState('');
   const reset = useAuthStore(state => state.reset);
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
-  const { profile, getProfile } = useAuthStore();
+  const {profile, getProfile} = useAuthStore();
   const colorScheme = useColorScheme();
   const colors = COLORS();
   const iconQuestion = require('../assets/icons/questionCircle.png');
@@ -127,12 +127,12 @@ export default function ProfileScreen() {
           <View style={styles.container}>
             <View style={styles.header}>
               <View style={styles.headerTextContainer}>
-                <Text style={[styles.greeting, { color: colors.text }]}>
+                <Text style={[styles.greeting, {color: colors.text}]}>
                   Profil Saya
                 </Text>
               </View>
             </View>
-            <View style={[styles.card, { borderColor: colors.borderTwo }]}>
+            <View style={[styles.card, {borderColor: colors.borderTwo}]}>
               <LinearGradient
                 colors={[
                   colors.gradientStartProfile,
@@ -155,16 +155,16 @@ export default function ProfileScreen() {
                   ]}>
                   <Image
                     source={require('../assets/images/avatar.png')}
-                    style={{ width: 54, height: 54, resizeMode: 'cover' }}
+                    style={{width: 54, height: 54, resizeMode: 'cover'}}
                   />
                   <View style={styles.textContent}>
-                    <Text style={[styles.cardTitle, { color: colors.text }]}>
+                    <Text style={[styles.cardTitle, {color: colors.text}]}>
                       {profile?.first_name} {profile?.last_name}
                     </Text>
-                    <Text style={[styles.txtSubTitle, { color: colors.text }]}>
+                    <Text style={[styles.txtSubTitle, {color: colors.text}]}>
                       {profile?.NIK}
                     </Text>
-                    <Text style={[styles.txtSubTitle, { color: colors.text }]}>
+                    <Text style={[styles.txtSubTitle, {color: colors.text}]}>
                       {profile?.email}
                     </Text>
                   </View>
@@ -201,7 +201,7 @@ export default function ProfileScreen() {
                       <Text
                         style={[
                           styles.textOption,
-                          { color: item.isExit ? colors.exit : colors.text },
+                          {color: item.isExit ? colors.exit : colors.text},
                         ]}>
                         {item.title}
                       </Text>
@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingBottom: 20,
   },
-  container: { flex: 1, padding: 16, marginTop: '5%' },
+  container: {flex: 1, padding: 16, marginTop: '5%'},
   background: {
     flex: 1,
     width: '100%',
