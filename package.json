@@ -34,6 +34,7 @@
     "react-native": "^0.76.7",
     "react-native-background-actions": "^4.0.1",
     "react-native-background-fetch": "^4.2.7",
+    "react-native-background-geolocation": "^4.18.6",
     "react-native-calendars": "^1.1309.1",
     "react-native-confirmation-code-field": "^7.4.0",
     "react-native-device-info": "^14.0.4",

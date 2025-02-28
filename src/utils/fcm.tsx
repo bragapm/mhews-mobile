@@ -5,6 +5,7 @@ import { navigate } from '../navigation/RootNavigation';
 import BackgroundFetch from 'react-native-background-fetch';
 import { fetchLocation, getLocationDetails, watchLocation } from './locationUtils';
 import BackgroundService from 'react-native-background-actions';
+import BackgroundGeolocation from 'react-native-background-geolocation';
 
 /**
  * Meminta izin untuk menerima notifikasi push
@@ -147,7 +148,7 @@ export async function initBackgroundFetch() {
         console.log("🔹 Initializing Background Fetch...");
         await BackgroundFetch.configure(
             {
-                minimumFetchInterval: 120,
+                minimumFetchInterval: 15,
                 stopOnTerminate: false,
                 startOnBoot: true,
                 enableHeadless: true,
@@ -183,7 +184,6 @@ export const stopBackgroundTask = async () => {
 export async function createBackgroundTask() {
     try {
         console.log("📝 Creating Background Task...");
-
         await BackgroundFetch.scheduleTask({
             taskId: "com.mhews.braga.id.fetchinbackground",
             delay: 60000,
@@ -204,13 +204,23 @@ export async function fetchDataInBackground() {
         console.log("📡 Fetching data in background...");
         await showSyncNotification();
 
-        await watchLocation(async (location) => {
-            console.log("📍 Location fetched:", location);
-            const address = await getLocationDetails(location.latitude, location.longitude);
-            console.log("🏠 Address fetched:", address);
+        const location = await BackgroundGeolocation.getCurrentPosition({
+            samples: 3,
+            extras: {
+                "event": "getCurrentPosition"
+            }
         });
+        if (location) {
+            console.log("📍 Location fetched:", location);
+            const address = await getLocationDetails(location?.coords?.latitude, location?.coords?.longitude);
+            console.log("🏠 Address fetched:", address);
+            await notifee.stopForegroundService();
+            console.log("📢 Notifikasi sinkronisasi dihapus.");
+        }
+        console.log('[getCurrentPosition]', location);
     } catch (error) {
         console.error("❌ Error fetching background data:", error);
+        await notifee.stopForegroundService();
     }
 }
 
@@ -221,23 +231,18 @@ export async function showSyncNotification() {
         importance: AndroidImportance.HIGH,
     });
 
-    const notificationId = await notifee.displayNotification({
+    await notifee.displayNotification({
         title: "Sedang Mensinkronkan Data...",
         body: "Mohon tunggu, sedang mengambil lokasi...",
         android: {
             channelId,
             importance: AndroidImportance.HIGH,
-            // asForegroundService: true,
-            autoCancel: true,
+            asForegroundService: true,
+            autoCancel: false,
             progress: {
                 indeterminate: true,
             },
             ticker: "Sedang memperbarui data...",
         },
     });
-
-    setTimeout(async () => {
-        await notifee.cancelNotification(notificationId);
-        console.log("📢 Notifikasi sinkronisasi dihapus.");
-    }, 5000);
 }
