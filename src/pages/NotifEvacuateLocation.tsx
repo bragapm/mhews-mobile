@@ -70,6 +70,7 @@ const NotifEvacuateLocationScreen = () => {
   const [evacuationCenters, setEvacuationCenters] = useState<
     EvacuationLocation[]
   >([]);
+  // console.log('evacuationCenters', JSON.stringify(evacuationCenters));
 
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
 
@@ -393,6 +394,7 @@ const NotifEvacuateLocationScreen = () => {
       const response = await getData(`items/titik_evakuasi`, {
         headers: {Authorization: `Bearer ${token}`},
       });
+      // console.log('dataa', JSON.stringify(response?.data));
       if (!response) throw new Error('Gagal mengambil data');
 
       // Asumsikan response adalah array data
@@ -402,9 +404,9 @@ const NotifEvacuateLocationScreen = () => {
         distance: '', // nanti akan dihitung
         duration: '', // nanti akan dihitung
         status: 'Tersedia', // Default status, sesuaikan jika perlu
-        address: item.alamat,
-        coordinate: item.geom.coordinates, // Pastikan format [longitude, latitude]
-        type: getAbbreviation(item.jenis_titik_kumpul),
+        address: item?.alamat,
+        coordinate: item?.geom?.coordinates, // Pastikan format [longitude, latitude]
+        type: getAbbreviation(item?.jenis_titik_kumpul),
       }));
       setEvacuationCenters(transformedData);
     } catch (error) {

@@ -41,6 +41,7 @@ interface EvacuationLocation {
   address: string;
   coordinate: [number, number];
   type: string;
+  jenisTitikKumpul?: string;
 }
 
 interface TransportModeItem {
@@ -72,6 +73,14 @@ const EvacuationLocationScreen = () => {
     EvacuationLocation[]
   >([]);
 
+  const [jenisTitikKumpulList, setJenisTitikKumpulList] = useState<string[]>(
+    [],
+  );
+  const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
+
+  const isSemuaSelected =
+    selectedFilters.length === jenisTitikKumpulList.length &&
+    jenisTitikKumpulList.length > 0;
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
 
   // Lokasi evakuasi yang dipilih => menampilkan modal detail
@@ -410,6 +419,7 @@ const EvacuationLocationScreen = () => {
         address: item.alamat,
         coordinate: item.geom.coordinates, // Pastikan format [longitude, latitude]
         type: getAbbreviation(item.jenis_titik_kumpul),
+        jenisTitikKumpul: item.jenis_titik_kumpul,
       }));
       setEvacuationCenters(transformedData);
     } catch (error) {
@@ -428,8 +438,47 @@ const EvacuationLocationScreen = () => {
     fetchData();
   }, [userLocation]);
 
-  // Misal di atas komponen
-  // Misal di atas komponen
+  useEffect(() => {
+    if (evacuationCenters.length > 0) {
+      const uniqueTypes = Array.from(
+        new Set(
+          evacuationCenters
+            .map(ec => ec.jenisTitikKumpul)
+            .filter((v): v is string => Boolean(v)),
+        ),
+      );
+      setJenisTitikKumpulList(uniqueTypes);
+    }
+  }, [evacuationCenters]);
+
+  const handleFilterPress = (filter: string) => {
+    if (filter === 'semua') {
+      if (isSemuaSelected) {
+        setSelectedFilters([]);
+      } else {
+        setSelectedFilters([...jenisTitikKumpulList]);
+      }
+      return;
+    }
+
+    if (selectedFilters.includes(filter)) {
+      const newFilters = selectedFilters.filter(f => f !== filter);
+      setSelectedFilters(newFilters);
+    } else {
+      const newFilters = [...selectedFilters, filter];
+      setSelectedFilters(newFilters);
+    }
+  };
+
+  const filteredEvacuationCenters = (() => {
+    if (selectedFilters.length === 0 || isSemuaSelected) {
+      return evacuationCenters;
+    }
+    return evacuationCenters.filter(center =>
+      selectedFilters.includes(center.jenisTitikKumpul || ''),
+    );
+  })();
+
   const getCustomStepDescription = (step: any) => {
     if (!step) return '';
 
@@ -504,10 +553,6 @@ const EvacuationLocationScreen = () => {
     if (mod.includes('uturn')) return arrowIconsSm.uturn;
     return arrowIcons.straight; // fallback
   }
-
-  // const goBack = () => {
-  //   navigation.replace('Tabs');
-  // };
 
   return (
     <View style={styles.container}>
@@ -592,7 +637,7 @@ const EvacuationLocationScreen = () => {
           )}
 
           {/* Marker evakuasi */}
-          {evacuationCenters.map(item => (
+          {filteredEvacuationCenters?.map(item => (
             <React.Fragment key={item.id}>
               <MapboxGL.ShapeSource
                 id={`markerEvacuate-${item.id}`}
@@ -654,38 +699,90 @@ const EvacuationLocationScreen = () => {
       </View>
 
       {/* Tombol Back */}
-      <View style={styles.headerContainer}>
-        <TouchableOpacity
-          style={[styles.headerBackButton, {backgroundColor: colors.bg}]}
-          onPress={goBack}>
-          <AntDesign name="arrowleft" size={24} color={colors.text} />
-        </TouchableOpacity>
-        {/* Search Bar */}
-        <TouchableOpacity
-          style={[styles.headerSearchContainer, {backgroundColor: colors.bg}]}
-          onPress={() => setModalVisible(true)}>
-          <Feather
-            name="search"
-            size={18}
-            color={colors.tabIconDefault}
-            style={styles.headerSearchIcon}
-          />
-          <View style={styles.headerSearchInput}>
-            <Text style={styles.searchText}>
-              {searchQuery || 'Cari Lokasi'}
-            </Text>
-          </View>
-        </TouchableOpacity>
+      {!showRoutePanel && (
+        <>
+          <View style={styles.headerContainer}>
+            <TouchableOpacity
+              style={[styles.headerBackButton, {backgroundColor: colors.bg}]}
+              onPress={goBack}>
+              <AntDesign name="arrowleft" size={24} color={colors.text} />
+            </TouchableOpacity>
+            {/* Search Bar */}
+            <View
+              style={{
+                width: '85%',
+                alignItems: 'center',
+                justifyContent: 'flex-end',
+                marginLeft: '10%',
+              }}>
+              <TouchableOpacity
+                style={[
+                  styles.headerSearchContainer,
+                  {backgroundColor: colors.bg},
+                ]}
+                onPress={() => setModalVisible(true)}>
+                <Feather
+                  name="search"
+                  size={18}
+                  color={colors.tabIconDefault}
+                  style={styles.headerSearchIcon}
+                />
+                <View style={styles.headerSearchInput}>
+                  <Text style={styles.searchText}>
+                    {searchQuery || 'Cari Lokasi'}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            </View>
 
-        {/* Tombol Filter */}
-        <TouchableOpacity
+            {/* Tombol Filter */}
+            {/* <TouchableOpacity
           style={[styles.headerFilterButton, {backgroundColor: colors.bg}]}
           onPress={() => setFilterVisible(true)}>
           <Ionicons name="options" size={24} color={colors.text} />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
-        {/* Filter Bencana */}
-      </View>
+            {/* Filter Bencana */}
+          </View>
+          <FlatList
+            data={['semua', ...jenisTitikKumpulList]}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            keyExtractor={(item, index) => index.toString()}
+            style={{position: 'absolute', top: 110}}
+            contentContainerStyle={{paddingLeft: 10, paddingTop: '2%'}}
+            renderItem={({item}) => {
+              // Apakah chip ini sedang aktif?
+              let isSelected = false;
+              if (item === 'semua') {
+                // "semua" aktif kalau isSemuaSelected = true
+                isSelected = isSemuaSelected;
+              } else {
+                // Filter biasa
+                isSelected = selectedFilters.includes(item);
+              }
+
+              return (
+                <TouchableOpacity
+                  style={[
+                    styles.chip,
+                    isSelected && styles.chipSelected,
+                    {backgroundColor: colors.bg},
+                  ]}
+                  onPress={() => handleFilterPress(item)}>
+                  <Text
+                    style={{
+                      color: isSelected ? '#F36A1D' : colors.text,
+                      fontSize: 12,
+                    }}>
+                    {item === 'semua' ? 'Semua' : item}
+                  </Text>
+                </TouchableOpacity>
+              );
+            }}
+          />
+        </>
+      )}
 
       {/* Tombol Locate Me */}
       <TouchableOpacity
@@ -739,7 +836,7 @@ const EvacuationLocationScreen = () => {
           </View>
 
           <FlatList
-            data={evacuationCenters}
+            data={filteredEvacuationCenters}
             keyExtractor={item => item.id.toString()}
             // horizontal
             showsHorizontalScrollIndicator={false}
@@ -890,7 +987,7 @@ const EvacuationLocationScreen = () => {
                   },
                 ]}
                 onPress={handleShowRoute}>
-                <Text style={styles.routeButtonText}>
+                <Text style={[styles.routeButtonText, {color: '#CD541B'}]}>
                   Simulasi Rute Evakuasi
                 </Text>
               </TouchableOpacity>
@@ -901,7 +998,11 @@ const EvacuationLocationScreen = () => {
 
       {/* Panel Rute (memilih moda, menampilkan estimasi, dsb) */}
       {selectedCenter && showRoutePanel && (
-        <View style={[styles.routePanel, {backgroundColor: colors.bg}]}>
+        <View
+          style={[
+            styles.bottomSheet,
+            {height: bottomSheetHeight, backgroundColor: colors.bg},
+          ]}>
           {/* Tombol Tutup Panel */}
           {/* <TouchableOpacity
             style={styles.closeRouteButton}
@@ -969,45 +1070,53 @@ const EvacuationLocationScreen = () => {
           </Text>
 
           {/* Pilihan Moda Transportasi */}
-          <FlatList
-            data={transportModesData}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            keyExtractor={item => item.mode}
-            contentContainerStyle={{
-              paddingRight: '8%',
-              marginBottom: '2%',
-            }}
-            renderItem={({item}) => {
-              const isSelected = selectedMode === item.mode;
-              return (
-                <TouchableOpacity
-                  style={[
-                    styles.transportModeButton,
-                    isSelected && styles.transportModeActive,
-                    {backgroundColor: colors.bg},
-                  ]}
-                  onPress={() => handleChangeMode(item.mode)}>
-                  <Image
-                    source={isSelected ? item.iconActive : item.iconDefault}
-                    style={{
-                      width: 20,
-                      height: 15,
-                      resizeMode: 'contain',
-                      marginRight: '2%',
-                    }}
-                  />
-                  <Text
+          <View
+            style={{
+              width: '100%',
+              alignItems: 'center',
+              justifyContent: 'center',
+              paddingVertical: '3%',
+            }}>
+            <FlatList
+              data={transportModesData}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              keyExtractor={item => item.mode}
+              contentContainerStyle={{
+                paddingRight: '8%',
+                // marginBottom: '5%',
+              }}
+              renderItem={({item}) => {
+                const isSelected = selectedMode === item.mode;
+                return (
+                  <TouchableOpacity
                     style={[
-                      styles.transportModeText && {color: colors.info},
-                      isSelected && {color: '#f57c00'},
-                    ]}>
-                    {item.label}
-                  </Text>
-                </TouchableOpacity>
-              );
-            }}
-          />
+                      styles.transportModeButton,
+                      isSelected && styles.transportModeActive,
+                      {backgroundColor: colors.bg},
+                    ]}
+                    onPress={() => handleChangeMode(item.mode)}>
+                    <Image
+                      source={isSelected ? item.iconActive : item.iconDefault}
+                      style={{
+                        width: 20,
+                        height: 15,
+                        resizeMode: 'contain',
+                        marginRight: '2%',
+                      }}
+                    />
+                    <Text
+                      style={[
+                        styles.transportModeText && {color: colors.info},
+                        isSelected && {color: '#f57c00'},
+                      ]}>
+                      {item.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              }}
+            />
+          </View>
 
           <Text
             style={{
@@ -1021,6 +1130,10 @@ const EvacuationLocationScreen = () => {
           <FlatList
             data={routeSteps}
             keyExtractor={(_, index) => index.toString()}
+            contentContainerStyle={{
+              marginTop: '2%',
+              paddingBottom: '5%',
+            }}
             renderItem={({item}) => (
               <View style={styles.stepItemContainer}>
                 {/* Icon Arah (opsional) */}
@@ -1464,23 +1577,25 @@ const styles = StyleSheet.create({
     shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.2,
     shadowRadius: 4,
+    width: '100%',
   },
-  headerFilterButton: {
-    position: 'absolute',
-    top: 20,
-    right: 15,
-    backgroundColor: 'rgb(255, 255, 255)',
-    padding: 8,
-    borderRadius: 10,
-  },
+  // headerFilterButton: {
+  //   position: 'absolute',
+  //   top: 20,
+  //   right: 15,
+  //   backgroundColor: 'rgb(255, 255, 255)',
+  //   padding: 8,
+  //   borderRadius: 10,
+  // },
   headerSearchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgb(255, 255, 255)',
     borderRadius: 8,
     paddingHorizontal: 10,
-    width: '70%',
+    width: '100%',
     marginVertical: 10,
+    // marginLeft: '10%',
   },
   headerSearchIcon: {
     marginRight: 5,
@@ -1501,6 +1616,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgb(255, 255, 255)',
     padding: 8,
     borderRadius: 10,
+    width: '10%',
   },
   stepItemContainer: {
     flexDirection: 'row',
@@ -1515,5 +1631,27 @@ const styles = StyleSheet.create({
   stepDistance: {
     fontSize: 12,
     color: '#888',
+  },
+  chip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgb(255, 255, 255)',
+    borderRadius: 10,
+    marginRight: 8,
+    marginBottom: 8,
+    borderWidth: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    marginHorizontal: 5,
+  },
+  chipSelected: {borderColor: '#f36a1d'},
+  headerAlertContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#e74c3c',
+    padding: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+    width: '90%',
+    justifyContent: 'space-between',
   },
 });
