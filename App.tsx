@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, {useEffect} from 'react';
 import {
   SafeAreaView,
   StatusBar,
@@ -7,8 +7,8 @@ import {
   Alert,
   Platform,
 } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
+import {NavigationContainer} from '@react-navigation/native';
+import {createStackNavigator} from '@react-navigation/stack';
 import SplashScreen from './src/splash';
 import AlertProvider from './src/components/AlertContext';
 import TabNavigator from './src/(tabs)/_layout';
@@ -28,12 +28,10 @@ import FindFamilyScreen from './src/pages/account/FindFamily';
 import DisasterAlertScreen from './src/pages/DisasterAlert';
 import EvacuationLocationScreen from './src/pages/EvacuationLocation';
 import ManageLocationsScreen from './src/pages/ManageLocations';
-import {
-  initBackgroundFetch,
-  requestUserPermissionFCM,
-} from './src/utils/fcm';
+import {initBackgroundFetch, requestUserPermissionFCM} from './src/utils/fcm';
 import NotifEvacuateLocationScreen from './src/pages/NotifEvacuateLocation';
-import { check, PERMISSIONS, RESULTS } from 'react-native-permissions';
+import {check, PERMISSIONS, RESULTS} from 'react-native-permissions';
+import {SOSModalProvider} from './src/components/GlobalSOSModal';
 const Stack = createStackNavigator();
 
 function App() {
@@ -68,52 +66,57 @@ function App() {
   return (
     <AlertProvider>
       <NavigationContainer>
-        <SafeAreaView style={[styles.safeArea, backgroundStyle]}>
-          <StatusBar
-            barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-            backgroundColor={backgroundStyle.backgroundColor}
-          />
-          <Stack.Navigator screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="Splash" component={SplashScreen} />
-            <Stack.Screen name="Login" component={Login} />
-            <Stack.Screen name="Signup" component={Signup} />
-            <Stack.Screen name="Otp" component={OTPConfirmation} />
-            <Stack.Screen name="Tabs" component={TabNavigator} />
-            <Stack.Screen name="Profile" component={ProfileScreen} />
-            <Stack.Screen name="EditProfile" component={EditProfileScreen} />
-            <Stack.Screen
-              name="ChangePassword"
-              component={ChangePasswordScreen}
+        <SOSModalProvider>
+          <SafeAreaView style={[styles.safeArea, backgroundStyle]}>
+            <StatusBar
+              barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+              backgroundColor={backgroundStyle.backgroundColor}
             />
-            <Stack.Screen
-              name="FamilyProfile"
-              component={FamilyProfileScreen}
-            />
-            <Stack.Screen name="FamilyList" component={FamilyListScreen} />
-            <Stack.Screen name="FindFamily" component={FindFamilyScreen} />
-            <Stack.Screen name="Language" component={LanguageScreen} />
-            <Stack.Screen name="AboutUs" component={AboutUsScreen} />
-            <Stack.Screen name="HelpCenter" component={HelpCenterScreen} />
-            <Stack.Screen name="DisasterRisk" component={DisasterRiskScreen} />
-            <Stack.Screen
-              name="ManageLocations"
-              component={ManageLocationsScreen}
-            />
-            {/* Full screen notif */}
-            <Stack.Screen
-              name="DisasterAlert"
-              component={DisasterAlertScreen}
-            />
-            <Stack.Screen
-              name="EvacuationLocation"
-              component={EvacuationLocationScreen}
-            />
-            <Stack.Screen
-              name="NotifEvacuateLocationScreen"
-              component={NotifEvacuateLocationScreen}
-            />
-          </Stack.Navigator>
-        </SafeAreaView>
+            <Stack.Navigator screenOptions={{headerShown: false}}>
+              <Stack.Screen name="Splash" component={SplashScreen} />
+              <Stack.Screen name="Login" component={Login} />
+              <Stack.Screen name="Signup" component={Signup} />
+              <Stack.Screen name="Otp" component={OTPConfirmation} />
+              <Stack.Screen name="Tabs" component={TabNavigator} />
+              <Stack.Screen name="Profile" component={ProfileScreen} />
+              <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+              <Stack.Screen
+                name="ChangePassword"
+                component={ChangePasswordScreen}
+              />
+              <Stack.Screen
+                name="FamilyProfile"
+                component={FamilyProfileScreen}
+              />
+              <Stack.Screen name="FamilyList" component={FamilyListScreen} />
+              <Stack.Screen name="FindFamily" component={FindFamilyScreen} />
+              <Stack.Screen name="Language" component={LanguageScreen} />
+              <Stack.Screen name="AboutUs" component={AboutUsScreen} />
+              <Stack.Screen name="HelpCenter" component={HelpCenterScreen} />
+              <Stack.Screen
+                name="DisasterRisk"
+                component={DisasterRiskScreen}
+              />
+              <Stack.Screen
+                name="ManageLocations"
+                component={ManageLocationsScreen}
+              />
+              {/* Full screen notif */}
+              <Stack.Screen
+                name="DisasterAlert"
+                component={DisasterAlertScreen}
+              />
+              <Stack.Screen
+                name="EvacuationLocation"
+                component={EvacuationLocationScreen}
+              />
+              <Stack.Screen
+                name="NotifEvacuateLocationScreen"
+                component={NotifEvacuateLocationScreen}
+              />
+            </Stack.Navigator>
+          </SafeAreaView>
+        </SOSModalProvider>
       </NavigationContainer>
     </AlertProvider>
   );

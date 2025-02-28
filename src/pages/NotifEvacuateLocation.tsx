@@ -23,6 +23,7 @@ import {StackNavigationProp} from '@react-navigation/stack';
 import {RootStackParamList} from '../navigation/types';
 import useAuthStore from '../hooks/auth';
 import {getData} from '../services/apiServices';
+import {useSOSModal} from '../components/GlobalSOSModal';
 
 // Ganti dengan token Mapbox Anda
 const MAPBOX_ACCESS_TOKEN =
@@ -61,6 +62,7 @@ interface MapboxStep {
 type TransportMode = 'mobil' | 'motor' | 'umum' | 'jalan';
 
 const NotifEvacuateLocationScreen = () => {
+  const {showModal} = useSOSModal();
   const token = useAuthStore(state => state.token);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(
     null,
@@ -89,6 +91,7 @@ const NotifEvacuateLocationScreen = () => {
   // STEPS RUTE
   const [routeSteps, setRouteSteps] = useState<any[]>([]);
   const [isGuidanceActive, setIsGuidanceActive] = useState(false);
+  
 
   // Map & Camera
   const mapRef = useRef<MapboxGL.MapView | null>(null);
@@ -974,6 +977,7 @@ const NotifEvacuateLocationScreen = () => {
                 <Image
                   source={getChevronIcon(routeSteps[0]?.maneuver?.modifier)}
                   style={{width: 20, height: 20}}
+                  resizeMode="contain"
                 />
               </View>
               <View
@@ -1009,6 +1013,7 @@ const NotifEvacuateLocationScreen = () => {
                       : iconJalanKakiActive
                   }
                   style={styles.transportIcon}
+                  resizeMode="contain"
                 />
               </View>
             </View>
@@ -1020,7 +1025,8 @@ const NotifEvacuateLocationScreen = () => {
               <View style={{flexDirection: 'row', alignItems: 'center'}}>
                 <Image
                   source={getChevronIconSm(routeSteps[1]?.maneuver?.modifier)}
-                  style={{width: 15, height: 15, marginRight: '2%'}}
+                  style={{width: 15, height: 15, marginRight: '5%'}}
+                  resizeMode="contain"
                 />
 
                 <Text style={styles.nextStepText}>
@@ -1066,16 +1072,17 @@ const NotifEvacuateLocationScreen = () => {
               <TouchableOpacity
                 style={styles.arrivedButton}
                 onPress={() => {
-                  // Jika ditekan "Saya Sudah Sampai"
                   setIsGuidanceActive(false);
                   setRouteSteps([]);
                   setSelectedCenter(null);
                   setRouteCoords(null);
+                  setShowRoutePanel(false); // Tambahkan ini untuk menutup panel rute
                 }}>
                 <Text style={styles.arrivedButtonText}>Saya Sudah Sampai</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
+                onPress={showModal}
                 style={[
                   styles.sosButton,
                   {
@@ -1084,7 +1091,9 @@ const NotifEvacuateLocationScreen = () => {
                     borderColor: '#C4432C',
                   },
                 ]}>
-                <Text style={styles.sosButtonText}>S.O.S</Text>
+                <Text style={[styles.sosButtonText, {color: '#C4432C'}]}>
+                  S.O.S
+                </Text>
               </TouchableOpacity>
             </View>
           </View>

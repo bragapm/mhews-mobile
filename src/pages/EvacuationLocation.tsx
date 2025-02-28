@@ -12,6 +12,7 @@ import {
   FlatList,
   Image,
   useColorScheme,
+  TextInput,
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import MapboxGL, {Camera} from '@rnmapbox/maps';
@@ -553,6 +554,48 @@ const EvacuationLocationScreen = () => {
     if (mod.includes('uturn')) return arrowIconsSm.uturn;
     return arrowIcons.straight; // fallback
   }
+
+  const handleSearch = async (text: any) => {
+    setSearchQuery(text);
+    if (text.trim() === '') {
+      setSearchResults([]);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+          text,
+        )}.json?access_token=${MAPBOX_ACCESS_TOKEN}&limit=20&country=id`,
+      );
+      const data = await response.json();
+
+      if (data.features) {
+        setSearchResults(
+          data.features.map((place: any) => ({
+            id: place.id,
+            name: place.place_name,
+            lat: place.center[1], // Latitude
+            lon: place.center[0], // Longitude
+          })),
+        );
+      }
+    } catch (error) {
+      console.error('Error fetching locations:', error);
+    }
+  };
+
+  const handleSelectLocation = (location: any) => {
+    setSearchQuery(location.name);
+    setModalVisible(false);
+    if (cameraRef.current) {
+      cameraRef.current.setCamera({
+        centerCoordinate: [location.lon, location.lat],
+        zoomLevel: 14,
+        animationDuration: 1000,
+      });
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -1135,11 +1178,13 @@ const EvacuationLocationScreen = () => {
               paddingBottom: '5%',
             }}
             renderItem={({item}) => (
-              <View style={styles.stepItemContainer}>
+              <View
+                style={[styles.stepItemContainer, {borderColor: colors.text}]}>
                 {/* Icon Arah (opsional) */}
                 <Image
                   source={getChevronIcon(item.maneuver?.modifier)}
                   style={{width: 20, height: 20, marginRight: 8}}
+                  resizeMode="contain"
                 />
                 {/* Teks Deskripsi Langkah */}
                 <View style={{flex: 1}}>
@@ -1291,6 +1336,61 @@ const EvacuationLocationScreen = () => {
           </View>
         </View>
       )}
+      <Modal
+        animationType="slide"
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}>
+        <View style={styles.modalContainer}>
+          {/* Header Modal */}
+          <View style={styles.modalHeader}>
+            {/* Tombol Back */}
+            <TouchableOpacity
+              style={styles.headerBackButtonModal}
+              onPress={() => setModalVisible(false)}>
+              <AntDesign name="arrowleft" size={24} color="black" />
+            </TouchableOpacity>
+
+            {/* Input Pencarian */}
+            <View style={styles.headerSearchContainerModal}>
+              <Feather
+                name="search"
+                size={18}
+                color="gray"
+                style={styles.headerSearchIconModal}
+              />
+              <TextInput
+                placeholder="Cari Lokasi"
+                style={styles.headerSearchInputModal}
+                value={searchQuery}
+                onChangeText={handleSearch}
+              />
+            </View>
+          </View>
+
+          {/* List hasil pencarian */}
+          <FlatList
+            data={searchResults}
+            keyExtractor={(item: any) => item.id}
+            ListHeaderComponent={() => (
+              <Text style={styles.resultHeader}>Hasil Pencarian</Text>
+            )}
+            renderItem={({item}) => (
+              <TouchableOpacity
+                style={styles.resultItem}
+                onPress={() => handleSelectLocation(item)}>
+                <View style={styles.resultIconContainer}>
+                  <Feather name="map-pin" size={20} color="gray" />
+                </View>
+                <View style={styles.resultTextContainer}>
+                  <Text style={styles.resultTitle}>{item.name}</Text>
+                  <Text style={styles.resultSubtitle}>{item.address}</Text>
+                </View>
+              </TouchableOpacity>
+            )}
+            ItemSeparatorComponent={() => <View style={styles.separator} />}
+          />
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -1620,8 +1720,13 @@ const styles = StyleSheet.create({
   },
   stepItemContainer: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     marginBottom: 8,
+    borderWidth: 1,
+    paddingHorizontal: '2%',
+    paddingVertical: '3%',
+    justifyContent: 'center',
+    borderRadius: 10,
   },
   stepInstruction: {
     fontSize: 14,
@@ -1653,5 +1758,78 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '90%',
     justifyContent: 'space-between',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(126, 126, 126, 0.3)',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+  },
+  modalHeaderDetail: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+    justifyContent: 'space-between',
+  },
+  headerBackButtonModal: {
+    marginRight: 10,
+    backgroundColor: 'rgb(255, 255, 255)',
+    padding: 8,
+    borderRadius: 10,
+  },
+  headerSearchContainerModal: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgb(255, 255, 255)',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    height: 40,
+  },
+  headerSearchIconModal: {
+    marginRight: 5,
+  },
+  headerSearchInputModal: {
+    flex: 1,
+    height: 40,
+    justifyContent: 'center',
+  },
+  resultHeader: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+    marginVertical: 10,
+    marginHorizontal: 16,
+  },
+  resultItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+  resultIconContainer: {
+    marginRight: 12,
+  },
+  resultTextContainer: {
+    flex: 1,
+  },
+  resultTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  resultSubtitle: {
+    fontSize: 14,
+    color: '#666',
+  },
+  separator: {
+    height: 1,
+    backgroundColor: '#E0E0E0',
+    marginHorizontal: 16,
   },
 });
