@@ -1,4 +1,4 @@
-const primaryColor = "#F36A1D";
+const primaryColor = '#F36A1D';
 
 export const ColorsConfig = {
   light: {
@@ -24,6 +24,7 @@ export const ColorsConfig = {
     gradientCardEnd: '#CD541B',
     info: '#4F4D4A',
     danger: '#FEF4F0',
+    activeCard: '#FEF9EF',
   },
   dark: {
     text: '#F9F8F7',
@@ -48,6 +49,7 @@ export const ColorsConfig = {
     gradientCardEnd: '#CD541B',
     info: '#B4B4AF',
     danger: '#4D1613',
+    activeCard: '#3C221D',
   },
 };
 

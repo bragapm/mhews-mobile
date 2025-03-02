@@ -44,6 +44,7 @@ export default function HomeScreen() {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const colorScheme = useColorScheme();
   const {profile, getProfile} = useAuthStore();
+  console.log('PROFILE', profile);
   const [emergencyMessage, setEmergencyMessage] = useState('');
   const [siagaBencana, setSiagaBencana] = useState([]);
   const [fiturPendukung, setFiturPendukung] = useState([]);
