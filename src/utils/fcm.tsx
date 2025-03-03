@@ -6,6 +6,8 @@ import BackgroundFetch from 'react-native-background-fetch';
 import { fetchLocation, getLocationDetails, watchLocation } from './locationUtils';
 import BackgroundService from 'react-native-background-actions';
 import BackgroundGeolocation from 'react-native-background-geolocation';
+import { patchData } from '../services/apiServices';
+import useAuthStore from '../hooks/auth';
 
 /**
  * Meminta izin untuk menerima notifikasi push
@@ -216,6 +218,7 @@ export async function fetchDataInBackground() {
             console.log("🏠 Address fetched:", address);
             await notifee.stopForegroundService();
             console.log("📢 Notifikasi sinkronisasi dihapus.");
+            handleData(location);
         }
         console.log('[getCurrentPosition]', location);
     } catch (error) {
@@ -223,6 +226,31 @@ export async function fetchDataInBackground() {
         await notifee.stopForegroundService();
     }
 }
+
+const handleData = async (data: any) => {
+    const { profile, getProfile } = useAuthStore();
+    let fcm_token = await getFcmToken();
+    try {
+        const { latitude, longitude } = data.coords;
+
+        const dataPayload = {
+            location: `${latitude}, ${longitude}`,
+            "geom": {
+                "type": "Point",
+                "coordinates": [
+                    data?.coords?.longitude,
+                    data?.coords?.latitude
+                ]
+            },
+            fcm_token: fcm_token
+        }
+        const response = await patchData('/users/' + profile?.id, dataPayload);
+        if (response?.data) {
+            console.log(response);
+        }
+    } catch (error: any) {
+    }
+};
 
 export async function showSyncNotification() {
     const channelId = await notifee.createChannel({

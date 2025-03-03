@@ -7,14 +7,11 @@ import {
   StyleSheet,
   useColorScheme,
   ImageBackground,
-  Dimensions,
   Image,
   ScrollView,
-  TextInput,
   StatusBar,
 } from 'react-native';
 import COLORS from '../config/COLORS';
-import FloatingSOSButton from '../components/FloatingSOSButton';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/types';
@@ -74,6 +71,7 @@ export default function ChatScreen() {
 
   // State untuk mengontrol indeks animasi
   const [chatIconIndex, setChatIconIndex] = useState(0);
+  const flatListRef = useRef<FlatList>(null);
 
   // Update indeks secara berkala untuk animasi looping
   useEffect(() => {
@@ -101,6 +99,12 @@ export default function ChatScreen() {
     { id: "4", text: "Bagaimana cara evakuasi saat gempa?", role: "user" },
     { id: "5", text: "Saat gempa, segera berlindung di bawah meja kokoh atau cari area terbuka.", role: "safebot" },
   ]);
+
+  useEffect(() => {
+    if (messages.length > 0) {
+      flatListRef.current?.scrollToEnd({ animated: true });
+    }
+  }, [messages]);
 
   const handleOptionPress = (option: any) => {
     const timestamp = Date.now();
@@ -227,13 +231,18 @@ export default function ChatScreen() {
       ) : (
         <>
           <HeaderNav onPress={() => setIsShowChatBot(false)} title="SafeBot" icon="bnpb" />
-          <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
-            <View style={styles.container}>
-              <View style={[styles.contentOption, { backgroundColor: colorScheme === "dark" ? "#1c1c1c" : "#fff", height: "100%", padding: 15 }]}>
-                <FlatList data={messages} keyExtractor={(item) => item.id} renderItem={renderMessage} />
-              </View>
-            </View>
-          </ScrollView>
+          <FlatList
+            data={messages}
+            ref={flatListRef}
+            keyExtractor={(item) => item.id}
+            renderItem={renderMessage}
+            contentContainerStyle={[
+              styles.scrollContainer,
+              { backgroundColor: colorScheme === "dark" ? "#1c1c1c" : "#fff", padding: 15 }
+            ]}
+            ListFooterComponent={<View style={{ height: 20 }} />}
+            showsVerticalScrollIndicator={false}
+          />
         </>
       )}
     </>
@@ -243,13 +252,6 @@ export default function ChatScreen() {
 const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
-  },
-  container: {
-    flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  contentOption: {
-    width: "100%",
   },
   background: {
     flex: 1,
