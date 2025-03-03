@@ -140,6 +140,11 @@ export default function ChatScreen() {
 
   const handleOptionPress = async (option: any) => {
     const timestamp = Date.now();
+    setMessages((prevMessages) => [
+      ...prevMessages,
+      { id: `user_${option.id}_${timestamp}`, text: option.label, role: "user" },
+    ]);
+
     if (option?.id == "informasi_bencana") {
       const location = await fetchLocation();
       if (location) {
