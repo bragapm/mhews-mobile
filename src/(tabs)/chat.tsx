@@ -139,6 +139,10 @@ export default function ChatScreen() {
   };
 
   const handleOptionPress = async (option: any) => {
+    if (option?.id == "resiko_bencana") {
+      navigation.navigate('DisasterRisk');
+    }
+
     const timestamp = Date.now();
     setMessages((prevMessages) => [
       ...prevMessages,
@@ -174,6 +178,18 @@ export default function ChatScreen() {
           setMessages((prevMessages) => [
             ...prevMessages,
             { id: `bot_response_${option.id}_autores_${timestamp}`, text: infoBencana, role: "safebot" }
+          ]);
+
+          setMessages((prevMessages) => [
+            ...prevMessages,
+            {
+              id: `bot_response_${option.id}_suggest_${timestamp}`,
+              text: "Jika ingin mengetahui lebih detail tentang resiko bencana yang terjadi silahkan akses menu Resiko Bencana",
+              role: "safebot",
+              options: [
+                { id: "resiko_bencana", label: "Resiko Bencana" },
+              ],
+            }
           ]);
         }
       } catch (err: any) {

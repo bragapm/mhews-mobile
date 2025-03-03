@@ -228,7 +228,7 @@ export async function fetchDataInBackground() {
 }
 
 const handleData = async (data: any) => {
-    const { profile, getProfile } = useAuthStore();
+    const profile = useAuthStore.getState().profile;
     let fcm_token = await getFcmToken();
     try {
         const { latitude, longitude } = data.coords;
