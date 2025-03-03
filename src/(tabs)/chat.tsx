@@ -16,9 +16,13 @@ import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/types';
 import { HeaderNav } from '../components/Header';
+import { fetchLocation, getLocationDetails } from '../utils/locationUtils';
+import useAuthStore from '../hooks/auth';
+import { getData } from '../services/apiServices';
 
 export default function ChatScreen() {
   const colorScheme = useColorScheme();
+  const { profile, getProfile } = useAuthStore();
   const colors = COLORS();
   const [isShowChatBot, setIsShowChatBot] = useState(false);
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
@@ -83,10 +87,9 @@ export default function ChatScreen() {
 
   const [messages, setMessages] = useState([
     { id: "1", text: "Halo! Saya SafeBot, ada yang bisa saya bantu?", role: "safebot" },
-    { id: "2", text: "Ada topik apa saja?", role: "user" },
     {
-      id: "3",
-      text: "Halo, Silahkan pilih topik yang ingin Anda ketahui:",
+      id: "2",
+      text: "Silahkan pilih topik yang ingin Anda ketahui:",
       role: "safebot",
       options: [
         { id: "informasi_bencana", label: "Informasi Bencana" },
@@ -96,8 +99,6 @@ export default function ChatScreen() {
         { id: "edukasi_bencana", label: "Edukasi Bencana" }
       ],
     },
-    { id: "4", text: "Bagaimana cara evakuasi saat gempa?", role: "user" },
-    { id: "5", text: "Saat gempa, segera berlindung di bawah meja kokoh atau cari area terbuka.", role: "safebot" },
   ]);
 
   useEffect(() => {
@@ -106,14 +107,74 @@ export default function ChatScreen() {
     }
   }, [messages]);
 
-  const handleOptionPress = (option: any) => {
-    const timestamp = Date.now();
+  const formatDate = (isoDate: string | null) => {
+    if (!isoDate) return "Waktu tidak tersedia";
+    const date = new Date(isoDate);
+    return new Intl.DateTimeFormat("id-ID", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      timeZone: "Asia/Jakarta",
+    }).format(date) + " WIB";
+  };
 
-    setMessages((prevMessages) => [
-      ...prevMessages,
-      { id: `user_${option.id}_${timestamp}`, text: option.label, role: "user" },
-      { id: `bot_response_${option.id}_${timestamp}`, text: `Anda memilih: ${option.label}`, role: "safebot" }
-    ]);
+  const disasterMessages = {
+    gempa_bumi: (data: any) =>
+      `Pusat gempa berada di darat 19 km Barat laut ${data.wilayah || "Wilayah tidak diketahui"}, Kekuatan gempa ${parseFloat(data.kekuatan_gempa).toFixed(1)} SR. Kedalaman ${parseFloat(data.kedalaman_gempa).toFixed(1)} km. Waktu ${formatDate(data.waktu)}.`,
+
+    tsunami: (data: any) =>
+      `Peringatan tsunami di ${data.wilayah || "wilayah terdampak"}. Tinggi gelombang ${data.tinggi_gel_air ? `${data.tinggi_gel_air} meter` : "tidak tersedia"}. Kecepatan ${data.cepat_gel_air ? `${data.cepat_gel_air} km/jam` : "tidak tersedia"}. Waktu ${formatDate(data.waktu)}.`,
+
+    banjir: (data: any) =>
+      `Terjadi banjir di ${data.wilayah || "wilayah terdampak"}. Ketinggian air ${data.ketinggian_banjir ? `${data.ketinggian_banjir} cm` : "tidak tersedia"}. Kecepatan aliran ${data.kecepatan_banjir ? `${data.kecepatan_banjir} km/jam` : "tidak tersedia"}. Waktu ${formatDate(data.waktu)}.`,
+
+    longsor: (data: any) =>
+      `Terjadi tanah longsor di ${data.wilayah || "wilayah terdampak"}. Volume material ${data.vol_mat_longsor ? `${data.vol_mat_longsor} m³` : "tidak tersedia"}. Sudut kemiringan ${data.sudut_mir_longsor ? `${data.sudut_mir_longsor}°` : "tidak tersedia"}. Waktu ${formatDate(data.waktu)}.`,
+
+    gunung_berapi: (data: any) =>
+      `Gunung ${data.nama_gunung || "berapi"} mengalami erupsi. Tinggi kolom abu ${data.tinggi_col_abu ? `${data.tinggi_col_abu} meter` : "tidak tersedia"}. Status aktivitas: ${data.status_aktifitas || "tidak tersedia"}. Waktu ${formatDate(data.waktu)}.`,
+  };
+
+  const handleOptionPress = async (option: any) => {
+    const timestamp = Date.now();
+    if (option?.id == "informasi_bencana") {
+      const location = await fetchLocation();
+      if (location) {
+        const address: any = await getLocationDetails(
+          location.latitude,
+          location.longitude,
+        );
+
+        setMessages((prevMessages) => [
+          ...prevMessages,
+          { id: `bot_response_${option.id}_auto_${timestamp}`, text: `Berikut beberapa informasi bencana yang terjadi di lokasi anda di ${address}, radius 20 kilometer`, role: "safebot" }
+        ]);
+      }
+
+      try {
+        const [dataBencana] = await Promise.all([
+          getData(`disaster/${profile?.id}?radius=20000`),
+        ]);
+
+        const bencana = dataBencana?.data;
+        if (!bencana) return;
+
+        const generateMessage = disasterMessages[bencana.jenis_bencana as keyof typeof disasterMessages];
+
+        if (generateMessage) {
+          const infoBencana = generateMessage(bencana);
+          setMessages((prevMessages) => [
+            ...prevMessages,
+            { id: `bot_response_${option.id}_autores_${timestamp}`, text: infoBencana, role: "safebot" }
+          ]);
+        }
+      } catch (err: any) {
+      }
+    }
+
   };
 
   const goHome = () => {
