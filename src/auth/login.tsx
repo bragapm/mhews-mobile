@@ -11,20 +11,20 @@ import {
   useColorScheme,
   StatusBar,
 } from 'react-native';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
-import React, {useState} from 'react';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import React, { useState } from 'react';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Feather from 'react-native-vector-icons/Feather';
-import {useNavigation} from '@react-navigation/native';
-import {useForm, Controller} from 'react-hook-form';
-import {zodResolver} from '@hookform/resolvers/zod';
-import {z} from 'zod';
-import {postData} from '../services/apiServices';
+import { useNavigation } from '@react-navigation/native';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { postData } from '../services/apiServices';
 import COLORS from '../config/COLORS';
 import useAuthStore from '../hooks/auth';
-import {useAlert} from '../components/AlertContext';
-import {StackNavigationProp} from '@react-navigation/stack';
-import {RootStackParamList} from '../navigation/types';
+import { useAlert } from '../components/AlertContext';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../navigation/types';
 
 // Skema validasi dengan Zod
 const signinSchema = z.object({
@@ -38,14 +38,14 @@ const Login = () => {
   const colors = COLORS();
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [loading, setLoading] = useState(false);
-  const {setAuthData, getProfile} = useAuthStore();
-  const {showAlert} = useAlert();
+  const { setAuthData, getProfile } = useAuthStore();
+  const { showAlert } = useAlert();
 
   const {
     control,
     handleSubmit,
     setError,
-    formState: {errors},
+    formState: { errors },
   } = useForm({
     resolver: zodResolver(signinSchema),
   });
@@ -97,31 +97,31 @@ const Login = () => {
         resizeMode="cover">
         <View style={styles.container}>
           <KeyboardAwareScrollView
-            contentContainerStyle={{flexGrow: 1}}
+            contentContainerStyle={{ flexGrow: 1 }}
             keyboardShouldPersistTaps="handled"
             enableOnAndroid={true}
             extraScrollHeight={20}>
             {/* Header */}
-            <View style={{marginLeft: 15, marginTop: 25}}>
+            <View style={{ marginLeft: 15, marginTop: 25 }}>
               <Image
                 source={logoSource}
-                style={{width: 150, height: 50, resizeMode: 'contain'}}
+                style={{ width: 150, height: 50, resizeMode: 'contain' }}
               />
             </View>
 
             {/* Title */}
-            <View style={{marginBottom: 20}}>
-              <Text style={[styles.title, {color: colors.text}]}>
+            <View style={{ marginBottom: 20 }}>
+              <Text style={[styles.title, { color: colors.text }]}>
                 Selamat datang di
               </Text>
-              <Text style={[styles.title, {color: colors.text}]}>
+              <Text style={[styles.title, { color: colors.text }]}>
                 Aplikasi MHEWS
               </Text>
             </View>
 
             {/* Form Login */}
-            <View style={[styles.card, {backgroundColor: colors.background}]}>
-              <Text style={[styles.sectionTitle, {color: colors.text}]}>
+            <View style={[styles.card, { backgroundColor: colors.background }]}>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>
                 Masuk
               </Text>
 
@@ -129,7 +129,7 @@ const Login = () => {
               <Controller
                 control={control}
                 name="email"
-                render={({field: {onChange, value}}) => (
+                render={({ field: { onChange, value } }) => (
                   <View
                     style={[
                       styles.inputContainer,
@@ -171,7 +171,7 @@ const Login = () => {
               <Controller
                 control={control}
                 name="password"
-                render={({field: {onChange, value}}) => (
+                render={({ field: { onChange, value } }) => (
                   <View
                     style={[
                       styles.inputContainer,
@@ -235,7 +235,7 @@ const Login = () => {
                   alignItems: 'center',
                   marginVertical: 10,
                 }}>
-                <View style={{flex: 1, height: 1, backgroundColor: '#ccc'}} />
+                <View style={{ flex: 1, height: 1, backgroundColor: '#ccc' }} />
                 <Text
                   style={[
                     styles.orText,
@@ -247,14 +247,14 @@ const Login = () => {
                   ]}>
                   atau
                 </Text>
-                <View style={{flex: 1, height: 1, backgroundColor: '#ccc'}} />
+                <View style={{ flex: 1, height: 1, backgroundColor: '#ccc' }} />
               </View>
 
               {/* Tombol Masuk dengan Google */}
               <TouchableOpacity
                 style={[
                   styles.altButton,
-                  {backgroundColor: colors.background},
+                  { backgroundColor: colors.background },
                 ]}>
                 {/* <AntDesign name="google" size={24} color="#DB4437" /> */}
                 <Image
@@ -268,7 +268,7 @@ const Login = () => {
               <TouchableOpacity
                 style={[
                   styles.altButton,
-                  {backgroundColor: colors.background},
+                  { backgroundColor: colors.background },
                 ]}>
                 <Image
                   source={require('../assets/icons/bnpb-logo.png')}
@@ -281,7 +281,7 @@ const Login = () => {
               <TouchableOpacity
                 style={[
                   styles.altButton,
-                  {backgroundColor: colors.background},
+                  { backgroundColor: colors.background },
                 ]}>
                 <Image
                   source={require('../assets/images/guest.png')}
@@ -298,7 +298,7 @@ const Login = () => {
                   justifyContent: 'center',
                   marginTop: 20,
                 }}>
-                <Text style={{fontSize: 16, color: colors.text}}>
+                <Text style={{ fontSize: 16, color: colors.text }}>
                   Belum punya akun?
                 </Text>
                 <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
@@ -321,17 +321,8 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-  },
   container: {
     flex: 1,
-  },
-  logo: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: 'black',
   },
   title: {
     fontSize: 24,
@@ -371,9 +362,6 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 50,
     fontSize: 16,
-  },
-  eyeIcon: {
-    marginLeft: 10,
   },
   button: {
     backgroundColor: '#F36A1D',
@@ -422,5 +410,5 @@ const styles = StyleSheet.create({
     color: '#F36A1D',
     fontWeight: 'bold',
   },
-  errorText: {color: 'red', fontSize: 14, marginBottom: 10},
+  errorText: { color: 'red', fontSize: 14, marginBottom: 10 },
 });

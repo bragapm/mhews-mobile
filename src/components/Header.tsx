@@ -16,18 +16,35 @@ import AntDesign from "react-native-vector-icons/AntDesign";
 export const HeaderNav = ({
   onPress,
   title,
+  icon = null,
 }: {
   onPress: () => void;
   title: string;
+  icon?: any;
 }) => {
   const colorScheme = useColorScheme();
   const colors = COLORS();
+
+  const iconMap: { [key: string]: any } = {
+    bnpb: require('../assets/icons/bnpb-logo.png'),
+  };
+
   return (
     <View style={styles.header}>
-      <TouchableOpacity onPress={onPress}>
+      <TouchableOpacity onPress={onPress} style={icon ? styles.withIconSpacing : {}}>
         <AntDesign name="arrowleft" size={24} color={colors.tabIconDefault} />
       </TouchableOpacity>
-      <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
+
+      {icon ? (
+        <View style={styles.titleContainerWithIcon}>
+          <View style={styles.iconWrapper}>
+            <Image source={iconMap[icon]} style={styles.iconImage} />
+          </View>
+          <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
+        </View>
+      ) : (
+        <Text style={[styles.titleCenter, { color: colors.text }]}>{title}</Text>
+      )}
     </View>
   );
 };
@@ -35,16 +52,41 @@ export const HeaderNav = ({
 const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 16,
+    marginBottom: 6,
+    marginTop: "10%",
     paddingHorizontal: 8,
   },
+  withIconSpacing: {
+    marginRight: 10,
+  },
+  titleContainerWithIcon: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
   title: {
-    fontSize: 24,
+    fontSize: 20,
+    fontWeight: "bold",
+    marginLeft: 8,
+  },
+  titleCenter: {
+    fontSize: 20,
     fontWeight: "bold",
     textAlign: "center",
-    marginRight: 20,
     flex: 1,
+  },
+  iconWrapper: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#FFFFFF",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 8,
+  },
+  iconImage: {
+    width: 25,
+    height: 25,
+    resizeMode: 'contain',
   },
 });

@@ -93,11 +93,17 @@ export default function TabNavigator() {
         />
         <Tab.Screen
           name="chat"
-          component={ChatScreen}
+          component={HomeScreen}
           options={{
             tabBarLabel: "Chatbot",
             tabBarIcon: ({ focused }) => getTabIcon(focused, "chat"),
           }}
+          listeners={({ navigation }) => ({
+            tabPress: (e) => {
+              e.preventDefault();
+              navigation.navigate("ChatScreen");
+            },
+          })}
         />
         <Tab.Screen
           name="profile"

@@ -2,9 +2,7 @@ import { Platform, PermissionsAndroid } from 'react-native';
 import { request, check, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import GetLocation from 'react-native-get-location';
 import Geolocation from '@react-native-community/geolocation';
-
-const MAPBOX_ACCESS_TOKEN =
-  'sk.eyJ1Ijoid2hvaXNhcnZpYW4iLCJhIjoiY203YjJkajRtMDk3cDJtczlxMDRrOTExNiJ9.61sU5Z9qNoRfQ22qdcAMzQ';
+import { MAPBOX_ACCESS_TOKEN } from '../services/apiServices';
 
 const requestLocationPermission = async (): Promise<boolean> => {
   try {

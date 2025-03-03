@@ -1,4 +1,4 @@
-import React, {useRef, useState, useEffect, useCallback} from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -13,24 +13,22 @@ import {
   Image,
   useColorScheme,
 } from 'react-native';
-import MapboxGL, {Camera} from '@rnmapbox/maps';
+import MapboxGL, { Camera } from '@rnmapbox/maps';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import GetLocation from 'react-native-get-location';
 import COLORS from '../config/COLORS';
-import {useNavigation, NavigationContainer} from '@react-navigation/native';
-import {StackNavigationProp} from '@react-navigation/stack';
-import {RootStackParamList} from '../navigation/types';
+import { useNavigation, NavigationContainer } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../navigation/types';
 import useAuthStore from '../hooks/auth';
-import {getData} from '../services/apiServices';
-import {useSOSModal} from '../components/GlobalSOSModal';
+import { getData, MAPBOX_ACCESS_TOKEN } from '../services/apiServices';
+import { useSOSModal } from '../components/GlobalSOSModal';
 
 // Ganti dengan token Mapbox Anda
-const MAPBOX_ACCESS_TOKEN =
-  'sk.eyJ1Ijoid2hvaXNhcnZpYW4iLCJhIjoiY203YjJkajRtMDk3cDJtczlxMDRrOTExNiJ9.61sU5Z9qNoRfQ22qdcAMzQ';
 MapboxGL.setAccessToken(MAPBOX_ACCESS_TOKEN);
 
-const {width, height} = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 interface EvacuationLocation {
   id: number;
@@ -62,7 +60,7 @@ interface MapboxStep {
 type TransportMode = 'mobil' | 'motor' | 'umum' | 'jalan';
 
 const NotifEvacuateLocationScreen = () => {
-  const {showModal} = useSOSModal();
+  const { showModal } = useSOSModal();
   const token = useAuthStore(state => state.token);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(
     null,
@@ -91,7 +89,7 @@ const NotifEvacuateLocationScreen = () => {
   // STEPS RUTE
   const [routeSteps, setRouteSteps] = useState<any[]>([]);
   const [isGuidanceActive, setIsGuidanceActive] = useState(false);
-  
+
 
   // Map & Camera
   const mapRef = useRef<MapboxGL.MapView | null>(null);
@@ -280,7 +278,7 @@ const NotifEvacuateLocationScreen = () => {
           zIndex: 2,
         }}>
         <Text
-          style={{color: '#FFF', fontWeight: 'bold', fontSize: 12, zIndex: -2}}>
+          style={{ color: '#FFF', fontWeight: 'bold', fontSize: 12, zIndex: -2 }}>
           {label}
         </Text>
       </View>
@@ -368,7 +366,7 @@ const NotifEvacuateLocationScreen = () => {
           setEvacuationCenters(prev =>
             prev.map(item =>
               item.id === center.id
-                ? {...item, distance: newDistance, duration: newDuration}
+                ? { ...item, distance: newDistance, duration: newDuration }
                 : item,
             ),
           );
@@ -395,7 +393,7 @@ const NotifEvacuateLocationScreen = () => {
   const fetchData = async () => {
     try {
       const response = await getData(`items/titik_evakuasi`, {
-        headers: {Authorization: `Bearer ${token}`},
+        headers: { Authorization: `Bearer ${token}` },
       });
       // console.log('dataa', JSON.stringify(response?.data));
       if (!response) throw new Error('Gagal mengambil data');
@@ -660,7 +658,7 @@ const NotifEvacuateLocationScreen = () => {
       <TouchableOpacity
         style={[
           styles.locateMeButton,
-          {bottom: bottomSheetHeight + 10, backgroundColor: colors.bg},
+          { bottom: bottomSheetHeight + 10, backgroundColor: colors.bg },
         ]}
         onPress={locateMe}>
         <Ionicons name="locate-outline" size={24} color={colors.text} />
@@ -673,7 +671,7 @@ const NotifEvacuateLocationScreen = () => {
           {...panResponder.panHandlers}
           style={[
             styles.bottomSheet,
-            {height: bottomSheetHeight, backgroundColor: colors.bg},
+            { height: bottomSheetHeight, backgroundColor: colors.bg },
           ]}>
           <View style={styles.dragIndicator} />
           <View
@@ -690,7 +688,7 @@ const NotifEvacuateLocationScreen = () => {
               onPress={goBack}>
               <Image
                 source={chevLeft}
-                style={{width: 25, height: 40, resizeMode: 'contain'}}
+                style={{ width: 25, height: 40, resizeMode: 'contain' }}
               />
             </TouchableOpacity>
             <View
@@ -702,7 +700,7 @@ const NotifEvacuateLocationScreen = () => {
               <Text
                 style={[
                   styles.sheetTitle,
-                  {marginLeft: '2%', alignItems: 'center', color: colors.text},
+                  { marginLeft: '2%', alignItems: 'center', color: colors.text },
                 ]}>
                 Daftar Lokasi Evakuasi
               </Text>
@@ -714,19 +712,19 @@ const NotifEvacuateLocationScreen = () => {
             keyExtractor={item => item.id.toString()}
             horizontal
             showsHorizontalScrollIndicator={false}
-            renderItem={({item}) => (
+            renderItem={({ item }) => (
               <TouchableOpacity onPress={() => setSelectedCenter(item)}>
                 <View
                   style={[
                     styles.evacCard,
-                    {backgroundColor: colors.bg, borderColor: colors.info},
+                    { backgroundColor: colors.bg, borderColor: colors.info },
                   ]}>
                   <View
                     style={{
                       flexDirection: 'row',
                       justifyContent: 'space-between',
                     }}>
-                    <Text style={[styles.evacName, {color: colors.text}]}>
+                    <Text style={[styles.evacName, { color: colors.text }]}>
                       {item.name}
                     </Text>
                     <View
@@ -742,16 +740,16 @@ const NotifEvacuateLocationScreen = () => {
                           item.status === 'Tersedia' ? '#189E59' : '#c0392b',
                         borderWidth: 1,
                       }}>
-                      <Text style={[styles.evacStatus, {color: colors.text}]}>
+                      <Text style={[styles.evacStatus, { color: colors.text }]}>
                         {item.status}
                       </Text>
                     </View>
                   </View>
-                  <Text style={[styles.evacDistance, {color: colors.info}]}>
+                  <Text style={[styles.evacDistance, { color: colors.info }]}>
                     {item.distance || ''} (
                     {item.duration || 'Menghitung Jarak...'})
                   </Text>
-                  <Text style={[styles.evacAddress, {color: colors.info}]}>
+                  <Text style={[styles.evacAddress, { color: colors.info }]}>
                     {item.address}
                   </Text>
                 </View>
@@ -771,7 +769,7 @@ const NotifEvacuateLocationScreen = () => {
           <View
             style={[
               styles.modalContent,
-              {height: 250, backgroundColor: colors.bg},
+              { height: 250, backgroundColor: colors.bg },
             ]}>
             <View style={styles.dragIndicator} />
             {/* Tombol Tutup Modal */}
@@ -798,7 +796,7 @@ const NotifEvacuateLocationScreen = () => {
                 }}>
                 <Image
                   source={chevLeft}
-                  style={{width: 25, height: 40, resizeMode: 'contain'}}
+                  style={{ width: 25, height: 40, resizeMode: 'contain' }}
                 />
               </TouchableOpacity>
               <View
@@ -820,13 +818,13 @@ const NotifEvacuateLocationScreen = () => {
                   ]}>
                   {selectedCenter?.name}
                 </Text>
-                <Text style={[styles.modalDistance, {color: colors.info}]}>
+                <Text style={[styles.modalDistance, { color: colors.info }]}>
                   {selectedCenter?.distance}({selectedCenter?.duration})
                 </Text>
               </View>
             </View>
 
-            <Text style={[styles.modalAddress, {color: colors.info}]}>
+            <Text style={[styles.modalAddress, { color: colors.info }]}>
               {selectedCenter?.address}
             </Text>
 
@@ -842,7 +840,7 @@ const NotifEvacuateLocationScreen = () => {
 
       {/* Panel Rute (memilih moda, menampilkan estimasi, dsb) */}
       {selectedCenter && showRoutePanel && (
-        <View style={[styles.routePanel, {backgroundColor: colors.bg}]}>
+        <View style={[styles.routePanel, { backgroundColor: colors.bg }]}>
           {/* Tombol Tutup Panel */}
           {/* <TouchableOpacity
             style={styles.closeRouteButton}
@@ -869,7 +867,7 @@ const NotifEvacuateLocationScreen = () => {
               }}>
               <Image
                 source={chevLeft}
-                style={{width: 25, height: 40, resizeMode: 'contain'}}
+                style={{ width: 25, height: 40, resizeMode: 'contain' }}
               />
             </TouchableOpacity>
             <View
@@ -891,7 +889,7 @@ const NotifEvacuateLocationScreen = () => {
                 ]}>
                 {selectedCenter?.name}
               </Text>
-              <Text style={[styles.modalDistance, {color: colors.info}]}>
+              <Text style={[styles.modalDistance, { color: colors.info }]}>
                 {routeDistance > 0 ? getDistanceText(routeDistance) : ''}
               </Text>
             </View>
@@ -919,14 +917,14 @@ const NotifEvacuateLocationScreen = () => {
               paddingRight: '8%',
               marginBottom: '2%',
             }}
-            renderItem={({item}) => {
+            renderItem={({ item }) => {
               const isSelected = selectedMode === item.mode;
               return (
                 <TouchableOpacity
                   style={[
                     styles.transportModeButton,
                     isSelected && styles.transportModeActive,
-                    {backgroundColor: colors.bg},
+                    { backgroundColor: colors.bg },
                   ]}
                   onPress={() => handleChangeMode(item.mode)}>
                   <Image
@@ -940,8 +938,8 @@ const NotifEvacuateLocationScreen = () => {
                   />
                   <Text
                     style={[
-                      styles.transportModeText && {color: colors.info},
-                      isSelected && {color: '#f57c00'},
+                      styles.transportModeText && { color: colors.info },
+                      isSelected && { color: '#f57c00' },
                     ]}>
                     {item.label}
                   </Text>
@@ -952,7 +950,7 @@ const NotifEvacuateLocationScreen = () => {
 
           {/* Tombol Mulai Arahan */}
           <TouchableOpacity
-            style={[styles.routeButton, {marginTop: '2%', marginBottom: '2%'}]}
+            style={[styles.routeButton, { marginTop: '2%', marginBottom: '2%' }]}
             onPress={handleStartGuidance}>
             <Text style={styles.routeButtonText}>
               Mulai Arahan ke Lokasi Evakuasi
@@ -976,7 +974,7 @@ const NotifEvacuateLocationScreen = () => {
                 }}>
                 <Image
                   source={getChevronIcon(routeSteps[0]?.maneuver?.modifier)}
-                  style={{width: 20, height: 20}}
+                  style={{ width: 20, height: 20 }}
                   resizeMode="contain"
                 />
               </View>
@@ -990,7 +988,7 @@ const NotifEvacuateLocationScreen = () => {
                   {routeSteps[0]?.name && routeSteps[0].name.trim() !== ''
                     ? routeSteps[0].name
                     : extractRoadName(routeSteps[0]?.maneuver?.instruction) ||
-                      'Jalan Tidak Diketahui'}
+                    'Jalan Tidak Diketahui'}
                 </Text>
                 <Text style={styles.currentInstruction}>
                   {getCustomStepDescription(routeSteps[0])}
@@ -1007,10 +1005,10 @@ const NotifEvacuateLocationScreen = () => {
                     selectedMode === 'mobil'
                       ? iconMobilActive
                       : selectedMode === 'motor'
-                      ? iconMotorActive
-                      : selectedMode === 'umum'
-                      ? iconTransportUmumActive
-                      : iconJalanKakiActive
+                        ? iconMotorActive
+                        : selectedMode === 'umum'
+                          ? iconTransportUmumActive
+                          : iconJalanKakiActive
                   }
                   style={styles.transportIcon}
                   resizeMode="contain"
@@ -1022,10 +1020,10 @@ const NotifEvacuateLocationScreen = () => {
           {/* BAGIAN “LANGKAH BERIKUTNYA” */}
           {routeSteps[1] && (
             <View style={styles.nextStepContainer}>
-              <View style={{flexDirection: 'row', alignItems: 'center'}}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <Image
                   source={getChevronIconSm(routeSteps[1]?.maneuver?.modifier)}
-                  style={{width: 15, height: 15, marginRight: '5%'}}
+                  style={{ width: 15, height: 15, marginRight: '5%' }}
                   resizeMode="contain"
                 />
 
@@ -1039,7 +1037,7 @@ const NotifEvacuateLocationScreen = () => {
 
           {/* BAGIAN BAWAH: Info tujuan akhir + tombol */}
           <View
-            style={[styles.guidanceBottomCard, {backgroundColor: colors.bg}]}>
+            style={[styles.guidanceBottomCard, { backgroundColor: colors.bg }]}>
             <View style={styles.dragIndicator} />
             <View
               style={{
@@ -1057,7 +1055,7 @@ const NotifEvacuateLocationScreen = () => {
                 }}>
                 {selectedCenter?.name}
               </Text>
-              <Text style={{fontSize: 14, marginBottom: 8, color: colors.info}}>
+              <Text style={{ fontSize: 14, marginBottom: 8, color: colors.info }}>
                 {routeDistance > 0 ? getDistanceText(routeDistance) : ''}
               </Text>
             </View>
@@ -1091,7 +1089,7 @@ const NotifEvacuateLocationScreen = () => {
                     borderColor: '#C4432C',
                   },
                 ]}>
-                <Text style={[styles.sosButtonText, {color: '#C4432C'}]}>
+                <Text style={[styles.sosButtonText, { color: '#C4432C' }]}>
                   S.O.S
                 </Text>
               </TouchableOpacity>
@@ -1106,9 +1104,9 @@ const NotifEvacuateLocationScreen = () => {
 export default NotifEvacuateLocationScreen;
 
 const styles = StyleSheet.create({
-  container: {flex: 1},
-  mapContainer: {flex: 1},
-  map: {flex: 1},
+  container: { flex: 1 },
+  mapContainer: { flex: 1 },
+  map: { flex: 1 },
   backButton: {
     position: 'absolute',
     top: 50,

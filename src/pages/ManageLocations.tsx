@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -16,19 +16,17 @@ import {
 } from 'react-native';
 import COLORS from '../config/COLORS';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import {getData, postData} from '../services/apiServices';
+import { getData, MAPBOX_ACCESS_TOKEN, postData } from '../services/apiServices';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Feather from 'react-native-vector-icons/Feather';
-import {fetchLocation, getLocationDetails} from '../utils/locationUtils';
-import MapboxGL, {Camera} from '@rnmapbox/maps';
+import { fetchLocation, getLocationDetails } from '../utils/locationUtils';
+import MapboxGL, { Camera } from '@rnmapbox/maps';
 import useAuthStore from '../hooks/auth';
 
 export default function ManageLocationsScreen() {
-  const MAPBOX_ACCESS_TOKEN =
-    'sk.eyJ1Ijoid2hvaXNhcnZpYW4iLCJhIjoiY203YjJkajRtMDk3cDJtczlxMDRrOTExNiJ9.61sU5Z9qNoRfQ22qdcAMzQ';
   MapboxGL.setAccessToken(MAPBOX_ACCESS_TOKEN);
-  const {profile, getProfile} = useAuthStore();
-  const {width, height} = Dimensions.get('window');
+  const { profile, getProfile } = useAuthStore();
+  const { width, height } = Dimensions.get('window');
   const colorScheme = useColorScheme();
   const colors = COLORS();
 
@@ -110,7 +108,7 @@ export default function ManageLocationsScreen() {
       const userId = profile?.id;
 
       // Filter data agar hanya item dengan pemilik === userId
-      const filtered = response?.data?.filter(item => item.pemilik === userId);
+      const filtered = response?.data?.filter((item: any) => item.pemilik === userId);
 
       // Simpan ke state
       setListLokasi(filtered);
@@ -201,7 +199,7 @@ export default function ManageLocationsScreen() {
   ];
 
   // ---- Render item di FlatList ----
-  const renderItem = ({item}) => {
+  const renderItem = ({ item }: { item: any }) => {
     const isCurrent = item.id === 'current';
     const isActive = selectedLocation === item.id;
 
@@ -215,8 +213,8 @@ export default function ManageLocationsScreen() {
         style={[
           styles.boxLocation,
           isActive
-            ? {backgroundColor: colors.activeCard}
-            : {backgroundColor: colors.bg},
+            ? { backgroundColor: colors.activeCard }
+            : { backgroundColor: colors.bg },
         ]}>
         <View style={styles.rowBetween}>
           <View style={styles.iconContainer}>
@@ -226,11 +224,11 @@ export default function ManageLocationsScreen() {
             <Text
               style={[
                 styles.label,
-                isActive ? {color: '#F36A1D'} : {color: colors.text},
+                isActive ? { color: '#F36A1D' } : { color: colors.text },
               ]}>
               {item.nama_lokasi}
             </Text>
-            <Text style={[styles.detailLocation, {color: colors.info}]}>
+            <Text style={[styles.detailLocation, { color: colors.info }]}>
               {item.alamat}
             </Text>
           </View>
@@ -335,8 +333,8 @@ export default function ManageLocationsScreen() {
 
       {/* MAP VIEW (jika sudah ada selectedPin) */}
       {selectedPin && (
-        <View style={{flex: 1}}>
-          <MapboxGL.MapView ref={mapRef} style={{flex: 1}}>
+        <View style={{ flex: 1 }}>
+          <MapboxGL.MapView ref={mapRef} style={{ flex: 1 }}>
             <Camera
               ref={cameraRef}
               centerCoordinate={selectedPin || [106.84513, -6.21462]}
@@ -347,7 +345,7 @@ export default function ManageLocationsScreen() {
               coordinate={selectedPin}
               draggable={true}
               onDragEnd={handleMarkerDragEnd}>
-              <View style={{width: 30, height: 30}}>
+              <View style={{ width: 30, height: 30 }}>
                 <Ionicons name="location-sharp" size={30} color="#c55" />
               </View>
             </MapboxGL.PointAnnotation>
@@ -371,7 +369,7 @@ export default function ManageLocationsScreen() {
                 }}>
                 <Image
                   source={require('../assets/images/info.png')}
-                  style={[styles.iconImage, {width: 20, height: 20}]}
+                  style={[styles.iconImage, { width: 20, height: 20 }]}
                 />
               </View>
 
@@ -379,7 +377,7 @@ export default function ManageLocationsScreen() {
                 style={{
                   width: '80%',
                 }}>
-                <Text style={[styles.alertText, {textAlign: 'left'}]}>
+                <Text style={[styles.alertText, { textAlign: 'left' }]}>
                   Sesuaikan peta dengan pin point sesuai dengan alamat yang anda
                   inginkan
                 </Text>
@@ -392,7 +390,7 @@ export default function ManageLocationsScreen() {
                   <Text
                     style={[
                       styles.alertText,
-                      {textAlign: 'right', alignItems: 'flex-start'},
+                      { textAlign: 'right', alignItems: 'flex-start' },
                     ]}>
                     X
                   </Text>
@@ -402,11 +400,11 @@ export default function ManageLocationsScreen() {
           )}
 
           {/* Info box di bagian bawah peta */}
-          <View style={[styles.bottomInfo, {backgroundColor: colors.bg}]}>
-            <Text style={[styles.locationTitle, {color: colors.text}]}>
+          <View style={[styles.bottomInfo, { backgroundColor: colors.bg }]}>
+            <Text style={[styles.locationTitle, { color: colors.text }]}>
               {mapLocationName}
             </Text>
-            <Text style={[styles.locationSub, {color: colors.info}]}>
+            <Text style={[styles.locationSub, { color: colors.info }]}>
               {mapLocationAddress}
             </Text>
 
@@ -436,13 +434,13 @@ export default function ManageLocationsScreen() {
           {...panResponder.panHandlers}
           style={[
             styles.bottomSheet,
-            {height: bottomSheetHeight, backgroundColor: colors.bg},
+            { height: bottomSheetHeight, backgroundColor: colors.bg },
           ]}>
           <View style={styles.dragIndicator} />
-          <Text style={[styles.modalTitle, {color: colors.text}]}>
+          <Text style={[styles.modalTitle, { color: colors.text }]}>
             Lokasi Notifikasi Bencana
           </Text>
-          <Text style={[styles.modalSubtitle, {color: colors.info}]}>
+          <Text style={[styles.modalSubtitle, { color: colors.info }]}>
             Kelola lokasi penting untuk menerima notifikasi langsung saat
             bencana terjadi
           </Text>
@@ -452,7 +450,7 @@ export default function ManageLocationsScreen() {
             keyExtractor={(item, index) => item.id.toString() + index}
             renderItem={renderItem}
             showsVerticalScrollIndicator={false}
-            style={{marginBottom: 10}}
+            style={{ marginBottom: 10 }}
           />
 
           <TouchableOpacity
@@ -473,12 +471,12 @@ export default function ManageLocationsScreen() {
         animationType="slide"
         visible={modalSearch}
         onRequestClose={() => setModalSearch(false)}>
-        <View style={[styles.modalContainer, {backgroundColor: colors.bg}]}>
+        <View style={[styles.modalContainer, { backgroundColor: colors.bg }]}>
           <View style={styles.modalHeader}>
             <TouchableOpacity
               style={[
                 styles.headerBackButtonModal,
-                {backgroundColor: colors.bg},
+                { backgroundColor: colors.bg },
               ]}
               onPress={() => setModalSearch(false)}>
               <AntDesign name="arrowleft" size={24} color={colors.text} />
@@ -486,7 +484,7 @@ export default function ManageLocationsScreen() {
             <View
               style={[
                 styles.headerSearchContainerModal,
-                {backgroundColor: colors.bg},
+                { backgroundColor: colors.bg },
               ]}>
               <Feather
                 name="search"
@@ -496,7 +494,7 @@ export default function ManageLocationsScreen() {
               />
               <TextInput
                 placeholder="Cari Lokasi"
-                style={[styles.headerSearchInputModal, {color: colors.text}]}
+                style={[styles.headerSearchInputModal, { color: colors.text }]}
                 value={searchQuery}
                 onChangeText={handleSearch}
               />
@@ -507,15 +505,15 @@ export default function ManageLocationsScreen() {
             data={modifiedSearchResults}
             keyExtractor={(item: any) => item.id}
             ListHeaderComponent={() => (
-              <Text style={[styles.resultHeader, {color: colors.text}]}>
+              <Text style={[styles.resultHeader, { color: colors.text }]}>
                 Hasil Pencarian
               </Text>
             )}
-            renderItem={({item}) => {
+            renderItem={({ item }) => {
               if (item.id === 'use-current') {
                 return (
                   <TouchableOpacity
-                    style={[styles.resultItem, {backgroundColor: colors.bg}]}
+                    style={[styles.resultItem, { backgroundColor: colors.bg }]}
                     onPress={() => handleSelectLocation(item)}>
                     <View style={styles.resultIconContainer}>
                       <Ionicons
@@ -525,11 +523,11 @@ export default function ManageLocationsScreen() {
                       />
                     </View>
                     <View style={styles.resultTextContainer}>
-                      <Text style={[styles.resultTitle, {color: colors.text}]}>
+                      <Text style={[styles.resultTitle, { color: colors.text }]}>
                         Gunakan Lokasi Saya Saat Ini
                       </Text>
                       <Text
-                        style={[styles.resultSubtitle, {color: colors.info}]}>
+                        style={[styles.resultSubtitle, { color: colors.info }]}>
                         {locateNow || 'Mencari...'}
                       </Text>
                     </View>
@@ -538,17 +536,17 @@ export default function ManageLocationsScreen() {
               } else {
                 return (
                   <TouchableOpacity
-                    style={[styles.resultItem, {backgroundColor: colors.bg}]}
+                    style={[styles.resultItem, { backgroundColor: colors.bg }]}
                     onPress={() => handleSelectLocation(item)}>
                     <View style={styles.resultIconContainer}>
                       <Feather name="map-pin" size={20} color="gray" />
                     </View>
                     <View style={styles.resultTextContainer}>
-                      <Text style={[styles.resultTitle, {color: colors.text}]}>
+                      <Text style={[styles.resultTitle, { color: colors.text }]}>
                         {item?.name}
                       </Text>
                       <Text
-                        style={[styles.resultSubtitle, {color: colors.info}]}>
+                        style={[styles.resultSubtitle, { color: colors.info }]}>
                         {' '}
                       </Text>
                     </View>
@@ -569,7 +567,7 @@ export default function ManageLocationsScreen() {
         <View
           style={[
             styles.addLocationModalContainer,
-            {backgroundColor: colors.bg},
+            { backgroundColor: colors.bg },
           ]}>
           {/* Header */}
           <View
@@ -581,17 +579,17 @@ export default function ManageLocationsScreen() {
             <TouchableOpacity
               style={[
                 styles.headerBackButtonModal,
-                {backgroundColor: colors.bg},
+                { backgroundColor: colors.bg },
               ]}
               onPress={() => setModalAddLocation(false)}>
               <AntDesign name="arrowleft" size={24} color={colors.text} />
             </TouchableOpacity>
-            <Text style={[styles.addLocationTitle, {color: colors.text}]}>
+            <Text style={[styles.addLocationTitle, { color: colors.text }]}>
               Tambah Lokasi
             </Text>
           </View>
 
-          <Text style={[styles.addLocationSubtitle, {color: colors.info}]}>
+          <Text style={[styles.addLocationSubtitle, { color: colors.info }]}>
             Lengkapi data lokasi anda
           </Text>
 
@@ -615,18 +613,18 @@ export default function ManageLocationsScreen() {
                   name="locate-outline"
                   size={24}
                   color={'#F36A1D'}
-                  // onPress={locateMe}
+                // onPress={locateMe}
                 />
               </View>
               <View
                 style={{
                   width: '90%',
                 }}>
-                <Text style={[styles.addressPreviewTitle, {color: '#F36A1D'}]}>
+                <Text style={[styles.addressPreviewTitle, { color: '#F36A1D' }]}>
                   {mapLocationName}
                 </Text>
                 <Text
-                  style={[styles.addressPreviewSubtitle, {color: colors.info}]}>
+                  style={[styles.addressPreviewSubtitle, { color: colors.info }]}>
                   {mapLocationAddress}
                 </Text>
               </View>
@@ -641,7 +639,7 @@ export default function ManageLocationsScreen() {
                 },
               ]}
               onPress={() => setModalAddLocation(false)}>
-              <Text style={[styles.btnSaveLocationText, {color: colors.text}]}>
+              <Text style={[styles.btnSaveLocationText, { color: colors.text }]}>
                 Ubah Pin Point
               </Text>
             </TouchableOpacity>
@@ -659,11 +657,11 @@ export default function ManageLocationsScreen() {
                 borderColor: colors.info,
               },
             ]}>
-            <Text style={[styles.formLabel, {color: colors.info}]}>
+            <Text style={[styles.formLabel, { color: colors.info }]}>
               Label Lokasi
             </Text>
             <TextInput
-              style={[styles.formInput, {color: colors.info}]}
+              style={[styles.formInput, { color: colors.info }]}
               placeholder="Masukkan Label Lokasi"
               value={lokasiLabel}
               onChangeText={setLokasiLabel}
@@ -682,17 +680,17 @@ export default function ManageLocationsScreen() {
                 borderColor: colors.info,
               },
             ]}>
-            <Text style={[styles.formLabel, {color: colors.info}]}>
+            <Text style={[styles.formLabel, { color: colors.info }]}>
               Alamat Lengkap
             </Text>
             <TextInput
               style={[
                 styles.formInput,
-                {height: 80, textAlignVertical: 'top', color: colors.info},
+                { height: 80, textAlignVertical: 'top', color: colors.info },
               ]}
               multiline
               value={mapLocationAddress}
-              onChangeText={() => {}}
+              onChangeText={() => { }}
             />
           </View>
 
