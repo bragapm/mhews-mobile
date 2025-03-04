@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useCallback } from 'react';
+import React, {useRef, useState, useEffect, useCallback} from 'react';
 import {
   View,
   Text,
@@ -15,21 +15,21 @@ import {
   TextInput,
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
-import MapboxGL, { Camera } from '@rnmapbox/maps';
+import MapboxGL, {Camera} from '@rnmapbox/maps';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import GetLocation from 'react-native-get-location';
 import COLORS from '../config/COLORS';
-import { useNavigation, NavigationContainer } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../navigation/types';
+import {useNavigation, NavigationContainer} from '@react-navigation/native';
+import {StackNavigationProp} from '@react-navigation/stack';
+import {RootStackParamList} from '../navigation/types';
 import useAuthStore from '../hooks/auth';
-import { getData, MAPBOX_ACCESS_TOKEN } from '../services/apiServices';
+import {getData, MAPBOX_ACCESS_TOKEN} from '../services/apiServices';
 
 // Ganti dengan token Mapbox Anda
 MapboxGL.setAccessToken(MAPBOX_ACCESS_TOKEN);
 
-const { width, height } = Dimensions.get('window');
+const {width, height} = Dimensions.get('window');
 
 interface EvacuationLocation {
   id: number;
@@ -289,7 +289,7 @@ const EvacuationLocationScreen = () => {
           zIndex: 2,
         }}>
         <Text
-          style={{ color: '#FFF', fontWeight: 'bold', fontSize: 12, zIndex: -2 }}>
+          style={{color: '#FFF', fontWeight: 'bold', fontSize: 12, zIndex: -2}}>
           {label}
         </Text>
       </View>
@@ -377,7 +377,7 @@ const EvacuationLocationScreen = () => {
           setEvacuationCenters(prev =>
             prev.map(item =>
               item.id === center.id
-                ? { ...item, distance: newDistance, duration: newDuration }
+                ? {...item, distance: newDistance, duration: newDuration}
                 : item,
             ),
           );
@@ -404,7 +404,7 @@ const EvacuationLocationScreen = () => {
   const fetchData = async () => {
     try {
       const response = await getData(`items/titik_evakuasi`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {Authorization: `Bearer ${token}`},
       });
       if (!response) throw new Error('Gagal mengambil data');
 
@@ -469,14 +469,59 @@ const EvacuationLocationScreen = () => {
     }
   };
 
-  const filteredEvacuationCenters = (() => {
+  const deg2rad = (deg: number): number => deg * (Math.PI / 180);
+
+  const getDistanceFromLatLonInKm = (
+    lat1: number,
+    lon1: number,
+    lat2: number,
+    lon2: number,
+  ): number => {
+    const R = 6371; // radius bumi dalam km
+    const dLat = deg2rad(lat2 - lat1);
+    const dLon = deg2rad(lon2 - lon1);
+    const a =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos(deg2rad(lat1)) *
+        Math.cos(deg2rad(lat2)) *
+        Math.sin(dLon / 2) ** 2;
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
+
+  const filteredEvacuationCenters = React.useMemo(() => {
+    // Filter berdasarkan selectedFilters
+    let centers = [];
     if (selectedFilters.length === 0 || isSemuaSelected) {
-      return evacuationCenters;
+      centers = evacuationCenters;
+    } else {
+      centers = evacuationCenters.filter(center =>
+        selectedFilters.includes(center.jenisTitikKumpul || ''),
+      );
     }
-    return evacuationCenters.filter(center =>
-      selectedFilters.includes(center.jenisTitikKumpul || ''),
-    );
-  })();
+
+    // Jika userLocation tersedia, urutkan berdasarkan jarak terdekat
+    if (userLocation) {
+      return centers
+        .slice() // buat copy agar array original tidak termodifikasi
+        .sort((a, b) => {
+          const distanceA = getDistanceFromLatLonInKm(
+            userLocation[1],
+            userLocation[0],
+            a.coordinate[1],
+            a.coordinate[0],
+          );
+          const distanceB = getDistanceFromLatLonInKm(
+            userLocation[1],
+            userLocation[0],
+            b.coordinate[1],
+            b.coordinate[0],
+          );
+          return distanceA - distanceB;
+        });
+    }
+    return centers;
+  }, [evacuationCenters, selectedFilters, isSemuaSelected, userLocation]);
 
   const getCustomStepDescription = (step: any) => {
     if (!step) return '';
@@ -744,7 +789,7 @@ const EvacuationLocationScreen = () => {
         <>
           <View style={styles.headerContainer}>
             <TouchableOpacity
-              style={[styles.headerBackButton, { backgroundColor: colors.bg }]}
+              style={[styles.headerBackButton, {backgroundColor: colors.bg}]}
               onPress={goBack}>
               <AntDesign name="arrowleft" size={24} color={colors.text} />
             </TouchableOpacity>
@@ -759,7 +804,7 @@ const EvacuationLocationScreen = () => {
               <TouchableOpacity
                 style={[
                   styles.headerSearchContainer,
-                  { backgroundColor: colors.bg },
+                  {backgroundColor: colors.bg},
                 ]}
                 onPress={() => setModalVisible(true)}>
                 <Feather
@@ -790,9 +835,9 @@ const EvacuationLocationScreen = () => {
             horizontal
             showsHorizontalScrollIndicator={false}
             keyExtractor={(item, index) => index.toString()}
-            style={{ position: 'absolute', top: 110 }}
-            contentContainerStyle={{ paddingLeft: 10, paddingTop: '2%' }}
-            renderItem={({ item }) => {
+            style={{position: 'absolute', top: 110}}
+            contentContainerStyle={{paddingLeft: 10, paddingTop: '2%'}}
+            renderItem={({item}) => {
               // Apakah chip ini sedang aktif?
               let isSelected = false;
               if (item === 'semua') {
@@ -808,7 +853,7 @@ const EvacuationLocationScreen = () => {
                   style={[
                     styles.chip,
                     isSelected && styles.chipSelected,
-                    { backgroundColor: colors.bg },
+                    {backgroundColor: colors.bg},
                   ]}
                   onPress={() => handleFilterPress(item)}>
                   <Text
@@ -829,7 +874,7 @@ const EvacuationLocationScreen = () => {
       <TouchableOpacity
         style={[
           styles.locateMeButton,
-          { bottom: bottomSheetHeight + 10, backgroundColor: colors.bg },
+          {bottom: bottomSheetHeight + 10, backgroundColor: colors.bg},
         ]}
         onPress={locateMe}>
         <Ionicons name="locate-outline" size={24} color={colors.text} />
@@ -842,7 +887,7 @@ const EvacuationLocationScreen = () => {
           {...panResponder.panHandlers}
           style={[
             styles.bottomSheet,
-            { height: bottomSheetHeight, backgroundColor: colors.bg },
+            {height: bottomSheetHeight, backgroundColor: colors.bg},
           ]}>
           <View style={styles.dragIndicator} />
           <View
@@ -869,7 +914,7 @@ const EvacuationLocationScreen = () => {
                 ]}>
                 Lokasi Evakuasi
               </Text>
-              <Text style={[styles.evacDistance, { color: colors.info }]}>
+              <Text style={[styles.evacDistance, {color: colors.info}]}>
                 Daftar lokasi evakuasi yang dapat diakses ketika terjadi bencana
                 berdasarkan lokasi anda
               </Text>
@@ -881,23 +926,23 @@ const EvacuationLocationScreen = () => {
             keyExtractor={item => item.id.toString()}
             // horizontal
             showsHorizontalScrollIndicator={false}
-            renderItem={({ item }) => (
+            renderItem={({item}) => (
               <View>
                 <View
                   style={[
                     styles.evacCard,
-                    { backgroundColor: colors.bg, borderColor: colors.info },
+                    {backgroundColor: colors.bg, borderColor: colors.info},
                   ]}>
                   <View
                     style={{
                       flexDirection: 'row',
                       justifyContent: 'space-between',
                     }}>
-                    <Text style={[styles.evacName, { color: colors.text }]}>
+                    <Text style={[styles.evacName, {color: colors.text}]}>
                       {item.name}
                     </Text>
                   </View>
-                  <Text style={[styles.evacDistance, { color: colors.info }]}>
+                  <Text style={[styles.evacDistance, {color: colors.info}]}>
                     {item.distance || ''} (
                     {item.duration || 'Menghitung Jarak...'})
                   </Text>
@@ -908,7 +953,7 @@ const EvacuationLocationScreen = () => {
                       justifyContent: 'center',
                       marginTop: '2%',
                     }}>
-                    <Text style={[styles.evacAddress, { color: colors.info }]}>
+                    <Text style={[styles.evacAddress, {color: colors.info}]}>
                       {item.address}
                     </Text>
                   </View>
@@ -953,7 +998,7 @@ const EvacuationLocationScreen = () => {
           <View
             style={[
               styles.modalContent,
-              { height: 250, backgroundColor: colors.bg },
+              {height: 250, backgroundColor: colors.bg},
             ]}>
             <View style={styles.dragIndicator} />
             {/* Tombol Tutup Modal */}
@@ -1000,13 +1045,13 @@ const EvacuationLocationScreen = () => {
                     ]}>
                     {selectedCenter?.name}
                   </Text>
-                  <Text style={[styles.modalDistance, { color: colors.info }]}>
+                  <Text style={[styles.modalDistance, {color: colors.info}]}>
                     {selectedCenter?.distance}({selectedCenter?.duration})
                   </Text>
                 </View>
               </View>
 
-              <Text style={[styles.modalAddress, { color: colors.info }]}>
+              <Text style={[styles.modalAddress, {color: colors.info}]}>
                 {selectedCenter?.address}
               </Text>
 
@@ -1028,7 +1073,7 @@ const EvacuationLocationScreen = () => {
                   },
                 ]}
                 onPress={handleShowRoute}>
-                <Text style={[styles.routeButtonText, { color: '#CD541B' }]}>
+                <Text style={[styles.routeButtonText, {color: '#CD541B'}]}>
                   Simulasi Rute Evakuasi
                 </Text>
               </TouchableOpacity>
@@ -1042,7 +1087,7 @@ const EvacuationLocationScreen = () => {
         <View
           style={[
             styles.bottomSheet,
-            { height: bottomSheetHeight, backgroundColor: colors.bg },
+            {height: bottomSheetHeight, backgroundColor: colors.bg},
           ]}>
           {/* Tombol Tutup Panel */}
           {/* <TouchableOpacity
@@ -1070,7 +1115,7 @@ const EvacuationLocationScreen = () => {
               }}>
               <Image
                 source={chevLeft}
-                style={{ width: 25, height: 40, resizeMode: 'contain' }}
+                style={{width: 25, height: 40, resizeMode: 'contain'}}
               />
             </TouchableOpacity>
             <View
@@ -1092,7 +1137,7 @@ const EvacuationLocationScreen = () => {
                 ]}>
                 {selectedCenter?.name}
               </Text>
-              <Text style={[styles.modalDistance, { color: colors.info }]}>
+              <Text style={[styles.modalDistance, {color: colors.info}]}>
                 {routeDistance > 0 ? getDistanceText(routeDistance) : ''}
               </Text>
             </View>
@@ -1127,14 +1172,14 @@ const EvacuationLocationScreen = () => {
                 paddingRight: '8%',
                 // marginBottom: '5%',
               }}
-              renderItem={({ item }) => {
+              renderItem={({item}) => {
                 const isSelected = selectedMode === item.mode;
                 return (
                   <TouchableOpacity
                     style={[
                       styles.transportModeButton,
                       isSelected && styles.transportModeActive,
-                      { backgroundColor: colors.bg },
+                      {backgroundColor: colors.bg},
                     ]}
                     onPress={() => handleChangeMode(item.mode)}>
                     <Image
@@ -1148,8 +1193,8 @@ const EvacuationLocationScreen = () => {
                     />
                     <Text
                       style={[
-                        styles.transportModeText && { color: colors.info },
-                        isSelected && { color: '#f57c00' },
+                        styles.transportModeText && {color: colors.info},
+                        isSelected && {color: '#f57c00'},
                       ]}>
                       {item.label}
                     </Text>
@@ -1175,17 +1220,17 @@ const EvacuationLocationScreen = () => {
               marginTop: '2%',
               paddingBottom: '5%',
             }}
-            renderItem={({ item }) => (
+            renderItem={({item}) => (
               <View
-                style={[styles.stepItemContainer, { borderColor: colors.text }]}>
+                style={[styles.stepItemContainer, {borderColor: colors.text}]}>
                 {/* Icon Arah (opsional) */}
                 <Image
                   source={getChevronIcon(item.maneuver?.modifier)}
-                  style={{ width: 20, height: 20, marginRight: 8 }}
+                  style={{width: 20, height: 20, marginRight: 8}}
                   resizeMode="contain"
                 />
                 {/* Teks Deskripsi Langkah */}
-                <View style={{ flex: 1 }}>
+                <View style={{flex: 1}}>
                   <Text style={styles.stepInstruction}>
                     {getCustomStepDescription(item)}
                   </Text>
@@ -1217,7 +1262,7 @@ const EvacuationLocationScreen = () => {
                 }}>
                 <Image
                   source={getChevronIcon(routeSteps[0]?.maneuver?.modifier)}
-                  style={{ width: 20, height: 20 }}
+                  style={{width: 20, height: 20}}
                 />
               </View>
               <View
@@ -1230,7 +1275,7 @@ const EvacuationLocationScreen = () => {
                   {routeSteps[0]?.name && routeSteps[0].name.trim() !== ''
                     ? routeSteps[0].name
                     : extractRoadName(routeSteps[0]?.maneuver?.instruction) ||
-                    'Jalan Tidak Diketahui'}
+                      'Jalan Tidak Diketahui'}
                 </Text>
                 <Text style={styles.currentInstruction}>
                   {getCustomStepDescription(routeSteps[0])}
@@ -1247,10 +1292,10 @@ const EvacuationLocationScreen = () => {
                     selectedMode === 'mobil'
                       ? iconMobilActive
                       : selectedMode === 'motor'
-                        ? iconMotorActive
-                        : selectedMode === 'umum'
-                          ? iconTransportUmumActive
-                          : iconJalanKakiActive
+                      ? iconMotorActive
+                      : selectedMode === 'umum'
+                      ? iconTransportUmumActive
+                      : iconJalanKakiActive
                   }
                   style={styles.transportIcon}
                 />
@@ -1261,10 +1306,10 @@ const EvacuationLocationScreen = () => {
           {/* BAGIAN “LANGKAH BERIKUTNYA” */}
           {routeSteps[1] && (
             <View style={styles.nextStepContainer}>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <View style={{flexDirection: 'row', alignItems: 'center'}}>
                 <Image
                   source={getChevronIconSm(routeSteps[1]?.maneuver?.modifier)}
-                  style={{ width: 15, height: 15, marginRight: '2%' }}
+                  style={{width: 15, height: 15, marginRight: '2%'}}
                 />
 
                 <Text style={styles.nextStepText}>
@@ -1277,7 +1322,7 @@ const EvacuationLocationScreen = () => {
 
           {/* BAGIAN BAWAH: Info tujuan akhir + tombol */}
           <View
-            style={[styles.guidanceBottomCard, { backgroundColor: colors.bg }]}>
+            style={[styles.guidanceBottomCard, {backgroundColor: colors.bg}]}>
             <View style={styles.dragIndicator} />
             <View
               style={{
@@ -1295,7 +1340,7 @@ const EvacuationLocationScreen = () => {
                 }}>
                 {selectedCenter?.name}
               </Text>
-              <Text style={{ fontSize: 14, marginBottom: 8, color: colors.info }}>
+              <Text style={{fontSize: 14, marginBottom: 8, color: colors.info}}>
                 {routeDistance > 0 ? getDistanceText(routeDistance) : ''}
               </Text>
             </View>
@@ -1372,7 +1417,7 @@ const EvacuationLocationScreen = () => {
             ListHeaderComponent={() => (
               <Text style={styles.resultHeader}>Hasil Pencarian</Text>
             )}
-            renderItem={({ item }) => (
+            renderItem={({item}) => (
               <TouchableOpacity
                 style={styles.resultItem}
                 onPress={() => handleSelectLocation(item)}>
@@ -1396,9 +1441,9 @@ const EvacuationLocationScreen = () => {
 export default EvacuationLocationScreen;
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  mapContainer: { flex: 1 },
-  map: { flex: 1 },
+  container: {flex: 1},
+  mapContainer: {flex: 1},
+  map: {flex: 1},
   backButton: {
     position: 'absolute',
     top: 50,
@@ -1672,7 +1717,7 @@ const styles = StyleSheet.create({
     zIndex: 999,
     flexDirection: 'column',
     alignItems: 'center',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.2,
     shadowRadius: 4,
     width: '100%',
@@ -1747,7 +1792,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     marginHorizontal: 5,
   },
-  chipSelected: { borderColor: '#f36a1d' },
+  chipSelected: {borderColor: '#f36a1d'},
   headerAlertContainer: {
     flexDirection: 'row',
     backgroundColor: '#e74c3c',
