@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   View,
   Text,
@@ -12,17 +12,17 @@ import {
   StatusBar,
 } from 'react-native';
 import COLORS from '../config/COLORS';
-import { useNavigation } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../navigation/types';
-import { HeaderNav } from '../components/Header';
-import { fetchLocation, getLocationDetails } from '../utils/locationUtils';
+import {useNavigation} from '@react-navigation/native';
+import {StackNavigationProp} from '@react-navigation/stack';
+import {RootStackParamList} from '../navigation/types';
+import {HeaderNav} from '../components/Header';
+import {fetchLocation, getLocationDetails} from '../utils/locationUtils';
 import useAuthStore from '../hooks/auth';
-import { getData } from '../services/apiServices';
+import {getData} from '../services/apiServices';
 
 export default function ChatScreen() {
   const colorScheme = useColorScheme();
-  const { profile, getProfile } = useAuthStore();
+  const {profile, getProfile} = useAuthStore();
   const colors = COLORS();
   const [isShowChatBot, setIsShowChatBot] = useState(false);
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
@@ -86,70 +86,110 @@ export default function ChatScreen() {
   }, []);
 
   const [messages, setMessages] = useState([
-    { id: "1", text: "Halo! Saya SafeBot, ada yang bisa saya bantu?", role: "safebot" },
     {
-      id: "2",
-      text: "Silahkan pilih topik yang ingin Anda ketahui:",
-      role: "safebot",
+      id: '1',
+      text: 'Halo! Saya SafeBot, ada yang bisa saya bantu?',
+      role: 'safebot',
+    },
+    {
+      id: '2',
+      text: 'Silahkan pilih topik yang ingin Anda ketahui:',
+      role: 'safebot',
       options: [
-        { id: "informasi_bencana", label: "Informasi Bencana" },
-        { id: "lapor_bencana", label: "Lapor Bencana" },
-        { id: "hubungi_call_center", label: "Hubungi Call Center" },
-        { id: "kontak_darurat", label: "Kontak Darurat" },
-        { id: "edukasi_bencana", label: "Edukasi Bencana" }
+        {id: 'informasi_bencana', label: 'Informasi Bencana'},
+        {id: 'lapor_bencana', label: 'Lapor Bencana'},
+        {id: 'hubungi_call_center', label: 'Hubungi Call Center'},
+        {id: 'kontak_darurat', label: 'Kontak Darurat'},
+        {id: 'edukasi_bencana', label: 'Edukasi Bencana'},
       ],
     },
   ]);
 
   useEffect(() => {
     if (messages.length > 0) {
-      flatListRef.current?.scrollToEnd({ animated: true });
+      flatListRef.current?.scrollToEnd({animated: true});
     }
   }, [messages]);
 
   const formatDate = (isoDate: string | null) => {
-    if (!isoDate) return "Waktu tidak tersedia";
+    if (!isoDate) return 'Waktu tidak tersedia';
     const date = new Date(isoDate);
-    return new Intl.DateTimeFormat("id-ID", {
-      day: "2-digit",
-      month: "long",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      timeZone: "Asia/Jakarta",
-    }).format(date) + " WIB";
+    return (
+      new Intl.DateTimeFormat('id-ID', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        timeZone: 'Asia/Jakarta',
+      }).format(date) + ' WIB'
+    );
   };
 
   const disasterMessages = {
     gempa_bumi: (data: any) =>
-      `Pusat gempa berada di darat 19 km Barat laut ${data.wilayah || "Wilayah tidak diketahui"}, Kekuatan gempa ${parseFloat(data.kekuatan_gempa).toFixed(1)} SR. Kedalaman ${parseFloat(data.kedalaman_gempa).toFixed(1)} km. Waktu ${formatDate(data.waktu)}.`,
+      `Pusat gempa berada di darat 19 km Barat laut ${
+        data.wilayah || 'Wilayah tidak diketahui'
+      }, Kekuatan gempa ${parseFloat(data.kekuatan_gempa).toFixed(
+        1,
+      )} SR. Kedalaman ${parseFloat(data.kedalaman_gempa).toFixed(
+        1,
+      )} km. Waktu ${formatDate(data.waktu)}.`,
 
     tsunami: (data: any) =>
-      `Peringatan tsunami di ${data.wilayah || "wilayah terdampak"}. Tinggi gelombang ${data.tinggi_gel_air ? `${data.tinggi_gel_air} meter` : "tidak tersedia"}. Kecepatan ${data.cepat_gel_air ? `${data.cepat_gel_air} km/jam` : "tidak tersedia"}. Waktu ${formatDate(data.waktu)}.`,
+      `Peringatan tsunami di ${
+        data.wilayah || 'wilayah terdampak'
+      }. Tinggi gelombang ${
+        data.tinggi_gel_air ? `${data.tinggi_gel_air} meter` : 'tidak tersedia'
+      }. Kecepatan ${
+        data.cepat_gel_air ? `${data.cepat_gel_air} km/jam` : 'tidak tersedia'
+      }. Waktu ${formatDate(data.waktu)}.`,
 
     banjir: (data: any) =>
-      `Terjadi banjir di ${data.wilayah || "wilayah terdampak"}. Ketinggian air ${data.ketinggian_banjir ? `${data.ketinggian_banjir} cm` : "tidak tersedia"}. Kecepatan aliran ${data.kecepatan_banjir ? `${data.kecepatan_banjir} km/jam` : "tidak tersedia"}. Waktu ${formatDate(data.waktu)}.`,
+      `Terjadi banjir di ${
+        data.wilayah || 'wilayah terdampak'
+      }. Ketinggian air ${
+        data.ketinggian_banjir
+          ? `${data.ketinggian_banjir} cm`
+          : 'tidak tersedia'
+      }. Kecepatan aliran ${
+        data.kecepatan_banjir
+          ? `${data.kecepatan_banjir} km/jam`
+          : 'tidak tersedia'
+      }. Waktu ${formatDate(data.waktu)}.`,
 
     longsor: (data: any) =>
-      `Terjadi tanah longsor di ${data.wilayah || "wilayah terdampak"}. Volume material ${data.vol_mat_longsor ? `${data.vol_mat_longsor} m³` : "tidak tersedia"}. Sudut kemiringan ${data.sudut_mir_longsor ? `${data.sudut_mir_longsor}°` : "tidak tersedia"}. Waktu ${formatDate(data.waktu)}.`,
+      `Terjadi tanah longsor di ${
+        data.wilayah || 'wilayah terdampak'
+      }. Volume material ${
+        data.vol_mat_longsor ? `${data.vol_mat_longsor} m³` : 'tidak tersedia'
+      }. Sudut kemiringan ${
+        data.sudut_mir_longsor ? `${data.sudut_mir_longsor}°` : 'tidak tersedia'
+      }. Waktu ${formatDate(data.waktu)}.`,
 
     gunung_berapi: (data: any) =>
-      `Gunung ${data.nama_gunung || "berapi"} mengalami erupsi. Tinggi kolom abu ${data.tinggi_col_abu ? `${data.tinggi_col_abu} meter` : "tidak tersedia"}. Status aktivitas: ${data.status_aktifitas || "tidak tersedia"}. Waktu ${formatDate(data.waktu)}.`,
+      `Gunung ${
+        data.nama_gunung || 'berapi'
+      } mengalami erupsi. Tinggi kolom abu ${
+        data.tinggi_col_abu ? `${data.tinggi_col_abu} meter` : 'tidak tersedia'
+      }. Status aktivitas: ${
+        data.status_aktifitas || 'tidak tersedia'
+      }. Waktu ${formatDate(data.waktu)}.`,
   };
 
   const handleOptionPress = async (option: any) => {
-    if (option?.id == "resiko_bencana") {
+    if (option?.id == 'resiko_bencana') {
       navigation.navigate('DisasterRisk');
     }
 
     const timestamp = Date.now();
-    setMessages((prevMessages) => [
+    setMessages(prevMessages => [
       ...prevMessages,
-      { id: `user_${option.id}_${timestamp}`, text: option.label, role: "user" },
+      {id: `user_${option.id}_${timestamp}`, text: option.label, role: 'user'},
     ]);
 
-    if (option?.id == "informasi_bencana") {
+    if (option?.id == 'informasi_bencana') {
       const location = await fetchLocation();
       if (location) {
         const address: any = await getLocationDetails(
@@ -157,9 +197,13 @@ export default function ChatScreen() {
           location.longitude,
         );
 
-        setMessages((prevMessages) => [
+        setMessages(prevMessages => [
           ...prevMessages,
-          { id: `bot_response_${option.id}_auto_${timestamp}`, text: `Berikut beberapa informasi bencana yang terjadi di lokasi anda di ${address}, radius 20 kilometer`, role: "safebot" }
+          {
+            id: `bot_response_${option.id}_auto_${timestamp}`,
+            text: `Berikut beberapa informasi bencana yang terjadi di lokasi anda di ${address}, radius 20 kilometer`,
+            role: 'safebot',
+          },
         ]);
       }
 
@@ -171,42 +215,59 @@ export default function ChatScreen() {
         const bencana = dataBencana?.data;
         if (!bencana) return;
 
-        const generateMessage = disasterMessages[bencana.jenis_bencana as keyof typeof disasterMessages];
+        const generateMessage =
+          disasterMessages[
+            bencana.jenis_bencana as keyof typeof disasterMessages
+          ];
 
         if (generateMessage) {
           const infoBencana = generateMessage(bencana);
-          setMessages((prevMessages) => [
+          setMessages(prevMessages => [
             ...prevMessages,
-            { id: `bot_response_${option.id}_autores_${timestamp}`, text: infoBencana, role: "safebot" }
+            {
+              id: `bot_response_${option.id}_autores_${timestamp}`,
+              text: infoBencana,
+              role: 'safebot',
+            },
           ]);
 
-          setMessages((prevMessages) => [
+          setMessages(prevMessages => [
             ...prevMessages,
             {
               id: `bot_response_${option.id}_suggest_${timestamp}`,
-              text: "Jika ingin mengetahui lebih detail tentang resiko bencana yang terjadi silahkan akses menu Resiko Bencana",
-              role: "safebot",
-              options: [
-                { id: "resiko_bencana", label: "Resiko Bencana" },
-              ],
-            }
+              text: 'Jika ingin mengetahui lebih detail tentang resiko bencana yang terjadi silahkan akses menu Resiko Bencana',
+              role: 'safebot',
+              options: [{id: 'resiko_bencana', label: 'Resiko Bencana'}],
+            },
           ]);
         }
-      } catch (err: any) {
-      }
+      } catch (err: any) {}
     }
-
   };
 
   const goHome = () => {
-    navigation.replace("Tabs");
+    navigation.replace('Tabs');
   };
 
-  const renderMessage = ({ item }: { item: any }) => (
-    <View style={[styles.messageWrapper, item.role === "safebot" ? styles.botWrapper : styles.userWrapper]}>
-      {item.role === "safebot" && <View style={styles.triangle} />}
-      <View style={[styles.messageContainer, item.role === "safebot" ? styles.botMessage : styles.userMessage]}>
-        <Text style={styles.messageText}>{item.text}</Text>
+  const renderMessage = ({item}: {item: any}) => (
+    <View
+      style={[
+        styles.messageWrapper,
+        item.role === 'safebot' ? styles.botWrapper : styles.userWrapper,
+      ]}>
+      {item.role === 'safebot' && (
+        <View style={[styles.triangle, {borderRightColor: colors.header}]} />
+      )}
+      <View
+        style={[
+          styles.messageContainer,
+          item.role === 'safebot'
+            ? {...styles.botMessage, backgroundColor: colors.header}
+            : styles.userMessage,
+        ]}>
+        <Text style={[styles.messageText, {color: colors.text}]}>
+          {item.text}
+        </Text>
 
         {item.options && (
           <View style={styles.optionsContainer}>
@@ -214,15 +275,16 @@ export default function ChatScreen() {
               <TouchableOpacity
                 key={option.id}
                 style={styles.optionButton}
-                onPress={() => handleOptionPress(option)}
-              >
-                <Text style={styles.optionText}>{option.label}</Text>
+                onPress={() => handleOptionPress(option)}>
+                <Text style={[styles.optionText, {color: colors.text}]}>
+                  {option.label}
+                </Text>
               </TouchableOpacity>
             ))}
           </View>
         )}
       </View>
-      {item.role === "user" && <View style={styles.triangleUser} />}
+      {item.role === 'user' && <View style={styles.triangleUser} />}
     </View>
   );
 
@@ -254,10 +316,10 @@ export default function ChatScreen() {
                     justifyContent: 'flex-start',
                     paddingTop: '20%',
                   }}>
-                  <Text style={[styles.greeting, { color: colors.text }]}>
+                  <Text style={[styles.greeting, {color: colors.text}]}>
                     Selamat
                   </Text>
-                  <Text style={[styles.greeting, { color: colors.text }]}>
+                  <Text style={[styles.greeting, {color: colors.text}]}>
                     Datang
                   </Text>
                 </View>
@@ -270,11 +332,11 @@ export default function ChatScreen() {
                   <Text
                     style={[
                       styles.locationText,
-                      { color: colors.subText, textAlign: 'left' },
+                      {color: colors.subText, textAlign: 'left'},
                     ]}>
                     Selamat datang di safeBot yang menyediakan banyak informasi
-                    tentang penanggulangan bencana, informasi risiko bahaya sekitar,
-                    edukasi bencana, telekonsultasi, dan lainnya.
+                    tentang penanggulangan bencana, informasi risiko bahaya
+                    sekitar, edukasi bencana, telekonsultasi, dan lainnya.
                   </Text>
                 </View>
 
@@ -299,10 +361,14 @@ export default function ChatScreen() {
                     flexDirection: 'row',
                     marginTop: '3%',
                   }}>
-                  <TouchableOpacity style={styles.btnSecondary} onPress={goHome}>
+                  <TouchableOpacity
+                    style={styles.btnSecondary}
+                    onPress={goHome}>
                     <Text style={styles.btnSecondaryText}>Kembali</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.btnPrimary} onPress={() => setIsShowChatBot(true)}>
+                  <TouchableOpacity
+                    style={styles.btnPrimary}
+                    onPress={() => setIsShowChatBot(true)}>
                     <Text style={styles.btnPrimaryText}>Selanjutnya</Text>
                   </TouchableOpacity>
                 </View>
@@ -312,17 +378,24 @@ export default function ChatScreen() {
         </>
       ) : (
         <>
-          <HeaderNav onPress={() => setIsShowChatBot(false)} title="SafeBot" icon="bnpb" />
+          <HeaderNav
+            onPress={() => setIsShowChatBot(false)}
+            title="SafeBot"
+            icon="bnpb"
+          />
           <FlatList
             data={messages}
             ref={flatListRef}
-            keyExtractor={(item) => item.id}
+            keyExtractor={item => item.id}
             renderItem={renderMessage}
             contentContainerStyle={[
               styles.scrollContainer,
-              { backgroundColor: colorScheme === "dark" ? "#1c1c1c" : "#fff", padding: 15 }
+              {
+                backgroundColor: colors.chatBg,
+                padding: 15,
+              },
             ]}
-            ListFooterComponent={<View style={{ height: 20 }} />}
+            ListFooterComponent={<View style={{height: 20}} />}
             showsVerticalScrollIndicator={false}
           />
         </>
@@ -384,20 +457,20 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   messageWrapper: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     marginVertical: 4,
   },
   botWrapper: {
-    alignSelf: "flex-start",
+    alignSelf: 'flex-start',
   },
   userWrapper: {
-    alignSelf: "flex-end",
+    alignSelf: 'flex-end',
   },
   messageContainer: {
     padding: 10,
     borderRadius: 10,
-    maxWidth: "80%",
+    maxWidth: '80%',
   },
   optionsContainer: {
     marginTop: 10,
@@ -408,18 +481,18 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   optionText: {
-    color: "#F59047",
-    fontWeight: "bold",
+    color: '#F59047',
+    fontWeight: 'bold',
   },
   botMessage: {
-    backgroundColor: "#E2E1DF",
+    backgroundColor: '#E2E1DF',
   },
   userMessage: {
-    backgroundColor: "#F59047",
+    backgroundColor: '#F59047',
   },
   messageText: {
     fontSize: 16,
-    color: "#333",
+    color: '#333',
   },
   triangle: {
     width: 0,
@@ -427,10 +500,10 @@ const styles = StyleSheet.create({
     borderTopWidth: 8,
     borderBottomWidth: 8,
     borderRightWidth: 12,
-    borderStyle: "solid",
-    borderTopColor: "transparent",
-    borderBottomColor: "transparent",
-    borderRightColor: "#E2E1DF",
+    borderStyle: 'solid',
+    borderTopColor: 'transparent',
+    borderBottomColor: 'transparent',
+    borderRightColor: '#E2E1DF',
   },
   triangleUser: {
     width: 0,
@@ -438,9 +511,9 @@ const styles = StyleSheet.create({
     borderTopWidth: 8,
     borderBottomWidth: 8,
     borderLeftWidth: 12,
-    borderStyle: "solid",
-    borderTopColor: "transparent",
-    borderBottomColor: "transparent",
-    borderLeftColor: "#F59047",
+    borderStyle: 'solid',
+    borderTopColor: 'transparent',
+    borderBottomColor: 'transparent',
+    borderLeftColor: '#F59047',
   },
 });

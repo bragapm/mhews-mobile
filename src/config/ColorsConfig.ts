@@ -25,6 +25,8 @@ export const ColorsConfig = {
     info: '#4F4D4A',
     danger: '#FEF4F0',
     activeCard: '#FEF9EF',
+    chatBg: '#F4F3F1',
+    header: '#E2E1DF',
   },
   dark: {
     text: '#F9F8F7',
@@ -50,6 +52,8 @@ export const ColorsConfig = {
     info: '#B4B4AF',
     danger: '#4D1613',
     activeCard: '#3C221D',
+    chatBg: '#191919',
+    header: '#232221',
   },
 };
 
