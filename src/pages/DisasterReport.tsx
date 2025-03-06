@@ -50,6 +50,7 @@ const DisasterReportScreen = () => {
   const anginKencang = require('../assets/images/AnginKencang-ReportDisaster.png');
   const longsor = require('../assets/images/Longsor-ReportDisaster.png');
   const tsunami = require('../assets/images/Tsunami-ReportDisaster.png');
+  const call = require('../assets/images/phone.png');
   const [showHistory, setShowHistory] = useState(false);
 
   const HISTORY_DATA = [
@@ -272,49 +273,175 @@ const DisasterReportScreen = () => {
         visible={showHistory}
         animationType="slide"
         onRequestClose={() => setShowHistory(false)}>
-        <View style={styles.modalContainer}>
-          {/* Header Modal */}
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Daftar Laporan</Text>
-            {/* Tombol tutup modal */}
-            <TouchableOpacity onPress={() => setShowHistory(false)}>
-              <Text style={styles.closeButtonText}>Tutup</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Sub-judul & Search Bar */}
-          <Text style={styles.modalSubTitle}>
-            Daftar lengkap laporan bencana yang anda laporkan
-          </Text>
-          <View style={styles.searchWrapper}>
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Cari Laporan"
-              placeholderTextColor="#999"
-            />
-          </View>
-
-          {/* Daftar isi laporan */}
-          <FlatList
-            data={HISTORY_DATA}
-            keyExtractor={item => item.id}
-            contentContainerStyle={{paddingHorizontal: 16, paddingBottom: 20}}
-            renderItem={({item}) => (
-              <View style={styles.reportItem}>
-                <Text style={styles.reportTitle}>{item.title}</Text>
-                <Text style={styles.reportDate}>{item.dateTime}</Text>
-                <Text style={styles.reportLocation}>{item.location}</Text>
-
-                <View style={styles.reportFooter}>
-                  <Text style={styles.reportStatus}>{item.status}</Text>
-                  <TouchableOpacity style={styles.helpButton}>
-                    <Text style={styles.helpButtonText}>Hubungi Bantuan</Text>
+        <ImageBackground
+          source={backgroundSource}
+          style={styles.background}
+          resizeMode="cover">
+          <View
+            style={[styles.modalContainer, {backgroundColor: 'transparent'}]}>
+            <View
+              style={{
+                width: '100%',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexDirection: 'row',
+              }}>
+              <View
+                style={{
+                  width: '90%',
+                  alignItems: 'center',
+                  flexDirection: 'row',
+                  justifyContent: 'center',
+                }}>
+                <View
+                  style={{
+                    alignSelf: 'center',
+                    width: '10%',
+                  }}>
+                  <TouchableOpacity
+                    onPress={() => setShowHistory(false)}
+                    style={{
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}>
+                    <Image
+                      source={arrowLeft}
+                      style={{
+                        width: 15,
+                        height: 16,
+                        resizeMode: 'contain',
+                      }}
+                    />
                   </TouchableOpacity>
                 </View>
+
+                <View
+                  style={{
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginVertical: '2%',
+                    width: '90%',
+                  }}>
+                  <Text
+                    style={{
+                      fontSize: 22,
+                      color: colors.text,
+                      marginBottom: 10,
+                      fontWeight: '800',
+                      marginLeft: '8%',
+                      alignItems: 'center',
+                    }}>
+                    Daftar Laporan
+                  </Text>
+                </View>
               </View>
-            )}
-          />
-        </View>
+            </View>
+            <View
+              style={{
+                backgroundColor: colors.bg,
+                width: '95%',
+                borderRadius: 10,
+                paddingHorizontal: '2%',
+                paddingVertical: '5%',
+                alignItems: 'center',
+                alignSelf: 'center',
+                marginTop: '5%',
+              }}>
+              {/* Sub-judul & Search Bar */}
+              <View
+                style={{
+                  width: '100%',
+                }}>
+                <Text style={[styles.modalSubTitle, {color: colors.info}]}>
+                  Daftar lengkap laporan bencana yang anda laporkan
+                </Text>
+              </View>
+              <View
+                style={{
+                  width: '90%',
+                  paddingVertical: '3%',
+                }}>
+                <TextInput
+                  style={styles.searchInput}
+                  placeholder="Cari Laporan"
+                  placeholderTextColor="#999"
+                />
+              </View>
+
+              {/* Daftar isi laporan */}
+              <FlatList
+                data={HISTORY_DATA}
+                keyExtractor={item => item.id}
+                contentContainerStyle={{
+                  paddingBottom: 20,
+                  width: '100%',
+                }}
+                style={{
+                  width: '90%',
+                }}
+                renderItem={({item}) => (
+                  <View
+                    style={[
+                      styles.reportItem,
+                      {
+                        borderWidth: 1,
+                        borderColor: colors.info,
+                        backgroundColor: colors.bg,
+                        width: '100%',
+                        paddingHorizontal: '3%',
+                        paddingVertical: '5%',
+                      },
+                    ]}>
+                    <View
+                      style={{
+                        width: '100%',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        flexDirection: 'row',
+                      }}>
+                      <Text style={[styles.reportTitle, {color: colors.text}]}>
+                        {item.title}
+                      </Text>
+                      <View
+                        style={{
+                          borderWidth: 1,
+                          borderColor: colors.info,
+                          borderRadius: 10,
+                          paddingHorizontal: '2%',
+                          paddingVertical: '2%',
+                        }}>
+                        <Text
+                          style={[styles.reportStatus, {color: colors.text}]}>
+                          {item.status}
+                        </Text>
+                      </View>
+                    </View>
+
+                    <Text style={styles.reportDate}>{item.dateTime}</Text>
+                    <Text style={styles.reportLocation}>{item.location}</Text>
+
+                    <View style={styles.reportFooter}>
+                      <TouchableOpacity style={styles.helpButton}>
+                        <Image
+                          source={call}
+                          style={{
+                            width: 15,
+                            height: 16,
+                            resizeMode: 'contain',
+                          }}
+                        />
+                        <Text
+                          style={[styles.helpButtonText, {color: '#F36A1D'}]}>
+                          Hubungi Bantuan
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                )}
+              />
+            </View>
+          </View>
+        </ImageBackground>
       </Modal>
     </>
   );
@@ -393,6 +520,7 @@ const styles = StyleSheet.create({
     color: '#666',
     marginBottom: 10,
     marginHorizontal: 16,
+    width: '70%',
   },
   searchWrapper: {
     marginHorizontal: 16,
@@ -402,7 +530,7 @@ const styles = StyleSheet.create({
     height: 40,
     borderWidth: 1,
     borderColor: '#ccc',
-    borderRadius: 8,
+    borderRadius: 5,
     paddingHorizontal: 10,
   },
 
@@ -410,11 +538,11 @@ const styles = StyleSheet.create({
   reportItem: {
     backgroundColor: '#F8F8F8',
     borderRadius: 10,
-    padding: 12,
+
     marginBottom: 10,
   },
   reportTitle: {
-    fontSize: 16,
+    fontSize: 13,
     fontWeight: '600',
     marginBottom: 4,
   },
@@ -425,7 +553,7 @@ const styles = StyleSheet.create({
   },
   reportLocation: {
     fontSize: 12,
-    color: '#999',
+    color: '#F59047',
     marginBottom: 8,
   },
   reportFooter: {
@@ -434,19 +562,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   reportStatus: {
-    fontSize: 12,
+    fontSize: 10,
     color: '#FF9900', // contoh warna "Menunggu Verifikasi"
     fontWeight: '600',
   },
   helpButton: {
-    backgroundColor: '#FF5E5E',
-    borderRadius: 8,
+    backgroundColor: 'transparent',
+    borderRadius: 0,
     paddingVertical: 6,
     paddingHorizontal: 10,
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
   },
   helpButtonText: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#fff',
     fontWeight: '600',
+    marginLeft: '3%',
   },
 });
