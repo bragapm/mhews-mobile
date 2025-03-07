@@ -19,10 +19,15 @@ import {
 } from 'react-native';
 import COLORS from '../config/COLORS';
 import {HeaderNav} from '../components/Header';
+import MapboxGL, {Camera} from '@rnmapbox/maps';
 import {useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {RootStackParamList} from '../navigation/types';
 import LinearGradient from 'react-native-linear-gradient';
+import {getData, MAPBOX_ACCESS_TOKEN} from '../services/apiServices';
+
+// Ganti dengan token Mapbox Anda
+MapboxGL.setAccessToken(MAPBOX_ACCESS_TOKEN);
 
 const {width, height} = Dimensions.get('window');
 
@@ -83,6 +88,9 @@ const DisasterReportScreen = () => {
       status: 'Menunggu Verifikasi',
     },
   ];
+
+  const [selectedDisaster, setSelectedDisaster] = useState<string | null>(null);
+
   // Daftar bencana
   const DISASTERS = [
     {
@@ -240,7 +248,10 @@ const DisasterReportScreen = () => {
               numColumns={2}
               columnWrapperStyle={{justifyContent: 'space-between'}}
               renderItem={({item}) => (
-                <TouchableOpacity style={styles.card} activeOpacity={0.8}>
+                <TouchableOpacity
+                  style={styles.card}
+                  onPress={() => setSelectedDisaster(item.id)}
+                  activeOpacity={0.8}>
                   <LinearGradient
                     colors={[colors.gradientCardStart, colors.gradientCardEnd]}
                     style={[
@@ -443,6 +454,280 @@ const DisasterReportScreen = () => {
           </View>
         </ImageBackground>
       </Modal>
+
+      {/*  */}
+      <Modal
+        visible={selectedDisaster !== null}
+        animationType="slide"
+        onRequestClose={() => setSelectedDisaster(null)}>
+        <ImageBackground
+          source={backgroundSource}
+          style={styles.background}
+          resizeMode="cover">
+          <ScrollView contentContainerStyle={{paddingBottom: 20}}>
+            {/* Header modal form */}
+            {/*  */}
+            <View
+              style={{
+                width: '100%',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexDirection: 'row',
+              }}>
+              <View
+                style={{
+                  width: '90%',
+                  alignItems: 'center',
+                  flexDirection: 'row',
+                  justifyContent: 'center',
+                }}>
+                <View
+                  style={{
+                    alignSelf: 'center',
+                    width: '10%',
+                  }}>
+                  <TouchableOpacity
+                    onPress={() => setSelectedDisaster(null)}
+                    style={{
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}>
+                    <Image
+                      source={arrowLeft}
+                      style={{
+                        width: 15,
+                        height: 16,
+                        resizeMode: 'contain',
+                      }}
+                    />
+                  </TouchableOpacity>
+                </View>
+
+                <View
+                  style={{
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginVertical: '2%',
+                    width: '90%',
+                  }}>
+                  <Text
+                    style={{
+                      fontSize: 22,
+                      color: colors.text,
+                      marginBottom: 10,
+                      fontWeight: '800',
+                      marginLeft: '8%',
+                      alignItems: 'center',
+                    }}>
+                    {selectedDisaster === '1' && 'Lapor Banjir'}
+                    {selectedDisaster === '2' && 'Lapor Erupsi Gunung Berapi'}
+                    {selectedDisaster === '3' && 'Lapor Gempa Bumi'}
+                    {selectedDisaster === '4' && 'Lapor Kebakaran Hutan'}
+                    {selectedDisaster === '5' && 'Lapor Kabut Asap'}
+                    {selectedDisaster === '6' && 'Lapor Angin Kencang'}
+                    {selectedDisaster === '7' && 'Lapor Tanah Longsor'}
+                    {selectedDisaster === '8' && 'Lapor Tsunami'}
+                  </Text>
+                </View>
+              </View>
+            </View>
+            {/*  */}
+
+            <View style={styles.formContainer}>
+              <Text style={[styles.formSubtitle, {color: colors.info}]}>
+                Lengkapi laporan dibawah ini untuk lapor bencana{' '}
+                {selectedDisaster === '1' && 'banjir'}
+                {selectedDisaster === '2' && 'erupsi gunung berapi'}
+                {selectedDisaster === '3' && 'gempa bumi'}
+                {selectedDisaster === '4' && 'kebakaran hutan'}
+                {selectedDisaster === '5' && 'kabut asap'}
+                {selectedDisaster === '6' && 'angin kencang'}
+                {selectedDisaster === '7' && 'tanah longsor'}
+                {selectedDisaster === '8' && 'tsunami'}
+              </Text>
+
+              {/* Lokasi Bencana & Map */}
+              <Text style={[styles.label, {color: colors.text}]}>
+                Lokasi Bencana
+              </Text>
+              <View style={styles.mapPlaceholder}>
+                <MapboxGL.MapView
+                  style={{flex: 1}}
+                  styleURL={MapboxGL.StyleURL.Street}>
+                  <Camera
+                    zoomLevel={12}
+                    centerCoordinate={[106.84513, -6.21462]} // Contoh koordinat (Jakarta)
+                    animationMode={'flyTo'}
+                    animationDuration={0}
+                  />
+                </MapboxGL.MapView>
+              </View>
+
+              {/* =========== CONTOH FORM SPESIFIK PER BENCANA =========== */}
+              {/* Banjir */}
+              {selectedDisaster === '1' && (
+                <>
+                  <Text style={styles.label}>Kedalaman Banjir</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="0 cm"
+                    keyboardType="numeric"
+                  />
+                  <View style={{marginVertical: 10}}>
+                    <Text style={styles.infoText}>
+                      • Rata-rata tinggi mata kaki orang dewasa ~ 10 cm
+                    </Text>
+                    <Text style={styles.infoText}>
+                      • Rata-rata tinggi betis orang dewasa ~ 40 cm
+                    </Text>
+                    <Text style={styles.infoText}>
+                      • Rata-rata tinggi dada orang dewasa ~ 140 cm
+                    </Text>
+                  </View>
+                </>
+              )}
+
+              {/* Erupsi Gunung Berapi */}
+              {selectedDisaster === '2' && (
+                <>
+                  <Text style={styles.label}>Tanda-Tanda Gunung Berapi</Text>
+                  {/* Contoh checkbox placeholder */}
+                  <View style={{marginBottom: 10}}>
+                    <Text style={styles.infoText}>
+                      [ ] Kenaikan suhu signifikan
+                    </Text>
+                    <Text style={styles.infoText}>
+                      [ ] Kekeringan/kematian tumbuhan
+                    </Text>
+                    <Text style={styles.infoText}>
+                      [ ] Perilaku hewan liar tidak biasa
+                    </Text>
+                    <Text style={styles.infoText}>[ ] Sumber gas beracun</Text>
+                    <Text style={styles.infoText}>[ ] Gemuruh yang sering</Text>
+                    <Text style={styles.infoText}>
+                      [ ] Suara gemuruh yang sering
+                    </Text>
+                  </View>
+                  <Text style={styles.label}>Jumlah Orang di Sekitar</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="0 orang"
+                    keyboardType="numeric"
+                  />
+                </>
+              )}
+
+              {/* Gempa Bumi */}
+              {selectedDisaster === '3' && (
+                <>
+                  <Text style={styles.label}>
+                    Apakah anda ingin melaporkan kerusakan jalan?
+                  </Text>
+                  {/* Contoh radio button placeholder */}
+                  <View style={{flexDirection: 'row', marginVertical: 5}}>
+                    <Text style={styles.infoText}>[ ] Ya</Text>
+                    <Text style={[styles.infoText, {marginLeft: 30}]}>
+                      [ ] Tidak
+                    </Text>
+                  </View>
+
+                  <Text style={styles.label}>Luas Jalan</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="0 m2"
+                    keyboardType="numeric"
+                  />
+                  <View style={{marginVertical: 10}}>
+                    <Text style={styles.infoText}>
+                      • Rata-rata jalan 2 lajur pejalan kaki atas 1
+                    </Text>
+                    <Text style={styles.infoText}>
+                      • Rata-rata jalan 1 lajur mobil di level 2
+                    </Text>
+                    {/* Silakan tambahkan sesuai info di screenshot */}
+                  </View>
+
+                  <Text style={styles.label}>Tingkat Kerusakan Jalan</Text>
+                  <View style={{marginVertical: 5}}>
+                    <Text style={styles.infoText}>[ ] Rusak Ringan</Text>
+                    <Text style={styles.infoText}>[ ] Rusak Sedang</Text>
+                    <Text style={styles.infoText}>[ ] Rusak Berat</Text>
+                  </View>
+                </>
+              )}
+
+              {/* FORM GENERIK (Kebakaran Hutan, Kabut Asap, Angin Kencang, Tanah Longsor, Tsunami) */}
+              {(selectedDisaster === '4' ||
+                selectedDisaster === '5' ||
+                selectedDisaster === '6' ||
+                selectedDisaster === '7' ||
+                selectedDisaster === '8') && (
+                <>
+                  <Text style={styles.label}>Unggah Foto Kejadian</Text>
+                  <TouchableOpacity style={styles.uploadButton}>
+                    <Text style={{color: '#666'}}>
+                      Unggah Foto Kejadian Disini
+                    </Text>
+                  </TouchableOpacity>
+
+                  <Text style={styles.label}>Deskripsi Kejadian</Text>
+                  <TextInput
+                    style={styles.inputArea}
+                    placeholder="Masukkan Deskripsi Kejadian Bencana"
+                    multiline
+                  />
+
+                  <Text style={styles.label}>
+                    Apakah anda membutuhkan bantuan?
+                  </Text>
+                  <View style={{flexDirection: 'row', marginVertical: 5}}>
+                    <Text style={styles.infoText}>[ ] Ya</Text>
+                    <Text style={[styles.infoText, {marginLeft: 30}]}>
+                      [ ] Tidak
+                    </Text>
+                  </View>
+
+                  <Text style={styles.label}>
+                    Apakah anda ingin melaporkan kerusakan?
+                  </Text>
+                  <View style={{flexDirection: 'row', marginVertical: 5}}>
+                    <Text style={styles.infoText}>[ ] Ya</Text>
+                    <Text style={[styles.infoText, {marginLeft: 30}]}>
+                      [ ] Tidak
+                    </Text>
+                  </View>
+
+                  <Text style={styles.label}>Deskripsi Kerusakan</Text>
+                  <TextInput
+                    style={styles.inputArea}
+                    placeholder="Masukkan Deskripsi Kerusakan yang Terjadi"
+                    multiline
+                  />
+                </>
+              )}
+
+              {/* Unggah foto & tombol submit (Banjir, Erupsi, Gempa juga butuh ini) */}
+              {selectedDisaster === '1' ||
+              selectedDisaster === '2' ||
+              selectedDisaster === '3' ? (
+                <>
+                  <Text style={styles.label}>Unggah Foto Kejadian</Text>
+                  <TouchableOpacity style={styles.uploadButton}>
+                    <Text style={{color: '#666'}}>
+                      Unggah Foto Kejadian Disini
+                    </Text>
+                  </TouchableOpacity>
+                </>
+              ) : null}
+
+              {/* Tombol Kirim Laporan */}
+              <TouchableOpacity style={styles.submitButton}>
+                <Text style={styles.submitButtonText}>Kirim Laporan</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </ImageBackground>
+      </Modal>
     </>
   );
 };
@@ -581,5 +866,77 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '600',
     marginLeft: '3%',
+  },
+  formModalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  formContainer: {
+    marginHorizontal: 20,
+    marginTop: 20,
+    paddingBottom: 30,
+  },
+  formSubtitle: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 16,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 6,
+  },
+  mapPlaceholder: {
+    width: '100%',
+    height: 200,
+    backgroundColor: '#EEE',
+    borderRadius: 10,
+    marginBottom: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  input: {
+    height: 40,
+    borderColor: '#CCC',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    marginBottom: 10,
+  },
+  inputArea: {
+    height: 80,
+    borderColor: '#CCC',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingTop: 10,
+    marginBottom: 10,
+    textAlignVertical: 'top',
+  },
+  infoText: {
+    fontSize: 13,
+    color: '#666',
+    marginBottom: 4,
+  },
+  uploadButton: {
+    height: 50,
+    borderColor: '#CCC',
+    borderWidth: 1,
+    borderRadius: 8,
+    marginBottom: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  submitButton: {
+    backgroundColor: '#F36A1D',
+    borderRadius: 8,
+    paddingVertical: 14,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  submitButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
