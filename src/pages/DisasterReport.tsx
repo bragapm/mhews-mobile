@@ -1,4 +1,4 @@
-import React, {useRef, useState, useEffect, useCallback} from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -18,18 +18,18 @@ import {
   Platform,
 } from 'react-native';
 import COLORS from '../config/COLORS';
-import {HeaderNav} from '../components/Header';
-import MapboxGL, {Camera} from '@rnmapbox/maps';
-import {useNavigation} from '@react-navigation/native';
-import {StackNavigationProp} from '@react-navigation/stack';
-import {RootStackParamList} from '../navigation/types';
+import { HeaderNav } from '../components/Header';
+import MapboxGL, { Camera } from '@rnmapbox/maps';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../navigation/types';
 import LinearGradient from 'react-native-linear-gradient';
-import {getData, MAPBOX_ACCESS_TOKEN} from '../services/apiServices';
+import { getData, MAPBOX_ACCESS_TOKEN } from '../services/apiServices';
 
 // Ganti dengan token Mapbox Anda
 MapboxGL.setAccessToken(MAPBOX_ACCESS_TOKEN);
 
-const {width, height} = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 const DisasterReportScreen = () => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
@@ -246,8 +246,8 @@ const DisasterReportScreen = () => {
               data={DISASTERS}
               keyExtractor={item => item.id}
               numColumns={2}
-              columnWrapperStyle={{justifyContent: 'space-between'}}
-              renderItem={({item}) => (
+              columnWrapperStyle={{ justifyContent: 'space-between' }}
+              renderItem={({ item }) => (
                 <TouchableOpacity
                   style={styles.card}
                   onPress={() => setSelectedDisaster(item.id)}
@@ -262,7 +262,7 @@ const DisasterReportScreen = () => {
                     ]}>
                     <View style={styles.cardContent}>
                       <Image source={item.image} style={styles.cardImage} />
-                      <View style={{width: '80%'}}>
+                      <View style={{ width: '80%' }}>
                         <Text
                           style={styles.cardTitle}
                           numberOfLines={2}
@@ -289,7 +289,7 @@ const DisasterReportScreen = () => {
           style={styles.background}
           resizeMode="cover">
           <View
-            style={[styles.modalContainer, {backgroundColor: 'transparent'}]}>
+            style={[styles.modalContainer, { backgroundColor: 'transparent' }]}>
             <View
               style={{
                 width: '100%',
@@ -363,7 +363,7 @@ const DisasterReportScreen = () => {
                 style={{
                   width: '100%',
                 }}>
-                <Text style={[styles.modalSubTitle, {color: colors.info}]}>
+                <Text style={[styles.modalSubTitle, { color: colors.info }]}>
                   Daftar lengkap laporan bencana yang anda laporkan
                 </Text>
               </View>
@@ -390,7 +390,7 @@ const DisasterReportScreen = () => {
                 style={{
                   width: '90%',
                 }}
-                renderItem={({item}) => (
+                renderItem={({ item }) => (
                   <View
                     style={[
                       styles.reportItem,
@@ -410,7 +410,7 @@ const DisasterReportScreen = () => {
                         justifyContent: 'space-between',
                         flexDirection: 'row',
                       }}>
-                      <Text style={[styles.reportTitle, {color: colors.text}]}>
+                      <Text style={[styles.reportTitle, { color: colors.text }]}>
                         {item.title}
                       </Text>
                       <View
@@ -422,7 +422,7 @@ const DisasterReportScreen = () => {
                           paddingVertical: '2%',
                         }}>
                         <Text
-                          style={[styles.reportStatus, {color: colors.text}]}>
+                          style={[styles.reportStatus, { color: colors.text }]}>
                           {item.status}
                         </Text>
                       </View>
@@ -442,7 +442,7 @@ const DisasterReportScreen = () => {
                           }}
                         />
                         <Text
-                          style={[styles.helpButtonText, {color: '#F36A1D'}]}>
+                          style={[styles.helpButtonText, { color: '#F36A1D' }]}>
                           Hubungi Bantuan
                         </Text>
                       </TouchableOpacity>
@@ -464,7 +464,7 @@ const DisasterReportScreen = () => {
           source={backgroundSource}
           style={styles.background}
           resizeMode="cover">
-          <ScrollView contentContainerStyle={{paddingBottom: 20}}>
+          <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
             {/* Header modal form */}
             {/*  */}
             <View
@@ -534,7 +534,7 @@ const DisasterReportScreen = () => {
             {/*  */}
 
             <View style={styles.formContainer}>
-              <Text style={[styles.formSubtitle, {color: colors.info}]}>
+              <Text style={[styles.formSubtitle, { color: colors.info }]}>
                 Lengkapi laporan dibawah ini untuk lapor bencana{' '}
                 {selectedDisaster === '1' && 'banjir'}
                 {selectedDisaster === '2' && 'erupsi gunung berapi'}
@@ -547,12 +547,12 @@ const DisasterReportScreen = () => {
               </Text>
 
               {/* Lokasi Bencana & Map */}
-              <Text style={[styles.label, {color: colors.text}]}>
+              <Text style={[styles.label, { color: colors.text }]}>
                 Lokasi Bencana
               </Text>
               <View style={styles.mapPlaceholder}>
                 <MapboxGL.MapView
-                  style={{flex: 1}}
+                  style={{ flex: 1 }}
                   styleURL={MapboxGL.StyleURL.Street}>
                   <Camera
                     zoomLevel={12}
@@ -573,7 +573,7 @@ const DisasterReportScreen = () => {
                     placeholder="0 cm"
                     keyboardType="numeric"
                   />
-                  <View style={{marginVertical: 10}}>
+                  <View style={{ marginVertical: 10 }}>
                     <Text style={styles.infoText}>
                       • Rata-rata tinggi mata kaki orang dewasa ~ 10 cm
                     </Text>
@@ -592,7 +592,7 @@ const DisasterReportScreen = () => {
                 <>
                   <Text style={styles.label}>Tanda-Tanda Gunung Berapi</Text>
                   {/* Contoh checkbox placeholder */}
-                  <View style={{marginBottom: 10}}>
+                  <View style={{ marginBottom: 10 }}>
                     <Text style={styles.infoText}>
                       [ ] Kenaikan suhu signifikan
                     </Text>
@@ -624,9 +624,9 @@ const DisasterReportScreen = () => {
                     Apakah anda ingin melaporkan kerusakan jalan?
                   </Text>
                   {/* Contoh radio button placeholder */}
-                  <View style={{flexDirection: 'row', marginVertical: 5}}>
+                  <View style={{ flexDirection: 'row', marginVertical: 5 }}>
                     <Text style={styles.infoText}>[ ] Ya</Text>
-                    <Text style={[styles.infoText, {marginLeft: 30}]}>
+                    <Text style={[styles.infoText, { marginLeft: 30 }]}>
                       [ ] Tidak
                     </Text>
                   </View>
@@ -637,7 +637,7 @@ const DisasterReportScreen = () => {
                     placeholder="0 m2"
                     keyboardType="numeric"
                   />
-                  <View style={{marginVertical: 10}}>
+                  <View style={{ marginVertical: 10 }}>
                     <Text style={styles.infoText}>
                       • Rata-rata jalan 2 lajur pejalan kaki atas 1
                     </Text>
@@ -648,7 +648,7 @@ const DisasterReportScreen = () => {
                   </View>
 
                   <Text style={styles.label}>Tingkat Kerusakan Jalan</Text>
-                  <View style={{marginVertical: 5}}>
+                  <View style={{ marginVertical: 5 }}>
                     <Text style={styles.infoText}>[ ] Rusak Ringan</Text>
                     <Text style={styles.infoText}>[ ] Rusak Sedang</Text>
                     <Text style={styles.infoText}>[ ] Rusak Berat</Text>
@@ -662,58 +662,58 @@ const DisasterReportScreen = () => {
                 selectedDisaster === '6' ||
                 selectedDisaster === '7' ||
                 selectedDisaster === '8') && (
-                <>
-                  <Text style={styles.label}>Unggah Foto Kejadian</Text>
-                  <TouchableOpacity style={styles.uploadButton}>
-                    <Text style={{color: '#666'}}>
-                      Unggah Foto Kejadian Disini
+                  <>
+                    <Text style={styles.label}>Unggah Foto Kejadian</Text>
+                    <TouchableOpacity style={styles.uploadButton}>
+                      <Text style={{ color: '#666' }}>
+                        Unggah Foto Kejadian Disini
+                      </Text>
+                    </TouchableOpacity>
+
+                    <Text style={styles.label}>Deskripsi Kejadian</Text>
+                    <TextInput
+                      style={styles.inputArea}
+                      placeholder="Masukkan Deskripsi Kejadian Bencana"
+                      multiline
+                    />
+
+                    <Text style={styles.label}>
+                      Apakah anda membutuhkan bantuan?
                     </Text>
-                  </TouchableOpacity>
+                    <View style={{ flexDirection: 'row', marginVertical: 5 }}>
+                      <Text style={styles.infoText}>[ ] Ya</Text>
+                      <Text style={[styles.infoText, { marginLeft: 30 }]}>
+                        [ ] Tidak
+                      </Text>
+                    </View>
 
-                  <Text style={styles.label}>Deskripsi Kejadian</Text>
-                  <TextInput
-                    style={styles.inputArea}
-                    placeholder="Masukkan Deskripsi Kejadian Bencana"
-                    multiline
-                  />
-
-                  <Text style={styles.label}>
-                    Apakah anda membutuhkan bantuan?
-                  </Text>
-                  <View style={{flexDirection: 'row', marginVertical: 5}}>
-                    <Text style={styles.infoText}>[ ] Ya</Text>
-                    <Text style={[styles.infoText, {marginLeft: 30}]}>
-                      [ ] Tidak
+                    <Text style={styles.label}>
+                      Apakah anda ingin melaporkan kerusakan?
                     </Text>
-                  </View>
+                    <View style={{ flexDirection: 'row', marginVertical: 5 }}>
+                      <Text style={styles.infoText}>[ ] Ya</Text>
+                      <Text style={[styles.infoText, { marginLeft: 30 }]}>
+                        [ ] Tidak
+                      </Text>
+                    </View>
 
-                  <Text style={styles.label}>
-                    Apakah anda ingin melaporkan kerusakan?
-                  </Text>
-                  <View style={{flexDirection: 'row', marginVertical: 5}}>
-                    <Text style={styles.infoText}>[ ] Ya</Text>
-                    <Text style={[styles.infoText, {marginLeft: 30}]}>
-                      [ ] Tidak
-                    </Text>
-                  </View>
-
-                  <Text style={styles.label}>Deskripsi Kerusakan</Text>
-                  <TextInput
-                    style={styles.inputArea}
-                    placeholder="Masukkan Deskripsi Kerusakan yang Terjadi"
-                    multiline
-                  />
-                </>
-              )}
+                    <Text style={styles.label}>Deskripsi Kerusakan</Text>
+                    <TextInput
+                      style={styles.inputArea}
+                      placeholder="Masukkan Deskripsi Kerusakan yang Terjadi"
+                      multiline
+                    />
+                  </>
+                )}
 
               {/* Unggah foto & tombol submit (Banjir, Erupsi, Gempa juga butuh ini) */}
               {selectedDisaster === '1' ||
-              selectedDisaster === '2' ||
-              selectedDisaster === '3' ? (
+                selectedDisaster === '2' ||
+                selectedDisaster === '3' ? (
                 <>
                   <Text style={styles.label}>Unggah Foto Kejadian</Text>
                   <TouchableOpacity style={styles.uploadButton}>
-                    <Text style={{color: '#666'}}>
+                    <Text style={{ color: '#666' }}>
                       Unggah Foto Kejadian Disini
                     </Text>
                   </TouchableOpacity>
@@ -744,7 +744,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingBottom: 20,
   },
-  container: {flex: 1, padding: 16, marginTop: '5%'},
+  container: { flex: 1, padding: 16, marginTop: '5%' },
   card: {
     borderRadius: 12,
     width: 180,

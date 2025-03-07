@@ -1,4 +1,4 @@
-import React, {createContext, useContext, useEffect, useState} from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -8,7 +8,7 @@ import {
   StyleSheet,
   Alert,
 } from 'react-native';
-import {useColorScheme} from 'react-native';
+import { useColorScheme } from 'react-native';
 import COLORS from '../config/COLORS';
 import colors from '../constants/colors';
 import AntDesign from 'react-native-vector-icons/AntDesign';
@@ -25,12 +25,12 @@ export const HeaderNav = ({
   const colorScheme = useColorScheme();
   const colors = COLORS();
 
-  const iconMap: {[key: string]: any} = {
+  const iconMap: { [key: string]: any } = {
     bnpb: require('../assets/icons/bnpb-logo.png'),
   };
 
   return (
-    <View style={[styles.header, {backgroundColor: colors.header}]}>
+    <View style={[styles.header, { backgroundColor: colors.header }]}>
       <TouchableOpacity
         onPress={onPress}
         style={icon ? styles.withIconSpacing : {}}>
@@ -42,14 +42,14 @@ export const HeaderNav = ({
           <View
             style={[
               styles.iconWrapper,
-              {backgroundColor: colors.cardBackground},
+              { backgroundColor: colors.cardBackground },
             ]}>
             <Image source={iconMap[icon]} style={styles.iconImage} />
           </View>
-          <Text style={[styles.title, {color: colors.text}]}>{title}</Text>
+          <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
         </View>
       ) : (
-        <Text style={[styles.titleCenter, {color: colors.text}]}>{title}</Text>
+        <Text style={[styles.titleCenter, { color: colors.text }]}>{title}</Text>
       )}
     </View>
   );

@@ -1,3 +1,4 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 
 export const BASE_URL = "https://mhewsmobile.braga.co.id/";
@@ -16,10 +17,14 @@ const api = axios.create({
 
 api.interceptors.request.use(
     async (config) => {
-        // const token = await AsyncStorage.getItem("token");
-        // if (token) {
-        //     config.headers.Authorization = `Bearer ${token}`;
-        // }
+        try {
+            const token = await AsyncStorage.getItem("token");
+            if (token) {
+                config.headers.Authorization = `Bearer ${token}`;
+            }
+        } catch (error) {
+            console.error("Error getting token:", error);
+        }
         return config;
     },
     (error) => {
@@ -30,16 +35,29 @@ api.interceptors.request.use(
 api.interceptors.response.use(
     (response) => response,
     (error) => {
-        console.error("API Error:", error.response?.data || error.message);
+        if (error.response) {
+            console.error("API Error:", {
+                status: error.response.status,
+                data: error.response.data,
+                headers: error.response.headers,
+            });
+        } else if (error.request) {
+            console.error("No response received:", error.request);
+        } else {
+            console.error("Request setup error:", error.message);
+        }
         return Promise.reject(error);
     }
 );
 
+
 export const getData = async (endpoint: string, params = {}) => {
     try {
+        console.log(`Fetching data from ${BASE_URL}${endpoint}`, params);
         const response = await api.get(endpoint, { params });
         return response.data;
     } catch (error) {
+        console.error("Error fetching data:", error);
         throw error;
     }
 };

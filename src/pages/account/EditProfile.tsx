@@ -24,6 +24,7 @@ import { HeaderNav } from "../../components/Header";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../../navigation/types";
+import { patchData } from "../../services/apiServices";
 
 const signupSchema = z.object({
     NIK: z.string().min(16, "NIK harus 16 digit").max(16, "NIK harus 16 digit"),
@@ -78,16 +79,15 @@ export default function EditProfileScreen() {
     const handleUpdateData = async (formData: any) => {
         setLoading(true);
         try {
-            console.log(formData);
-            //   // Contoh postData ke server
-            //   const response = await postData("/users", requestData);
-
-            // Bypass: asumsikan response sukses
-            setTimeout(() => {
+            const response = await patchData("/users/" + profile?.id, formData);
+            if (response?.data) {
                 setLoading(false);
                 showAlert("success", "Data profile berhasil diperbarui!");
                 setShowForm(false);
-            }, 2000);
+            } else {
+                setLoading(false);
+                showAlert("error", "Data profile gagal diperbarui!");
+            }
         } catch (error: any) {
             showAlert("error", error.message);
             setLoading(false);
