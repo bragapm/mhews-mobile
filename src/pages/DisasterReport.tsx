@@ -16,6 +16,7 @@ import {
   ScrollView,
   ImageBackground,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import COLORS from '../config/COLORS';
 import { HeaderNav } from '../components/Header';
@@ -24,7 +25,12 @@ import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/types';
 import LinearGradient from 'react-native-linear-gradient';
-import { getData, MAPBOX_ACCESS_TOKEN } from '../services/apiServices';
+import { getData, MAPBOX_ACCESS_TOKEN, postData } from '../services/apiServices';
+import useAuthStore from '../hooks/auth';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import { Checkbox, RadioButton } from 'react-native-paper';
+import { getLocationDetails } from '../utils/locationUtils';
+import { useAlert } from '../components/AlertContext';
 
 // Ganti dengan token Mapbox Anda
 MapboxGL.setAccessToken(MAPBOX_ACCESS_TOKEN);
@@ -57,83 +63,176 @@ const DisasterReportScreen = () => {
   const tsunami = require('../assets/images/Tsunami-ReportDisaster.png');
   const call = require('../assets/images/phone.png');
   const [showHistory, setShowHistory] = useState(false);
-
-  const HISTORY_DATA = [
-    {
-      id: '1',
-      title: 'Kebakaran Hutan Cilacap',
-      dateTime: '14 Februari 2025 - 18:30:56 WIB',
-      location: 'Kabupaten Cilacap, Jawa Tengah',
-      status: 'Menunggu Verifikasi',
-    },
-    {
-      id: '2',
-      title: 'Gempa Bumi Cilacap',
-      dateTime: '14 Februari 2025 - 18:30:56 WIB',
-      location: 'Kabupaten Cilacap, Jawa Tengah',
-      status: 'Menunggu Verifikasi',
-    },
-    {
-      id: '3',
-      title: 'Erupsi Gunung Berapi Cilacap',
-      dateTime: '14 Februari 2025 - 18:30:56 WIB',
-      location: 'Kabupaten Cilacap, Jawa Tengah',
-      status: 'Menunggu Verifikasi',
-    },
-    {
-      id: '4',
-      title: 'Banjir Cilacap',
-      dateTime: '14 Februari 2025 - 18:30:56 WIB',
-      location: 'Kabupaten Cilacap, Jawa Tengah',
-      status: 'Menunggu Verifikasi',
-    },
-  ];
-
   const [selectedDisaster, setSelectedDisaster] = useState<string | null>(null);
+  const [laporanBencana, setLaporanBencana] = useState([]);
+  const { profile, getProfile } = useAuthStore();
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const mapRef = useRef<MapboxGL.MapView | null>(null);
+  const { showAlert } = useAlert();
+
+  const [volcanoSigns, setVolcanoSigns] = useState({
+    temperatureRise: false,
+    plantDeath: false,
+    animalBehavior: false,
+    toxicGas: false,
+    frequentRumbling: false,
+    loudNoises: false,
+  });
+
+  const [reportDamage, setReportDamage] = useState('');
+  const [roadDamageLevel, setRoadDamageLevel] = useState('');
+  const [needHelp, setNeedHelp] = useState('');
+  const [selectedLocation, setSelectedLocation] = useState<[number, number] | null>(null);
+  const [kedalamanBanjir, setKedalamanBanjir] = useState('');
+  const [jumlahOrang, setJumlahOrang] = useState('');
+  const [luasJalan, setLuasJalan] = useState('');
+  const [deskripsiKejadian, setDeskripsiKejadian] = useState('');
+  const [deskripsiKerusakan, setDeskripsiKerusakan] = useState('');
 
   // Daftar bencana
   const DISASTERS = [
     {
       id: '1',
       title: 'Bencana Banjir',
+      jenis_laporan_bencana: 'banjir',
       image: banjir,
     },
     {
       id: '2',
       title: 'Erupsi Gunung Berapi',
+      jenis_laporan_bencana: 'gunung berapi',
       image: erupsi,
     },
     {
       id: '3',
       title: 'Gempa Bumi',
+      jenis_laporan_bencana: 'gempa bumi',
       image: gempa,
     },
     {
       id: '4',
       title: 'Kebakaran Hutan',
+      jenis_laporan_bencana: 'Kebakaran Hutan',
       image: kebakaranHutan,
     },
     {
       id: '5',
       title: 'Kabut Asap',
+      jenis_laporan_bencana: 'Kabut Asap',
       image: kabutAsap,
     },
     {
       id: '6',
       title: 'Angin Kencang',
+      jenis_laporan_bencana: 'Angin Kencang',
       image: anginKencang,
     },
     {
       id: '7',
       title: 'Tanah Longsor',
+      jenis_laporan_bencana: 'tanah longsor',
       image: longsor,
     },
     {
       id: '8',
       title: 'Gelombang Tsunami',
+      jenis_laporan_bencana: 'tsunami',
       image: tsunami,
     },
   ];
+
+  useEffect(() => {
+    getProfile();
+    fetchData();
+  }, []);
+
+  const handleMapPress = async (event: any) => {
+    const { geometry } = event;
+    if (geometry && geometry.coordinates) {
+      setSelectedLocation(geometry.coordinates);
+    }
+  };
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const [laporan_bencana] = await Promise.all([
+        getData('items/laporan_bencana'),
+      ]);
+
+      console.log(laporan_bencana?.data);
+
+      setLaporanBencana(laporan_bencana?.data || []);
+    } catch (err: any) {
+      setError(err.message);
+      console.error('Gagal mengambil data:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleCheckbox = (key: keyof typeof volcanoSigns) => {
+    setVolcanoSigns(prev => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
+
+  const submitLaporan = async () => {
+    if (!selectedLocation) {
+      showAlert('error', 'Lokasi belum dipilih!');
+      return;
+    }
+
+    const disaster = DISASTERS.find(d => d.id === selectedDisaster);
+    let address;
+    if (selectedLocation) {
+      address = await getLocationDetails(
+        selectedLocation[1],
+        selectedLocation[0],
+      );
+    }
+
+    const data = {
+      "jenis_laporan_bencana": disaster ? disaster.jenis_laporan_bencana : "Tidak Diketahui",
+      "nama_bencana": disaster ? disaster.title : "Tidak Diketahui",
+      "status_laporan": "Menunggu Verifikasi",
+      "pelapor": "ae819633-a26d-4a3d-91b8-ba5e58da3bd1",
+      "image": "1e3e1ea7-7567-4d57-ba63-516e9b927be5",
+      "alamat_banjir": address,
+      "geom": {
+        "type": "Point",
+        "coordinates": [
+          selectedLocation ? selectedLocation[1] : 0,
+          selectedLocation ? selectedLocation[0] : 0
+        ]
+      },
+      "kedalaman_banjir": kedalamanBanjir ? parseFloat(kedalamanBanjir) : 0,
+      "jumlah_orang_sekitar": jumlahOrang ? parseInt(jumlahOrang) : 0,
+      "luas_jalan": luasJalan ? parseFloat(luasJalan) : 0,
+      "deskripsi_kejadian": deskripsiKejadian,
+      "deskripsi_kerusakan": deskripsiKerusakan,
+    };
+
+    setLoading(true);
+    try {
+      const response = await postData('/items/laporan_bencana', data);
+      console.log(response);
+      if (response?.data) {
+        showAlert('success', 'Laporan Berhasil Dikirim.');
+        setLoading(false);
+        setSelectedDisaster(null);
+        fetchData();
+      } else {
+        setLoading(false);
+        showAlert('error', 'Login Gagal!');
+      }
+    } catch (error: any) {
+      showAlert('error', error.message);
+    }
+
+  };
 
   return (
     <>
@@ -146,81 +245,67 @@ const DisasterReportScreen = () => {
         source={backgroundSource}
         style={styles.background}
         resizeMode="cover">
+
         <ScrollView
           contentContainerStyle={styles.scrollContainer}
           showsVerticalScrollIndicator={false}>
+
           <View style={styles.container}>
             <View
               style={{
                 width: '100%',
-                alignItems: 'center',
-                justifyContent: 'space-between',
                 flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                paddingVertical: 15,
+                position: 'relative',
               }}>
-              <View
-                style={{
-                  width: '50%',
-                  alignItems: 'center',
-                  flexDirection: 'row',
-                  justifyContent: 'center',
-                }}>
-                <TouchableOpacity
-                  onPress={handleBack}
-                  style={{
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}>
-                  <Image
-                    source={arrowLeft}
-                    style={{
-                      width: 15,
-                      height: 16,
-                      resizeMode: 'contain',
-                    }}
-                  />
-                </TouchableOpacity>
-                <View
-                  style={{
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    marginVertical: '2%',
-                  }}>
-                  <Text
-                    style={{
-                      fontSize: 22,
-                      color: colors.text,
-                      marginBottom: 10,
-                      fontWeight: '800',
-                      marginLeft: '8%',
-                      alignItems: 'center',
-                    }}>
-                    Lapor Bencana
-                  </Text>
-                </View>
-              </View>
 
-              <View
+              <TouchableOpacity
+                onPress={handleBack}
                 style={{
-                  width: '50%',
-                  alignItems: 'flex-end',
+                  position: 'absolute',
+                  left: 1,
+                  zIndex: 1,
                 }}>
-                <TouchableOpacity
-                  onPress={() => setShowHistory(true)}
+                <Image
+                  source={arrowLeft}
                   style={{
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}>
-                  <Image
-                    source={historyReport}
-                    style={{
-                      width: 50,
-                      height: 40,
-                      resizeMode: 'contain',
-                    }}
-                  />
-                </TouchableOpacity>
-              </View>
+                    width: 20,
+                    height: 20,
+                    resizeMode: 'contain',
+                  }}
+                />
+              </TouchableOpacity>
+
+              <Text
+                style={{
+                  fontSize: 22,
+                  color: colors.text,
+                  fontWeight: '800',
+                }}>
+                Lapor Bencana
+              </Text>
+
+              <TouchableOpacity
+                onPress={() => setShowHistory(true)}
+                style={{
+                  position: 'absolute',
+                  right: 1,
+                  zIndex: 1,
+                }}>
+                <Image
+                  source={historyReport}
+                  style={{
+                    width: 50,
+                    height: 40,
+                    resizeMode: 'contain',
+                  }}
+                />
+              </TouchableOpacity>
+
             </View>
+
             <View
               style={{
                 alignItems: 'flex-start',
@@ -244,25 +329,21 @@ const DisasterReportScreen = () => {
             </View>
             <FlatList
               data={DISASTERS}
-              keyExtractor={item => item.id}
+              keyExtractor={(item) => item.id}
               numColumns={2}
-              columnWrapperStyle={{ justifyContent: 'space-between' }}
               renderItem={({ item }) => (
                 <TouchableOpacity
-                  style={styles.card}
+                  style={[styles.card, { width: '48%' }]}
                   onPress={() => setSelectedDisaster(item.id)}
                   activeOpacity={0.8}>
+
                   <LinearGradient
                     colors={[colors.gradientCardStart, colors.gradientCardEnd]}
-                    style={[
-                      styles.gradient,
-                      {
-                        /* Hapus height dinamis di sini */
-                      },
-                    ]}>
+                    style={styles.gradient}>
+
                     <View style={styles.cardContent}>
                       <Image source={item.image} style={styles.cardImage} />
-                      <View style={{ width: '80%' }}>
+                      <View style={{ width: '100%' }}>
                         <Text
                           style={styles.cardTitle}
                           numberOfLines={2}
@@ -271,9 +352,12 @@ const DisasterReportScreen = () => {
                         </Text>
                       </View>
                     </View>
+
                   </LinearGradient>
                 </TouchableOpacity>
               )}
+              contentContainerStyle={{ paddingHorizontal: 1, paddingBottom: 1 }}
+              columnWrapperStyle={DISASTERS.length > 1 ? { justifyContent: 'space-between' } : null}
             />
           </View>
         </ScrollView>
@@ -288,65 +372,47 @@ const DisasterReportScreen = () => {
           source={backgroundSource}
           style={styles.background}
           resizeMode="cover">
-          <View
-            style={[styles.modalContainer, { backgroundColor: 'transparent' }]}>
+
+          <View style={[styles.modalContainer, { backgroundColor: 'transparent' }]}>
+            {/* Header dengan ikon back dan judul di tengah */}
             <View
               style={{
                 width: '100%',
-                alignItems: 'center',
-                justifyContent: 'space-between',
                 flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center', // Memusatkan judul
+                position: 'relative', // Untuk menjaga posisi ikon back
               }}>
-              <View
-                style={{
-                  width: '90%',
-                  alignItems: 'center',
-                  flexDirection: 'row',
-                  justifyContent: 'center',
-                }}>
-                <View
-                  style={{
-                    alignSelf: 'center',
-                    width: '10%',
-                  }}>
-                  <TouchableOpacity
-                    onPress={() => setShowHistory(false)}
-                    style={{
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}>
-                    <Image
-                      source={arrowLeft}
-                      style={{
-                        width: 15,
-                        height: 16,
-                        resizeMode: 'contain',
-                      }}
-                    />
-                  </TouchableOpacity>
-                </View>
 
-                <View
+              {/* Ikon Back */}
+              <TouchableOpacity
+                onPress={() => setShowHistory(false)}
+                style={{
+                  position: 'absolute',
+                  left: 20, // Menempatkan ikon back di kiri
+                  zIndex: 1, // Pastikan di atas elemen lain
+                }}>
+                <Image
+                  source={arrowLeft}
                   style={{
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    marginVertical: '2%',
-                    width: '90%',
-                  }}>
-                  <Text
-                    style={{
-                      fontSize: 22,
-                      color: colors.text,
-                      marginBottom: 10,
-                      fontWeight: '800',
-                      marginLeft: '8%',
-                      alignItems: 'center',
-                    }}>
-                    Daftar Laporan
-                  </Text>
-                </View>
-              </View>
+                    width: 20,
+                    height: 20,
+                    resizeMode: 'contain',
+                  }}
+                />
+              </TouchableOpacity>
+
+              {/* Judul */}
+              <Text
+                style={{
+                  fontSize: 22,
+                  color: colors.text,
+                  fontWeight: '800',
+                }}>
+                Daftar Laporan
+              </Text>
             </View>
+
             <View
               style={{
                 backgroundColor: colors.bg,
@@ -381,8 +447,8 @@ const DisasterReportScreen = () => {
 
               {/* Daftar isi laporan */}
               <FlatList
-                data={HISTORY_DATA}
-                keyExtractor={item => item.id}
+                data={laporanBencana}
+                keyExtractor={(item: any) => item.id}
                 contentContainerStyle={{
                   paddingBottom: 20,
                   width: '100%',
@@ -411,7 +477,9 @@ const DisasterReportScreen = () => {
                         flexDirection: 'row',
                       }}>
                       <Text style={[styles.reportTitle, { color: colors.text }]}>
-                        {item.title}
+                        {item?.jenis_laporan_bencana
+                          .replace(/_/g, ' ')
+                          .replace(/\b\w/g, (c: any) => c.toUpperCase())}
                       </Text>
                       <View
                         style={{
@@ -423,13 +491,18 @@ const DisasterReportScreen = () => {
                         }}>
                         <Text
                           style={[styles.reportStatus, { color: colors.text }]}>
-                          {item.status}
+                          {item.status_laporan}
                         </Text>
                       </View>
                     </View>
 
-                    <Text style={styles.reportDate}>{item.dateTime}</Text>
-                    <Text style={styles.reportLocation}>{item.location}</Text>
+                    <Text style={styles.reportDate}>
+                      {new Intl.DateTimeFormat('id-ID', {
+                        dateStyle: 'full',
+                        timeStyle: 'medium',
+                      }).format(new Date(item?.date_created))}
+                    </Text>
+                    <Text style={styles.reportLocation}>{item.alamat_banjir}</Text>
 
                     <View style={styles.reportFooter}>
                       <TouchableOpacity style={styles.helpButton}>
@@ -464,7 +537,10 @@ const DisasterReportScreen = () => {
           source={backgroundSource}
           style={styles.background}
           resizeMode="cover">
-          <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
+          <ScrollView
+            contentContainerStyle={{ paddingBottom: 20 }}
+            keyboardShouldPersistTaps="handled"
+          >
             {/* Header modal form */}
             {/*  */}
             <View
@@ -507,7 +583,7 @@ const DisasterReportScreen = () => {
                   style={{
                     alignItems: 'center',
                     justifyContent: 'center',
-                    marginVertical: '2%',
+                    marginVertical: '5%',
                     width: '90%',
                   }}>
                   <Text
@@ -516,7 +592,6 @@ const DisasterReportScreen = () => {
                       color: colors.text,
                       marginBottom: 10,
                       fontWeight: '800',
-                      marginLeft: '8%',
                       alignItems: 'center',
                     }}>
                     {selectedDisaster === '1' && 'Lapor Banjir'}
@@ -531,7 +606,6 @@ const DisasterReportScreen = () => {
                 </View>
               </View>
             </View>
-            {/*  */}
 
             <View style={styles.formContainer}>
               <Text style={[styles.formSubtitle, { color: colors.info }]}>
@@ -547,42 +621,69 @@ const DisasterReportScreen = () => {
               </Text>
 
               {/* Lokasi Bencana & Map */}
-              <Text style={[styles.label, { color: colors.text }]}>
-                Lokasi Bencana
-              </Text>
+              <Text style={[styles.label, { color: colors.text }]}>Lokasi Bencana</Text>
               <View style={styles.mapPlaceholder}>
                 <MapboxGL.MapView
+                  ref={mapRef}
                   style={{ flex: 1 }}
-                  styleURL={MapboxGL.StyleURL.Street}>
-                  <Camera
+                  styleURL={MapboxGL.StyleURL.Street}
+                  onPress={handleMapPress}
+                  pointerEvents="box-none"
+                >
+                  {/* Kamera Awal */}
+                  <MapboxGL.Camera
                     zoomLevel={12}
-                    centerCoordinate={[106.84513, -6.21462]} // Contoh koordinat (Jakarta)
+                    centerCoordinate={selectedLocation || [106.84513, -6.21462]}
                     animationMode={'flyTo'}
-                    animationDuration={0}
+                    animationDuration={1000}
                   />
+
+                  {/* Pin Lokasi (Jika ada) */}
+                  {selectedLocation && (
+                    <MapboxGL.PointAnnotation
+                      id="selectedPin"
+                      coordinate={selectedLocation}>
+                      <View style={{ width: 30, height: 30 }}>
+                        <Ionicons name="location-sharp" size={30} color="#c55" />
+                      </View>
+                    </MapboxGL.PointAnnotation>
+                  )}
                 </MapboxGL.MapView>
               </View>
 
-              {/* =========== CONTOH FORM SPESIFIK PER BENCANA =========== */}
               {/* Banjir */}
               {selectedDisaster === '1' && (
                 <>
                   <Text style={styles.label}>Kedalaman Banjir</Text>
                   <TextInput
-                    style={styles.input}
+                    style={styles.inputText}
                     placeholder="0 cm"
                     keyboardType="numeric"
+                    value={kedalamanBanjir}
+                    onChangeText={setKedalamanBanjir}
                   />
-                  <View style={{ marginVertical: 10 }}>
-                    <Text style={styles.infoText}>
-                      • Rata-rata tinggi mata kaki orang dewasa ~ 10 cm
-                    </Text>
-                    <Text style={styles.infoText}>
-                      • Rata-rata tinggi betis orang dewasa ~ 40 cm
-                    </Text>
-                    <Text style={styles.infoText}>
-                      • Rata-rata tinggi dada orang dewasa ~ 140 cm
-                    </Text>
+
+                  <View style={[styles.infoBox]}>
+                    <View style={styles.infoContainer}>
+                      <Ionicons name="information-circle-outline" size={18} style={{ color: '#F36A1D' }} />
+                      <Text style={styles.infoText}>
+                        Rata-rata tinggi <Text style={styles.boldText}>mata kaki</Text> orang dewasa <Text style={styles.boldText}>+/- 10 cm</Text>
+                      </Text>
+                    </View>
+
+                    <View style={styles.infoContainer}>
+                      <Ionicons name="information-circle-outline" size={18} style={{ color: '#F36A1D' }} />
+                      <Text style={styles.infoText}>
+                        Rata-rata tinggi <Text style={styles.boldText}>betis</Text> orang dewasa <Text style={styles.boldText}>+/- 40 cm</Text>
+                      </Text>
+                    </View>
+
+                    <View style={styles.infoContainer}>
+                      <Ionicons name="information-circle-outline" size={18} style={{ color: '#F36A1D' }} />
+                      <Text style={styles.infoText}>
+                        Rata-rata tinggi <Text style={styles.boldText}>dada</Text> orang dewasa <Text style={styles.boldText}>+/- 140 cm</Text>
+                      </Text>
+                    </View>
                   </View>
                 </>
               )}
@@ -591,29 +692,42 @@ const DisasterReportScreen = () => {
               {selectedDisaster === '2' && (
                 <>
                   <Text style={styles.label}>Tanda-Tanda Gunung Berapi</Text>
-                  {/* Contoh checkbox placeholder */}
+
                   <View style={{ marginBottom: 10 }}>
-                    <Text style={styles.infoText}>
-                      [ ] Kenaikan suhu signifikan
-                    </Text>
-                    <Text style={styles.infoText}>
-                      [ ] Kekeringan/kematian tumbuhan
-                    </Text>
-                    <Text style={styles.infoText}>
-                      [ ] Perilaku hewan liar tidak biasa
-                    </Text>
-                    <Text style={styles.infoText}>[ ] Sumber gas beracun</Text>
-                    <Text style={styles.infoText}>[ ] Gemuruh yang sering</Text>
-                    <Text style={styles.infoText}>
-                      [ ] Suara gemuruh yang sering
-                    </Text>
+                    {Object.entries(volcanoSigns).map(([key, value]) => (
+                      <View key={key} style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <Checkbox
+                          status={value ? 'checked' : 'unchecked'}
+                          onPress={() => toggleCheckbox(key as keyof typeof volcanoSigns)}
+                          color="#F36A1D"
+                        />
+                        <Text style={styles.infoTextGrey}>
+                          {key === 'temperatureRise' && 'Kenaikan suhu signifikan'}
+                          {key === 'plantDeath' && 'Kekeringan/kematian tumbuhan'}
+                          {key === 'animalBehavior' && 'Perilaku hewan liar tidak biasa'}
+                          {key === 'toxicGas' && 'Sumber gas beracun'}
+                          {key === 'frequentRumbling' && 'Gemuruh yang sering'}
+                          {key === 'loudNoises' && 'Suara gemuruh yang sering'}
+                        </Text>
+                      </View>
+                    ))}
                   </View>
+
                   <Text style={styles.label}>Jumlah Orang di Sekitar</Text>
                   <TextInput
-                    style={styles.input}
+                    style={styles.inputText}
                     placeholder="0 orang"
                     keyboardType="numeric"
+                    value={jumlahOrang}
+                    onChangeText={setJumlahOrang}
                   />
+
+                  <View style={styles.infoContainer}>
+                    <Ionicons name="information-circle-outline" size={18} style={{ color: '#232221' }} />
+                    <Text style={styles.infoTextGrey}>
+                      Masukkan perkiraan jumlah orang di sekitar anda
+                    </Text>
+                  </View>
                 </>
               )}
 
@@ -623,36 +737,82 @@ const DisasterReportScreen = () => {
                   <Text style={styles.label}>
                     Apakah anda ingin melaporkan kerusakan jalan?
                   </Text>
-                  {/* Contoh radio button placeholder */}
-                  <View style={{ flexDirection: 'row', marginVertical: 5 }}>
-                    <Text style={styles.infoText}>[ ] Ya</Text>
-                    <Text style={[styles.infoText, { marginLeft: 30 }]}>
-                      [ ] Tidak
-                    </Text>
-                  </View>
+
+                  {/* Radio Button */}
+                  <RadioButton.Group
+                    onValueChange={value => setReportDamage(value)}
+                    value={reportDamage}
+                  >
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 5 }}>
+                      <RadioButton value="yes" color="#F36A1D" />
+                      <Text style={styles.infoTextGrey}>Ya</Text>
+
+                      <RadioButton value="no" color="#F36A1D" />
+                      <Text style={styles.infoTextGrey}>Tidak</Text>
+                    </View>
+                  </RadioButton.Group>
 
                   <Text style={styles.label}>Luas Jalan</Text>
                   <TextInput
-                    style={styles.input}
-                    placeholder="0 m2"
+                    style={styles.inputText}
+                    placeholder="0 m²"
                     keyboardType="numeric"
+                    value={luasJalan}
+                    onChangeText={setLuasJalan}
                   />
-                  <View style={{ marginVertical: 10 }}>
-                    <Text style={styles.infoText}>
-                      • Rata-rata jalan 2 lajur pejalan kaki atas 1
-                    </Text>
-                    <Text style={styles.infoText}>
-                      • Rata-rata jalan 1 lajur mobil di level 2
-                    </Text>
-                    {/* Silakan tambahkan sesuai info di screenshot */}
+
+                  {/* Informasi dengan Border */}
+                  <View style={[styles.infoBox]}>
+                    <View style={styles.infoContainer}>
+                      <Ionicons name="information-circle-outline" size={18} style={{ color: '#F36A1D' }} />
+                      <Text style={styles.infoText}>
+                        Rata-rata lebar jalan muat <Text style={styles.boldText}>2 lajur pejalan kaki atau 1 lajur  kendaraan roda 2 +/- 1.5 meter</Text>
+                      </Text>
+                    </View>
+
+                    <View style={styles.infoContainer}>
+                      <Ionicons name="information-circle-outline" size={18} style={{ color: '#F36A1D' }} />
+                      <Text style={styles.infoText}>
+                        Rata-rata lebar jalan <Text style={styles.boldText}>2  lajur kendaraan roda 2 atau 1 lajur kendaraan roda 4 +/- 3 meter</Text>
+                      </Text>
+                    </View>
+
+                    <View style={styles.infoContainer}>
+                      <Ionicons name="information-circle-outline" size={18} style={{ color: '#F36A1D' }} />
+                      <Text style={styles.infoText}>
+                        Rata-rata lebar jalan <Text style={styles.boldText}>2  lajur kendaraan roda 4 atau 1 lajur kendaraan berat (truk/bus) +/- 4 meter</Text>
+                      </Text>
+                    </View>
+
+                    <View style={styles.infoContainer}>
+                      <Ionicons name="information-circle-outline" size={18} style={{ color: '#F36A1D' }} />
+                      <Text style={styles.infoText}>
+                        Rata-rata lebar jalan <Text style={styles.boldText}>2 lajur kendaraan berat (truk/bus) +/- 6 meter</Text>
+                      </Text>
+                    </View>
                   </View>
 
                   <Text style={styles.label}>Tingkat Kerusakan Jalan</Text>
-                  <View style={{ marginVertical: 5 }}>
-                    <Text style={styles.infoText}>[ ] Rusak Ringan</Text>
-                    <Text style={styles.infoText}>[ ] Rusak Sedang</Text>
-                    <Text style={styles.infoText}>[ ] Rusak Berat</Text>
-                  </View>
+
+                  {/* Radio Button untuk Tingkat Kerusakan */}
+                  <RadioButton.Group
+                    onValueChange={value => setRoadDamageLevel(value)}
+                    value={roadDamageLevel}
+                  >
+                    {[
+                      { label: "Rusak Ringan", desc: "Jalan rusak halus berupa retakan atau lubang kecil" },
+                      { label: "Rusak Sedang", desc: "Jalan rusak berupa retakan dan lubang menengah namun dapat dilewati" },
+                      { label: "Rusak Berat", desc: "Jalan rusak berupa retakan dan lubang besar hingga terputus atau tidak bisa dilewati" }
+                    ].map((item, index) => (
+                      <View key={index} style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 5, paddingRight: 45 }}>
+                        <RadioButton value={item.label} color="#F36A1D" />
+                        <View>
+                          <Text style={styles.infoTextBold}>{item.label}</Text>
+                          <Text style={styles.infoTextGrey}>{item.desc}</Text>
+                        </View>
+                      </View>
+                    ))}
+                  </RadioButton.Group>
                 </>
               )}
 
@@ -675,33 +835,41 @@ const DisasterReportScreen = () => {
                       style={styles.inputArea}
                       placeholder="Masukkan Deskripsi Kejadian Bencana"
                       multiline
+                      value={deskripsiKejadian}
+                      onChangeText={setDeskripsiKejadian}
                     />
 
-                    <Text style={styles.label}>
-                      Apakah anda membutuhkan bantuan?
-                    </Text>
-                    <View style={{ flexDirection: 'row', marginVertical: 5 }}>
-                      <Text style={styles.infoText}>[ ] Ya</Text>
-                      <Text style={[styles.infoText, { marginLeft: 30 }]}>
-                        [ ] Tidak
-                      </Text>
-                    </View>
+                    {/* Butuh Bantuan */}
+                    <Text style={styles.label}>Apakah anda membutuhkan bantuan?</Text>
+                    <RadioButton.Group onValueChange={value => setNeedHelp(value)} value={needHelp}>
+                      <View style={{ flexDirection: 'row', marginVertical: 5, alignItems: 'center' }}>
+                        <RadioButton value="yes" color="#F36A1D" />
+                        <Text style={styles.infoTextGrey}>Ya</Text>
 
-                    <Text style={styles.label}>
-                      Apakah anda ingin melaporkan kerusakan?
-                    </Text>
-                    <View style={{ flexDirection: 'row', marginVertical: 5 }}>
-                      <Text style={styles.infoText}>[ ] Ya</Text>
-                      <Text style={[styles.infoText, { marginLeft: 30 }]}>
-                        [ ] Tidak
-                      </Text>
-                    </View>
+                        <RadioButton value="no" color="#F36A1D" />
+                        <Text style={styles.infoTextGrey}>Tidak</Text>
+                      </View>
+                    </RadioButton.Group>
+
+                    {/* Laporkan Kerusakan */}
+                    <Text style={styles.label}>Apakah anda ingin melaporkan kerusakan?</Text>
+                    <RadioButton.Group onValueChange={value => setReportDamage(value)} value={reportDamage}>
+                      <View style={{ flexDirection: 'row', marginVertical: 5, alignItems: 'center' }}>
+                        <RadioButton value="yes" color="#F36A1D" />
+                        <Text style={styles.infoTextGrey}>Ya</Text>
+
+                        <RadioButton value="no" color="#F36A1D" />
+                        <Text style={styles.infoTextGrey}>Tidak</Text>
+                      </View>
+                    </RadioButton.Group>
 
                     <Text style={styles.label}>Deskripsi Kerusakan</Text>
                     <TextInput
                       style={styles.inputArea}
                       placeholder="Masukkan Deskripsi Kerusakan yang Terjadi"
                       multiline
+                      value={deskripsiKerusakan}
+                      onChangeText={setDeskripsiKerusakan}
                     />
                   </>
                 )}
@@ -721,8 +889,15 @@ const DisasterReportScreen = () => {
               ) : null}
 
               {/* Tombol Kirim Laporan */}
-              <TouchableOpacity style={styles.submitButton}>
-                <Text style={styles.submitButtonText}>Kirim Laporan</Text>
+              <TouchableOpacity
+                style={styles.submitButton}
+                onPress={submitLaporan}
+                disabled={loading}>
+                {loading ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text style={styles.submitButtonText}>Kirim Laporan</Text>
+                )}
               </TouchableOpacity>
             </View>
           </ScrollView>
@@ -753,12 +928,29 @@ const styles = StyleSheet.create({
     overflow: 'hidden', // Supaya gradient tidak keluar batas sudut card
   },
   gradient: {
-    flex: 1, // Isi ruang card sepenuhnya
+    flex: 1,
     borderRadius: 12,
     paddingHorizontal: '5%',
-    paddingVertical: 16, // Atur padding sesuai selera
+    paddingVertical: 16,
     alignItems: 'flex-start',
     justifyContent: 'center',
+  },
+  infoBox: {
+    marginVertical: 10,
+    padding: 15,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#C3C3BF',
+    paddingRight: 20
+  },
+  infoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    marginBottom: 5,
+  },
+  boldText: {
+    fontWeight: 'bold',
   },
   cardContent: {
     flexDirection: 'column',
@@ -769,13 +961,14 @@ const styles = StyleSheet.create({
     width: 50,
     height: 40,
     resizeMode: 'contain',
+    marginBottom: 10
   },
   cardTitle: {
     fontSize: 18,
     color: 'white', // atau colors.text
     marginBottom: 10,
     fontWeight: '500',
-    marginLeft: '8%',
+    marginLeft: '3%',
     textAlign: 'left',
     lineHeight: 20,
     minHeight: 40,
@@ -783,22 +976,7 @@ const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
     backgroundColor: '#fff',
-    paddingTop: 50, // Sesuaikan agar tidak bertabrakan dengan status bar
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginHorizontal: 16,
-    marginBottom: 10,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-  },
-  closeButtonText: {
-    fontSize: 16,
-    color: 'red',
+    paddingTop: 20,
   },
   modalSubTitle: {
     fontSize: 14,
@@ -806,10 +984,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     marginHorizontal: 16,
     width: '70%',
-  },
-  searchWrapper: {
-    marginHorizontal: 16,
-    marginBottom: 16,
   },
   searchInput: {
     height: 40,
@@ -867,10 +1041,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginLeft: '3%',
   },
-  formModalTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-  },
   formContainer: {
     marginHorizontal: 20,
     marginTop: 20,
@@ -888,20 +1058,17 @@ const styles = StyleSheet.create({
   },
   mapPlaceholder: {
     width: '100%',
-    height: 200,
-    backgroundColor: '#EEE',
+    height: 300,
     borderRadius: 10,
     marginBottom: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
-  input: {
+  inputText: {
     height: 40,
     borderColor: '#CCC',
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 10,
-    marginBottom: 10,
+    marginBottom: 5,
   },
   inputArea: {
     height: 80,
@@ -915,7 +1082,18 @@ const styles = StyleSheet.create({
   },
   infoText: {
     fontSize: 13,
-    color: '#666',
+    color: '#F36A1D',
+    marginBottom: 4,
+  },
+  infoTextBold: {
+    fontSize: 13,
+    color: '#232221',
+    marginBottom: 4,
+    fontWeight: 'bold',
+  },
+  infoTextGrey: {
+    fontSize: 13,
+    color: '#232221',
     marginBottom: 4,
   },
   uploadButton: {

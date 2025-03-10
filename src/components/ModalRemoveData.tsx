@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
         width: '100%',
     },
     cancelButton: {
-        backgroundColor: '#000',
+        backgroundColor: '#4F4D4A',
     },
     dangerButtonOutline: {
         borderWidth: 1,

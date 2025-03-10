@@ -10,35 +10,39 @@ import {
   TextInput,
   ActivityIndicator,
   Image,
+  Dimensions,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import useAuthStore from '../../hooks/auth';
 import COLORS from '../../config/COLORS';
-import {useAlert} from '../../components/AlertContext';
+import { useAlert } from '../../components/AlertContext';
 import ModalRemoveData from '../../components/ModalRemoveData';
-import {HeaderNav} from '../../components/Header';
-import {useNavigation} from '@react-navigation/native';
-import {StackNavigationProp} from '@react-navigation/stack';
-import {RootStackParamList} from '../../navigation/types';
+import { HeaderNav } from '../../components/Header';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../../navigation/types';
+import { getData } from '../../services/apiServices';
 
 const familyMembers = [
-  {name: 'Dzaky Aditya', initials: 'DA', location: 'Bandung, Jawa Barat'},
-  {name: 'Kemal Abdillah', initials: 'KA', location: 'Bandung, Jawa Barat'},
-  {name: 'Puteri Tamada', initials: 'PT', location: 'Bandung, Jawa Barat'},
-  {name: 'Angelica Aprilia', initials: 'AP', location: 'Bandung, Jawa Barat'},
+  { name: 'Dzaky Aditya', initials: 'DA', location: 'Bandung, Jawa Barat' },
+  { name: 'Kemal Abdillah', initials: 'KA', location: 'Bandung, Jawa Barat' },
+  { name: 'Puteri Tamada', initials: 'PT', location: 'Bandung, Jawa Barat' },
+  { name: 'Angelica Aprilia', initials: 'AP', location: 'Bandung, Jawa Barat' },
 ];
 
 export default function FamilyListScreen() {
   const reset = useAuthStore(state => state.reset);
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
-  const {showAlert} = useAlert();
-  const {profile, getProfile} = useAuthStore();
+  const { showAlert } = useAlert();
+  const { profile, getProfile } = useAuthStore();
   const colorScheme = useColorScheme();
   const colors = COLORS();
   const [isShowDetailFamily, setIsShowDetailFamily] = useState(false);
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [selectedMember, setSelectedMember] = useState<any>(null);
+  const [friendLists, setFriendLists] = useState([]);
+  const [error, setError] = useState(null);
   const backgroundSource =
     colorScheme === 'dark'
       ? require('../../assets/images/bg-page-dark.png')
@@ -46,10 +50,29 @@ export default function FamilyListScreen() {
 
   useEffect(() => {
     getProfile();
+    fetchData();
   }, []);
 
-  const handleRemoveMember = (name: string) => {
-    setSelectedMember(name);
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const [friendlist] = await Promise.all([
+        getData('items/friend_list?fields=*,friends.*'),
+      ]);
+
+      console.log(friendlist);
+
+      setFriendLists(friendlist?.data || []);
+    } catch (err: any) {
+      setError(err.message);
+      console.error('Gagal mengambil data:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRemoveMember = (member: any) => {
+    setSelectedMember(member);
     setModalVisible(true);
   };
 
@@ -69,6 +92,9 @@ export default function FamilyListScreen() {
   };
 
   const handleMemberDetail = (member: any) => {
+    console.log(member);
+
+    setSelectedMember(member);
     setIsShowDetailFamily(true);
   };
 
@@ -104,36 +130,37 @@ export default function FamilyListScreen() {
                       marginTop: '5%',
                       paddingVertical: '4%',
                       paddingHorizontal: 16,
+                      paddingLeft: 5
                     },
                   ]}>
-                  <Text style={[styles.subTitle,{color:colors.info}]}>
+                  <Text style={[styles.subTitle, { color: colors.info }]}>
                     Daftar Kerabat yang anda tambahkan pada aplikasi MHEWS
                   </Text>
 
-                  <Text style={[styles.textOption]}>Daftar Kerabat (4)</Text>
+                  <Text style={[styles.textOption]}>Daftar Kerabat ({friendLists?.length})</Text>
 
                   {/* Family Members List */}
-                  {familyMembers.map((member, index) => (
+                  {friendLists.map((member: any, index: any) => (
                     <TouchableOpacity
                       key={index}
                       onPress={() => handleMemberDetail(member)}
                       style={styles.memberContainer}>
                       <View style={styles.memberInitials}>
                         <Text style={styles.initialsText}>
-                          {member.initials}
+                          {`${member?.friends?.first_name?.charAt(0) ?? ''}${member?.friends?.last_name?.charAt(0) ?? ''}`}
                         </Text>
                       </View>
                       <View style={styles.memberInfo}>
-                        <Text style={[styles.memberName, {color: colors.text}]}>
-                          {member.name}
+                        <Text style={[styles.memberName, { color: colors.text }]}>
+                          {member?.friends?.first_name} {member?.friends?.last_name}
                         </Text>
                         <Text
-                          style={[styles.memberLocation, {color: colors.info}]}>
-                          {member.location}
+                          style={[styles.memberLocation, { color: colors.info }]}>
+                          {member?.friends?.location ? member?.friends?.location : "-"}
                         </Text>
                       </View>
                       <TouchableOpacity
-                        onPress={() => handleRemoveMember(member.name)}
+                        onPress={() => handleRemoveMember(member)}
                         style={styles.removeButton}>
                         <Text style={styles.removeText}>X Hapus</Text>
                       </TouchableOpacity>
@@ -157,12 +184,14 @@ export default function FamilyListScreen() {
                   <View style={styles.memberContainerDetailFamily}>
                     <View style={styles.headerMemberDetail}>
                       <View style={styles.memberInitials}>
-                        <Text style={styles.initialsText}>DA</Text>
+                        <Text style={styles.initialsText}>
+                          {`${selectedMember?.friends?.first_name?.charAt(0) ?? ''}${selectedMember?.friends?.last_name?.charAt(0) ?? ''}`}
+                        </Text>
                       </View>
                       <View style={styles.memberInfo}>
-                        <Text style={styles.memberName}>Dzaky Aditya</Text>
+                        <Text style={styles.memberName}>{selectedMember?.friends?.first_name} {selectedMember?.friends?.last_name}</Text>
                         <Text style={styles.memberLocation}>
-                          Bandung, Jawa Barat
+                          {selectedMember?.friends?.location ? selectedMember?.friends?.location : "-"}
                         </Text>
                       </View>
                     </View>
@@ -171,21 +200,21 @@ export default function FamilyListScreen() {
                     <View style={styles.memberContainerDetail}>
                       <Text style={styles.memberName}>NIK</Text>
                       <Text style={styles.memberLocation}>
-                        3202842211880004
+                        {selectedMember?.friends?.NIK ? selectedMember?.friends?.NIK : "-"}
                       </Text>
                     </View>
                     <View style={styles.memberContainerDetail}>
                       <Text style={styles.memberName}>No. Handphone</Text>
-                      <Text style={styles.memberLocation}>+6281234567890</Text>
+                      <Text style={styles.memberLocation}>{selectedMember?.friends?.phone ? selectedMember?.friends?.phone : "-"}</Text>
                     </View>
                     <View style={styles.memberContainerDetail}>
                       <Text style={styles.memberName}>Email</Text>
-                      <Text style={styles.memberLocation}>user@email.com</Text>
+                      <Text style={styles.memberLocation}>{selectedMember?.friends?.email ? selectedMember?.friends?.email : "-"}</Text>
                     </View>
 
                     <TouchableOpacity
                       style={styles.outlineButton}
-                      onPress={() => handleRemoveMember('Dzaky Aditya')}
+                      onPress={() => handleRemoveMember(selectedMember)}
                       disabled={loading}>
                       {loading ? (
                         <ActivityIndicator size="small" color="#fff" />
@@ -215,6 +244,9 @@ export default function FamilyListScreen() {
   );
 }
 
+const { width } = Dimensions.get('window');
+const avatarSize = width * 0.12;
+
 const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
@@ -227,7 +259,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     marginLeft: 10,
   },
-  container: {flex: 1, padding: 16, marginTop: '5%'},
+  container: { flex: 1, padding: 16, marginTop: '5%' },
   background: {
     flex: 1,
     width: '100%',
@@ -262,7 +294,6 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     alignItems: 'flex-start',
     marginBottom: 8,
-    marginLeft: 10,
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 8,
@@ -273,14 +304,17 @@ const styles = StyleSheet.create({
   },
   memberInitials: {
     backgroundColor: '#FFA500',
-    borderRadius: 20,
-    padding: 8,
+    width: avatarSize,
+    height: avatarSize,
+    borderRadius: avatarSize / 2,
+    justifyContent: 'center',
+    alignItems: 'center',
     marginRight: 12,
   },
   initialsText: {
     color: '#fff',
     fontWeight: 'bold',
-    fontSize: 16,
+    fontSize: avatarSize * 0.4, // Ukuran teks mengikuti ukuran avatar
   },
   memberInfo: {
     flex: 1,
