@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -17,15 +17,15 @@ import {
   TextInput,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
-import {useNavigation} from '@react-navigation/native'; // Update here
-import {ASSET_URL, getData} from '../services/apiServices';
+import { useNavigation } from '@react-navigation/native'; // Update here
+import { ASSET_URL, getData } from '../services/apiServices';
 import useAuthStore from '../hooks/auth';
 import COLORS from '../config/COLORS';
-import {useAlert} from '../components/AlertContext';
+import { useAlert } from '../components/AlertContext';
 import FloatingSOSButton from '../components/FloatingSOSButton';
 import LinearGradient from 'react-native-linear-gradient';
-import {StackNavigationProp} from '@react-navigation/stack';
-import {RootStackParamList} from '../navigation/types';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../navigation/types';
 import {
   request,
   PERMISSIONS,
@@ -33,17 +33,17 @@ import {
   openSettings,
 } from 'react-native-permissions';
 import DeviceInfo from 'react-native-device-info';
-import {SvgUri} from 'react-native-svg';
-import {fetchLocation, getLocationDetails} from '../utils/locationUtils';
+import { SvgUri } from 'react-native-svg';
+import { fetchLocation, getLocationDetails } from '../utils/locationUtils';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Feather from 'react-native-vector-icons/Feather';
 
 export default function HomeScreen() {
-  const {width, height} = Dimensions.get('window');
-  const {showAlert} = useAlert();
+  const { width, height } = Dimensions.get('window');
+  const { showAlert } = useAlert();
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const colorScheme = useColorScheme();
-  const {profile, getProfile} = useAuthStore();
+  const { profile, getProfile } = useAuthStore();
   const [emergencyMessage, setEmergencyMessage] = useState('');
   const [siagaBencana, setSiagaBencana] = useState([]);
   const [fiturPendukung, setFiturPendukung] = useState([]);
@@ -160,6 +160,10 @@ export default function HomeScreen() {
     }
   };
 
+  const handleClickNotifications = () => {
+    navigation.navigate('Notifications');
+  };
+
   return (
     <>
       <StatusBar
@@ -181,29 +185,29 @@ export default function HomeScreen() {
           <View style={styles.container}>
             <View style={styles.header}>
               <View style={styles.headerTextContainer}>
-                <Text style={[styles.greeting, {color: color.text}]}>
+                <Text style={[styles.greeting, { color: color.text }]}>
                   Hi, {profile?.first_name} {profile?.last_name}
                 </Text>
                 <View style={styles.locationContainer}>
                   <Icon name="map-pin" size={16} color={color.subText} />
-                  <Text style={[styles.locationText, {color: color.subText}]}>
+                  <Text style={[styles.locationText, { color: color.subText }]}>
                     {locateNow || '-'}
                   </Text>
                 </View>
               </View>
-              <TouchableOpacity style={styles.notificationIcon}>
+              <TouchableOpacity style={styles.notificationIcon} onPress={handleClickNotifications}>
                 <Icon name="bell" size={22} color={colors.textPrimary} />
               </TouchableOpacity>
             </View>
 
-            <Text style={[styles.sectionTitle, {color: colors.textPrimary}]}>
+            <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
               Siaga Bencana
             </Text>
             <FlatList
               data={siagaBencana}
               horizontal
               showsHorizontalScrollIndicator={false}
-              renderItem={({item}: {item: any}) => (
+              renderItem={({ item }: { item: any }) => (
                 <TouchableOpacity
                   style={styles.card}
                   activeOpacity={0.8}
@@ -219,7 +223,7 @@ export default function HomeScreen() {
                     <View
                       style={[
                         styles.iconContainer,
-                        {marginRight: Platform.OS === 'ios' ? '15%' : '0%'},
+                        { marginRight: Platform.OS === 'ios' ? '15%' : '0%' },
                       ]}>
                       {(() => {
                         const iconUri = `${ASSET_URL}${item.icon}/${item.id}.png`;
@@ -260,24 +264,24 @@ export default function HomeScreen() {
               keyExtractor={(item: any) => item.id}
             />
 
-            <Text style={[styles.sectionTitle, {color: colors.textPrimary}]}>
+            <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
               Informasi Terkait
             </Text>
             <FlatList
               data={infoTerkait}
               horizontal
               showsHorizontalScrollIndicator={false}
-              renderItem={({item}: {item: any}) => (
+              renderItem={({ item }: { item: any }) => (
                 <TouchableOpacity
                   style={[
                     styles.informasiCard,
-                    {backgroundColor: colors.supportCardBackground},
+                    { backgroundColor: colors.supportCardBackground },
                   ]}
                   activeOpacity={0.8}>
                   <LinearGradient
                     colors={['#CD541B', 'transparent']}
-                    start={{x: 0, y: 1}}
-                    end={{x: 0.1, y: 0.1}}
+                    start={{ x: 0, y: 1 }}
+                    end={{ x: 0.1, y: 0.1 }}
                     style={styles.gradientBackground}
                   />
 
@@ -296,13 +300,13 @@ export default function HomeScreen() {
                     })()}
                   </View>
                   <View style={styles.textContainer}>
-                    <Text style={[styles.cardTitleSec, {color: color.text}]}>
+                    <Text style={[styles.cardTitleSec, { color: color.text }]}>
                       {item.title}
                     </Text>
                     <Text
                       style={[
                         styles.cardSubtitleSec,
-                        {color: color.tabIconDefault},
+                        { color: color.tabIconDefault },
                       ]}>
                       {item.description}
                     </Text>
@@ -312,18 +316,18 @@ export default function HomeScreen() {
               keyExtractor={item => item.id}
             />
 
-            <Text style={[styles.sectionTitle, {color: colors.textPrimary}]}>
+            <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
               Fitur Pendukung
             </Text>
             <FlatList
               data={fiturPendukung}
               numColumns={2}
               scrollEnabled={false}
-              renderItem={({item}: {item: any}) => (
+              renderItem={({ item }: { item: any }) => (
                 <TouchableOpacity
                   style={[
                     styles.supportCard,
-                    {backgroundColor: colors.supportCardBackground},
+                    { backgroundColor: colors.supportCardBackground },
                   ]}>
                   {(() => {
                     let iconUri = `${ASSET_URL}${item.icon}/${item.id}.png`;
@@ -335,13 +339,13 @@ export default function HomeScreen() {
                       />
                     );
                   })()}
-                  <Text style={[styles.cardTitleSec, {color: color.text}]}>
+                  <Text style={[styles.cardTitleSec, { color: color.text }]}>
                     {item.title}
                   </Text>
                   <Text
                     style={[
                       styles.cardSubtitleSec,
-                      {color: color.tabIconDefault},
+                      { color: color.tabIconDefault },
                     ]}>
                     {item.description}
                   </Text>
@@ -362,7 +366,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingBottom: 20,
   },
-  container: {flex: 1, padding: 16, marginTop: '5%'},
+  container: { flex: 1, padding: 16, marginTop: '5%' },
   background: {
     flex: 1,
     width: '100%',
@@ -378,6 +382,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
     paddingHorizontal: 8,
+    marginTop: 5
   },
   headerTextContainer: {
     flex: 1,
@@ -390,7 +395,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 4,
-    width: '80%',
+    width: '88%',
   },
   locationText: {
     fontSize: 14,
@@ -469,7 +474,7 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderRadius: 20,
     opacity: 0.2,
-    transform: [{rotate: '-95deg'}],
+    transform: [{ rotate: '-95deg' }],
   },
   supportCard: {
     borderRadius: 10,
@@ -494,7 +499,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     justifyContent: 'center',
   },
-  cardTitleSec: {fontSize: 18, fontWeight: 'bold', marginTop: 5},
+  cardTitleSec: { fontSize: 18, fontWeight: 'bold', marginTop: 5 },
   cardSubtitleSec: {
     fontSize: 14,
     marginTop: 4,

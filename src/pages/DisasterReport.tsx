@@ -62,6 +62,8 @@ const DisasterReportScreen = () => {
   const longsor = require('../assets/images/Longsor-ReportDisaster.png');
   const tsunami = require('../assets/images/Tsunami-ReportDisaster.png');
   const call = require('../assets/images/phone.png');
+  const markerIcon = require('../assets/icons/marker.png');
+
   const [showHistory, setShowHistory] = useState(false);
   const [selectedDisaster, setSelectedDisaster] = useState<string | null>(null);
   const [laporanBencana, setLaporanBencana] = useState([]);
@@ -89,6 +91,7 @@ const DisasterReportScreen = () => {
   const [luasJalan, setLuasJalan] = useState('');
   const [deskripsiKejadian, setDeskripsiKejadian] = useState('');
   const [deskripsiKerusakan, setDeskripsiKerusakan] = useState('');
+  const [selectedAddress, setSelectedAddress] = useState<any>('');
 
   // Daftar bencana
   const DISASTERS = [
@@ -151,6 +154,13 @@ const DisasterReportScreen = () => {
     const { geometry } = event;
     if (geometry && geometry.coordinates) {
       setSelectedLocation(geometry.coordinates);
+      if (geometry.coordinates) {
+        const address = await getLocationDetails(
+          geometry.coordinates[1],
+          geometry.coordinates[0],
+        );
+        setSelectedAddress(address);
+      }
     }
   };
 
@@ -160,8 +170,6 @@ const DisasterReportScreen = () => {
       const [laporan_bencana] = await Promise.all([
         getData('items/laporan_bencana'),
       ]);
-
-      console.log(laporan_bencana?.data);
 
       setLaporanBencana(laporan_bencana?.data || []);
     } catch (err: any) {
@@ -186,21 +194,13 @@ const DisasterReportScreen = () => {
     }
 
     const disaster = DISASTERS.find(d => d.id === selectedDisaster);
-    let address;
-    if (selectedLocation) {
-      address = await getLocationDetails(
-        selectedLocation[1],
-        selectedLocation[0],
-      );
-    }
-
     const data = {
       "jenis_laporan_bencana": disaster ? disaster.jenis_laporan_bencana : "Tidak Diketahui",
       "nama_bencana": disaster ? disaster.title : "Tidak Diketahui",
       "status_laporan": "Menunggu Verifikasi",
       "pelapor": "ae819633-a26d-4a3d-91b8-ba5e58da3bd1",
       "image": "1e3e1ea7-7567-4d57-ba63-516e9b927be5",
-      "alamat_banjir": address,
+      "alamat_banjir": selectedAddress,
       "geom": {
         "type": "Point",
         "coordinates": [
@@ -622,6 +622,17 @@ const DisasterReportScreen = () => {
 
               {/* Lokasi Bencana & Map */}
               <Text style={[styles.label, { color: colors.text }]}>Lokasi Bencana</Text>
+              {selectedLocation && (
+                <View style={[styles.infoBoxLocation]}>
+                  <View style={styles.infoContainerLocation}>
+                    <Ionicons name="locate" size={18} style={{ color: '#F36A1D' }} />
+                    <Text style={styles.infoText}>
+                      {selectedAddress}
+                    </Text>
+                  </View>
+                </View>
+              )}
+
               <View style={styles.mapPlaceholder}>
                 <MapboxGL.MapView
                   ref={mapRef}
@@ -638,15 +649,35 @@ const DisasterReportScreen = () => {
                     animationDuration={1000}
                   />
 
+                  <MapboxGL.Images images={{ marker: markerIcon }} />
+
                   {/* Pin Lokasi (Jika ada) */}
                   {selectedLocation && (
-                    <MapboxGL.PointAnnotation
+                    <MapboxGL.ShapeSource
                       id="selectedPin"
-                      coordinate={selectedLocation}>
-                      <View style={{ width: 30, height: 30 }}>
-                        <Ionicons name="location-sharp" size={30} color="#c55" />
-                      </View>
-                    </MapboxGL.PointAnnotation>
+                      shape={{
+                        type: 'FeatureCollection',
+                        features: [
+                          {
+                            type: 'Feature',
+                            geometry: {
+                              type: 'Point',
+                              coordinates: selectedLocation,
+                            },
+                            properties: null
+                          },
+                        ],
+                      }}
+                    >
+                      <MapboxGL.SymbolLayer
+                        id="markerLayer"
+                        style={{
+                          iconImage: 'marker',
+                          iconSize: 1,
+                          iconAnchor: 'bottom',
+                        }}
+                      />
+                    </MapboxGL.ShapeSource>
                   )}
                 </MapboxGL.MapView>
               </View>
@@ -935,6 +966,18 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     justifyContent: 'center',
   },
+  infoBoxLocation: {
+    marginVertical: 10,
+    padding: 15,
+    borderRadius: 10,
+    backgroundColor: '#fff',
+    paddingRight: 20
+  },
+  infoContainerLocation: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
   infoBox: {
     marginVertical: 10,
     padding: 15,
@@ -947,7 +990,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    marginBottom: 5,
   },
   boldText: {
     fontWeight: 'bold',
