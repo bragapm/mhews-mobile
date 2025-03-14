@@ -15,5 +15,6 @@ export type RootStackParamList = {
   NotifEvacuateLocationScreen: undefined;
   ManageLocations: undefined;
   Notifications: undefined;
+  FindFamily: undefined;
   Otp: { email: string; phone: string | null; sendTo: string; from: string };
 };

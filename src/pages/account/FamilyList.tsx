@@ -60,7 +60,7 @@ export default function FamilyListScreen() {
         getData('items/friend_list?fields=*,friends.*'),
       ]);
 
-      console.log(friendlist);
+      console.log(friendlist?.data);
 
       setFriendLists(friendlist?.data || []);
     } catch (err: any) {

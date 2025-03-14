@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -18,13 +18,13 @@ import {
 
 import useAuthStore from '../../hooks/auth';
 import COLORS from '../../config/COLORS';
-import {useAlert} from '../../components/AlertContext';
-import {HeaderNav} from '../../components/Header';
+import { useAlert } from '../../components/AlertContext';
+import { HeaderNav } from '../../components/Header';
 import ModalRemoveData from '../../components/ModalRemoveData';
-import {StackNavigationProp} from '@react-navigation/stack';
-import {RootStackParamList} from '../../navigation/types';
-import {useNavigation} from '@react-navigation/native';
-import {getData} from '../../services/apiServices';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../../navigation/types';
+import { useNavigation } from '@react-navigation/native';
+import { getData } from '../../services/apiServices';
 
 // Data dummy hanya untuk TAB "Cari Kerabat"
 const DUMMY_USERS = [
@@ -66,11 +66,11 @@ export default function FamilyProfileScreen() {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const colorScheme = useColorScheme();
   const colors = COLORS();
-  const {showAlert} = useAlert();
+  const { showAlert } = useAlert();
   const infoIcon = require('../../assets/images/resikoBahayaActive.png');
 
   // ========== State & store dari Auth ==========
-  const {profile, getProfile} = useAuthStore();
+  const { profile, getProfile } = useAuthStore();
   const reset = useAuthStore(state => state.reset);
 
   // ========== Loading & error ==========
@@ -131,13 +131,20 @@ export default function FamilyProfileScreen() {
 
   // Tombol kembali ke halaman utama (Tabs)
   const backToProfile = () => {
-    navigation.replace('Tabs');
+    if (isShowDetailFamily) {
+      setIsShowDetailFamily(false);
+    } else {
+      navigation.replace('Tabs');
+    }
   };
 
   // =======================
   // =     DAFTAR KERABAT  =
   // =======================
   const handleMemberDetail = (member: any) => {
+    if (!member.confirmation) {
+      return;
+    }
     setSelectedMember(member);
     setIsShowDetailFamily(true);
   };
@@ -162,8 +169,8 @@ export default function FamilyProfileScreen() {
     if (!isShowDetailFamily) {
       // ========== Tampilan LIST Kerabat ==========
       return (
-        <View style={[styles.cardContainer, {backgroundColor: colors.bg}]}>
-          <Text style={[styles.subTitle, {color: colors.text}]}>
+        <View style={[styles.cardContainer, { backgroundColor: colors.bg }]}>
+          <Text style={[styles.subTitle, { color: colors.text }]}>
             Tambahkan daftar kerabat anda dan dapatkan notifikasi ketika terjadi
             bencana
           </Text>
@@ -184,7 +191,7 @@ export default function FamilyProfileScreen() {
               <Image source={infoIcon} style={styles.iconInfo} />
             </View>
             <View>
-              <Text style={[styles.textOption, {color: colors.info}]}>
+              <Text style={[styles.textOption, { color: colors.info }]}>
                 Anda bisa mendapatkan notifikasi jika kerabat anda telah
                 menginstall aplikasi MHEWS
               </Text>
@@ -192,21 +199,21 @@ export default function FamilyProfileScreen() {
           </View>
 
           {loading ? (
-            <ActivityIndicator style={{marginTop: 20}} />
+            <ActivityIndicator style={{ marginTop: 20 }} />
           ) : (
             <FlatList
-              data={[{id: 'add-kerabat'}, ...friendLists]}
+              data={[{ id: 'add-kerabat' }, ...friendLists]}
               keyExtractor={(item, index) => item.id.toString()}
               numColumns={2}
-              columnWrapperStyle={{justifyContent: 'flex-start', gap: 12}}
+              columnWrapperStyle={{ justifyContent: 'flex-start', gap: 12 }}
               ListEmptyComponent={() =>
                 !loading && (
-                  <Text style={{textAlign: 'center', marginTop: 10}}>
+                  <Text style={{ textAlign: 'center', marginTop: 10 }}>
                     Tidak ada kerabat
                   </Text>
                 )
               }
-              renderItem={({item}) => {
+              renderItem={({ item }) => {
                 if (item.id === 'add-kerabat') {
                   return (
                     <TouchableOpacity
@@ -232,7 +239,7 @@ export default function FamilyProfileScreen() {
                         }}>
                         +
                       </Text>
-                      <Text style={{color: '#FF7A00', marginTop: 4}}>
+                      <Text style={{ color: '#FF7A00', marginTop: 4 }}>
                         Tambah Kerabat
                       </Text>
                     </TouchableOpacity>
@@ -251,8 +258,10 @@ export default function FamilyProfileScreen() {
                       justifyContent: 'center',
                       padding: 16,
                       marginBottom: 12,
+                      borderWidth: item.confirmation === false ? 2 : 0,
+                      borderColor: item.confirmation === false ? 'red' : 'transparent',
                     }}>
-                    <View style={{alignItems: 'center'}}>
+                    <View style={{ alignItems: 'center' }}>
                       <View
                         style={{
                           width: 45,
@@ -263,10 +272,9 @@ export default function FamilyProfileScreen() {
                           alignItems: 'center',
                           marginBottom: 8,
                         }}>
-                        <Text style={{color: '#FFF', fontWeight: 'bold'}}>
-                          {`${item?.friends?.first_name?.charAt(0) ?? ''}${
-                            item?.friends?.last_name?.charAt(0) ?? ''
-                          }`}
+                        <Text style={{ color: '#FFF', fontWeight: 'bold' }}>
+                          {`${item?.friends?.first_name?.charAt(0) ?? ''}${item?.friends?.last_name?.charAt(0) ?? ''
+                            }`}
                         </Text>
                       </View>
                       <Text
@@ -305,7 +313,7 @@ export default function FamilyProfileScreen() {
                             marginRight: 4,
                           }}
                         />
-                        <Text style={{fontSize: 12, color: colors.info}}>
+                        <Text style={{ fontSize: 12, color: colors.info }}>
                           {item?.isOnline ? 'Online' : 'Offline'}
                         </Text>
                       </View>
@@ -325,9 +333,8 @@ export default function FamilyProfileScreen() {
             <View style={styles.headerMemberDetail}>
               <View style={styles.memberInitials}>
                 <Text style={styles.initialsText}>
-                  {`${selectedMember?.friends?.first_name?.charAt(0) ?? ''}${
-                    selectedMember?.friends?.last_name?.charAt(0) ?? ''
-                  }`}
+                  {`${selectedMember?.friends?.first_name?.charAt(0) ?? ''}${selectedMember?.friends?.last_name?.charAt(0) ?? ''
+                    }`}
                 </Text>
               </View>
               <View style={styles.memberInfo}>
@@ -460,44 +467,44 @@ export default function FamilyProfileScreen() {
               </Text>
             </View>
             <View style={styles.detailInfo}>
-              <Text style={[styles.detailName, {color: colors.text}]}>
+              <Text style={[styles.detailName, { color: colors.text }]}>
                 {selectedSearchUser.name}
               </Text>
-              <Text style={[styles.detailLocation, {color: colors.info}]}>
+              <Text style={[styles.detailLocation, { color: colors.info }]}>
                 {selectedSearchUser.location}
               </Text>
             </View>
           </View>
 
           {/* Info lengkap */}
-          <View style={{marginTop: 10}}>
-            <Text style={[styles.detailLabel, {color: colors.text}]}>NIK</Text>
-            <Text style={[styles.detailValue, {color: colors.info}]}>
+          <View style={{ marginTop: 10 }}>
+            <Text style={[styles.detailLabel, { color: colors.text }]}>NIK</Text>
+            <Text style={[styles.detailValue, { color: colors.info }]}>
               {selectedSearchUser.nik || '-'}
             </Text>
 
-            <Text style={[styles.detailLabel, {color: colors.text}]}>
+            <Text style={[styles.detailLabel, { color: colors.text }]}>
               No. Handphone
             </Text>
-            <Text style={[styles.detailValue, {color: colors.info}]}>
+            <Text style={[styles.detailValue, { color: colors.info }]}>
               {selectedSearchUser.phone || '-'}
             </Text>
 
-            <Text style={[styles.detailLabel, {color: colors.text}]}>
+            <Text style={[styles.detailLabel, { color: colors.text }]}>
               Email
             </Text>
-            <Text style={[styles.detailValue, {color: colors.info}]}>
+            <Text style={[styles.detailValue, { color: colors.info }]}>
               {selectedSearchUser.email}
             </Text>
           </View>
 
           {/* Tombol Tambah Kerabat */}
-          <View style={{marginTop: 20}}>
+          <View style={{ marginTop: 20 }}>
             {isAdded ? (
               <View
-                style={[styles.addedButton, {backgroundColor: colors.text}]}>
+                style={[styles.addedButton, { backgroundColor: colors.text }]}>
                 <Text
-                  style={[styles.addedButtonText, {color: colors.background}]}>
+                  style={[styles.addedButtonText, { color: colors.background }]}>
                   ✓ Kerabat Ditambahkan
                 </Text>
               </View>
@@ -528,7 +535,7 @@ export default function FamilyProfileScreen() {
     // Jika belum pilih user => tampilkan form pencarian & hasil
     return (
       <View style={styles.cardContainer}>
-        <Text style={[styles.desc, {color: colors.info}]}>
+        <Text style={[styles.desc, { color: colors.info }]}>
           Temukan profil kerabat anda untuk ditambahkan dengan alamat email yang
           terdaftar
         </Text>
@@ -549,7 +556,7 @@ export default function FamilyProfileScreen() {
           <Text style={styles.searchButtonText}>Cari</Text>
         </TouchableOpacity>
 
-        <Text style={[styles.resultTitle, {color: colors.text}]}>
+        <Text style={[styles.resultTitle, { color: colors.text }]}>
           Hasil Pencarian
         </Text>
 
@@ -557,10 +564,10 @@ export default function FamilyProfileScreen() {
         {searchResult.length === 0 ? (
           <View style={styles.noResultContainer}>
             <Image source={kerabatIcon} style={styles.iconImage} />
-            <Text style={[styles.noResultTitle, {color: colors.info}]}>
+            <Text style={[styles.noResultTitle, { color: colors.info }]}>
               Tidak Ada Hasil Kerabat
             </Text>
-            <Text style={[styles.noResultDesc, {color: colors.info}]}>
+            <Text style={[styles.noResultDesc, { color: colors.info }]}>
               Silahkan memasukkan alamat email yang benar pada kolom pencarian
               diatas
             </Text>
@@ -573,7 +580,7 @@ export default function FamilyProfileScreen() {
                 key={item.id}
                 style={[
                   styles.userCard,
-                  {backgroundColor: colors.cardBackground},
+                  { backgroundColor: colors.cardBackground },
                 ]}
                 onPress={() => handleSelectUser(item)}>
                 {/* Avatar Inisial */}
@@ -585,29 +592,29 @@ export default function FamilyProfileScreen() {
 
                 {/* Info singkat */}
                 <View style={styles.infoContainer}>
-                  <Text style={[styles.nameText, {color: colors.text}]}>
+                  <Text style={[styles.nameText, { color: colors.text }]}>
                     {item.name}
                   </Text>
-                  <Text style={[styles.locationText, {color: colors.info}]}>
+                  <Text style={[styles.locationText, { color: colors.info }]}>
                     {item.location}
                   </Text>
-                  <Text style={[styles.emailText, {color: colors.text}]}>
+                  <Text style={[styles.emailText, { color: colors.text }]}>
                     {item.email}
                   </Text>
                 </View>
 
                 {/* Tombol Tambah */}
-                <View style={{marginTop: 20}}>
+                <View style={{ marginTop: 20 }}>
                   {isAdded ? (
                     <View
                       style={[
                         styles.addButton,
-                        {backgroundColor: colors.text},
+                        { backgroundColor: colors.text },
                       ]}>
                       <Text
                         style={[
                           styles.addedButtonText,
-                          {color: colors.background},
+                          { color: colors.background },
                         ]}>
                         ✓
                       </Text>
@@ -616,14 +623,14 @@ export default function FamilyProfileScreen() {
                     <TouchableOpacity
                       style={[
                         styles.addButton,
-                        {backgroundColor: colors.cardBackground},
+                        { backgroundColor: colors.cardBackground },
                       ]}
                       onPress={handleAddFriend}>
                       {isAdding ? (
                         <ActivityIndicator color="#FF7A00" />
                       ) : (
                         <Text
-                          style={[styles.addButtonText, {color: colors.text}]}>
+                          style={[styles.addButtonText, { color: colors.text }]}>
                           + Tambahkan
                         </Text>
                       )}
@@ -699,9 +706,8 @@ export default function FamilyProfileScreen() {
           visible={modalVisible}
           onClose={() => setModalVisible(false)}
           onConfirm={confirmRemoveMember}
-          title={`Anda yakin untuk hapus kerabat ${
-            selectedMember?.friends?.first_name ?? ''
-          }?`}
+          title={`Anda yakin untuk hapus kerabat ${selectedMember?.friends?.first_name ?? ''
+            }?`}
           message={`Dengan menghapus kerabat, anda tidak dapat berbagi aktivitas dan memantau kerabat ini. Apakah anda yakin?`}
         />
       </ImageBackground>
@@ -710,7 +716,7 @@ export default function FamilyProfileScreen() {
 }
 
 // ========== STYLING ==========
-const {width} = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 const avatarSize = width * 0.12;
 
 const styles = StyleSheet.create({

@@ -323,6 +323,12 @@ export default function DisasterRiskScreen() {
   };
 
   useEffect(() => {
+    setTimeout(() => {
+      locateMe();
+    }, 2000);
+  }, []);
+
+  useEffect(() => {
     fetchData();
   }, [selectedFilterJenisBencana]);
 
