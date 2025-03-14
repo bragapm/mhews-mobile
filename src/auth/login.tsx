@@ -68,10 +68,11 @@ const Login = () => {
         });
       } else {
         setLoading(false);
-        showAlert('error', 'Login Gagal!');
+        showAlert('error', 'Login Gagal, Email atau Password salah!');
       }
     } catch (error: any) {
-      showAlert('error', error.message);
+      setLoading(false);
+      showAlert('error', 'Login Gagal, Email atau Password salah!');
     }
   };
 
