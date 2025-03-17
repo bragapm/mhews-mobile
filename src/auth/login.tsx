@@ -97,34 +97,32 @@ const Login = () => {
       : require('../assets/images/braga-logo.png');
 
   const handleGoogleSignIn = async () => {
+    setLoading(true);
     try {
       await GoogleSignin.hasPlayServices();
-      const userInfo = await GoogleSignin.signIn();
-      /**
-       * Setelah berhasil sign in, biasanya Anda akan mendapatkan idToken/token.
-       * Gunakan token itu untuk dikirim ke server backend agar server juga melakukan verifikasi
-       * atau jika Anda butuh langsung simpan data user di state (contoh: Redux, Recoil, dsb).
-       */
-      console.log('User Info =>', userInfo);
-      // Misal kita mengambil idToken untuk kirim ke server:
-      // const { idToken } = userInfo;
-      // const response = await postData('/auth/google-login', { token: idToken });
-      // setAuthData(...), dsb. Sesuaikan dengan kebutuhan Anda.
 
-      Alert.alert(
-        'Sukses',
-        `Berhasil login Google sebagai: ${userInfo?.user?.email}`,
-      );
+      const userInfo = await GoogleSignin.signIn();
+      const googleEmail = userInfo?.user?.email || '';
+      setAuthData('dummyAccessToken', 'dummyRefreshToken');
+
+      navigation.navigate('Otp', {
+        email: googleEmail,
+        phone: null,
+        sendTo: 'email',
+        from: 'google-signin',
+      });
+
+      setLoading(false);
     } catch (error: any) {
+      setLoading(false);
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
-        // user membatalkan login
-        Alert.alert('Info', 'Login dibatalkan.');
+        showAlert('error', `Login dibatalkan.`);
       } else if (error.code === statusCodes.IN_PROGRESS) {
         Alert.alert('Info', 'Sedang memproses login...');
       } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
-        Alert.alert('Error', 'Google Play Services tidak tersedia / usang!');
+        showAlert('error', 'Google Play Services tidak tersedia / usang!');
       } else {
-        Alert.alert('Error', `Terjadi kesalahan: ${error?.message}`);
+        showAlert('error', `Login Gagal: ${error?.message}`);
       }
     }
   };
