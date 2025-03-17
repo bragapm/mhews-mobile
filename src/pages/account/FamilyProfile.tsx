@@ -181,7 +181,7 @@ export default function FamilyProfileScreen() {
               justifyContent: 'space-between',
               borderRadius: 10,
               backgroundColor: colors.gradientStartProfile,
-              borderColor: '#CD541B',
+              borderColor: '#F36A1D',
               borderWidth: 1,
               paddingHorizontal: '2%',
               paddingVertical: '2%',

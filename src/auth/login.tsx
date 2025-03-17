@@ -11,20 +11,20 @@ import {
   useColorScheme,
   StatusBar,
 } from 'react-native';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
-import React, {useState, useEffect} from 'react';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import React, { useState, useEffect } from 'react';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Feather from 'react-native-vector-icons/Feather';
-import {useNavigation} from '@react-navigation/native';
-import {useForm, Controller} from 'react-hook-form';
-import {zodResolver} from '@hookform/resolvers/zod';
-import {z} from 'zod';
-import {postData} from '../services/apiServices';
+import { useNavigation } from '@react-navigation/native';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { postData } from '../services/apiServices';
 import COLORS from '../config/COLORS';
 import useAuthStore from '../hooks/auth';
-import {useAlert} from '../components/AlertContext';
-import {StackNavigationProp} from '@react-navigation/stack';
-import {RootStackParamList} from '../navigation/types';
+import { useAlert } from '../components/AlertContext';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../navigation/types';
 import {
   GoogleSignin,
   statusCodes,
@@ -42,13 +42,15 @@ const Login = () => {
   const colors = COLORS();
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [loading, setLoading] = useState(false);
-  const {setAuthData, getProfile} = useAuthStore();
-  const {showAlert} = useAlert();
+  const [invalidCredential, setInvalidCredential] = useState(false);
+  const [messageInvalid, setMessageInvalid] = useState("");
+  const { setAuthData, getProfile } = useAuthStore();
+  const { showAlert } = useAlert();
 
   useEffect(() => {
     GoogleSignin.configure({
-      webClientId: 'ISI_DENGAN_WEB_CLIENT_ID_ANDA.apps.googleusercontent.com',
-      // offlineAccess: true, // Jika butuh refresh token
+      webClientId: '205553627601-bm6o39g55pepepv1r57cs4mhuladrtrf.apps.googleusercontent.com',
+      offlineAccess: true, // Jika butuh refresh token
     });
   }, []);
 
@@ -56,7 +58,7 @@ const Login = () => {
     control,
     handleSubmit,
     setError,
-    formState: {errors},
+    formState: { errors },
   } = useForm({
     resolver: zodResolver(signinSchema),
   });
@@ -79,11 +81,28 @@ const Login = () => {
         });
       } else {
         setLoading(false);
-        showAlert('error', 'Login Gagal, Email atau Password salah!');
+        // showAlert('error', 'Email atau password yang anda tidak valid');
+        setMessageInvalid("Email atau password tidak valid");
+        setInvalidCredential(true);
+        setTimeout(() => {
+          setMessageInvalid("");
+          setInvalidCredential(false);
+        }, 3000);
       }
     } catch (error: any) {
       setLoading(false);
-      showAlert('error', 'Login Gagal, Email atau Password salah!');
+      if (error?.message) {
+        const errorMessage = error.status == 401 ? 'Email atau password tidak valid' : error.message;
+        // showAlert('error', errorMessage);
+        setMessageInvalid(errorMessage);
+        setInvalidCredential(true);
+        setTimeout(() => {
+          setMessageInvalid("");
+          setInvalidCredential(false);
+        }, 3000);
+      } else {
+        showAlert('error', 'Login Gagal, Terjadi kesalahan pada server.');
+      }
     }
   };
 
@@ -102,7 +121,8 @@ const Login = () => {
       await GoogleSignin.hasPlayServices();
 
       const userInfo = await GoogleSignin.signIn();
-      const googleEmail = userInfo?.user?.email || '';
+
+      const googleEmail = userInfo?.data?.user?.email || '';
       setAuthData('dummyAccessToken', 'dummyRefreshToken');
 
       navigation.navigate('Otp', {
@@ -140,31 +160,31 @@ const Login = () => {
         resizeMode="cover">
         <View style={styles.container}>
           <KeyboardAwareScrollView
-            contentContainerStyle={{flexGrow: 1}}
+            contentContainerStyle={{ flexGrow: 1 }}
             keyboardShouldPersistTaps="handled"
             enableOnAndroid={true}
             extraScrollHeight={20}>
             {/* Header */}
-            <View style={{marginLeft: 15, marginTop: 25}}>
+            <View style={{ marginLeft: 15, marginTop: 25 }}>
               <Image
                 source={logoSource}
-                style={{width: 150, height: 50, resizeMode: 'contain'}}
+                style={{ width: 150, height: 50, resizeMode: 'contain' }}
               />
             </View>
 
             {/* Title */}
-            <View style={{marginBottom: 20}}>
-              <Text style={[styles.title, {color: colors.text}]}>
+            <View style={{ marginBottom: 20 }}>
+              <Text style={[styles.title, { color: colors.text }]}>
                 Selamat datang di
               </Text>
-              <Text style={[styles.title, {color: colors.text}]}>
+              <Text style={[styles.title, { color: colors.text }]}>
                 Aplikasi MHEWS
               </Text>
             </View>
 
             {/* Form Login */}
-            <View style={[styles.card, {backgroundColor: colors.background}]}>
-              <Text style={[styles.sectionTitle, {color: colors.text}]}>
+            <View style={[styles.card, { backgroundColor: colors.background }]}>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>
                 Masuk
               </Text>
 
@@ -172,7 +192,7 @@ const Login = () => {
               <Controller
                 control={control}
                 name="email"
-                render={({field: {onChange, value}}) => (
+                render={({ field: { onChange, value } }) => (
                   <View
                     style={[
                       styles.inputContainer,
@@ -204,6 +224,18 @@ const Login = () => {
                   </View>
                 )}
               />
+              {invalidCredential && (
+                <View style={styles.errorContainer}>
+                  <MaterialIcons
+                    name="error-outline"
+                    size={20}
+                    color="red"
+                    style={styles.icon}
+                  />
+                  {/* Pesan error */}
+                  <Text style={styles.errorText}>{messageInvalid}</Text>
+                </View>
+              )}
               {errors.email?.message && (
                 <Text style={styles.errorText}>
                   {String(errors.email.message)}
@@ -214,7 +246,7 @@ const Login = () => {
               <Controller
                 control={control}
                 name="password"
-                render={({field: {onChange, value}}) => (
+                render={({ field: { onChange, value } }) => (
                   <View
                     style={[
                       styles.inputContainer,
@@ -254,11 +286,27 @@ const Login = () => {
                   </View>
                 )}
               />
+              {invalidCredential && (
+                <View style={styles.errorContainer}>
+                  <MaterialIcons
+                    name="error-outline"
+                    size={20}
+                    color="red"
+                    style={styles.icon}
+                  />
+                  {/* Pesan error */}
+                  <Text style={styles.errorText}>{messageInvalid}</Text>
+                </View>
+              )}
               {errors.password?.message && (
                 <Text style={styles.errorText}>
                   {String(errors.password.message)}
                 </Text>
               )}
+
+              <TouchableOpacity>
+                <Text style={styles.forgotText}>Lupa Password ?</Text>
+              </TouchableOpacity>
 
               <TouchableOpacity
                 style={styles.button}
@@ -278,7 +326,7 @@ const Login = () => {
                   alignItems: 'center',
                   marginVertical: 10,
                 }}>
-                <View style={{flex: 1, height: 1, backgroundColor: '#ccc'}} />
+                <View style={{ flex: 1, height: 1, backgroundColor: '#ccc' }} />
                 <Text
                   style={[
                     styles.orText,
@@ -290,7 +338,7 @@ const Login = () => {
                   ]}>
                   atau
                 </Text>
-                <View style={{flex: 1, height: 1, backgroundColor: '#ccc'}} />
+                <View style={{ flex: 1, height: 1, backgroundColor: '#ccc' }} />
               </View>
 
               {/* Tombol Masuk dengan Google */}
@@ -298,7 +346,7 @@ const Login = () => {
                 onPress={handleGoogleSignIn}
                 style={[
                   styles.altButton,
-                  {backgroundColor: colors.background},
+                  { backgroundColor: colors.background },
                 ]}>
                 {/* <AntDesign name="google" size={24} color="#DB4437" /> */}
                 <Image
@@ -312,7 +360,7 @@ const Login = () => {
               <TouchableOpacity
                 style={[
                   styles.altButton,
-                  {backgroundColor: colors.background},
+                  { backgroundColor: colors.background },
                 ]}>
                 <Image
                   source={require('../assets/icons/bnpb-logo.png')}
@@ -322,18 +370,17 @@ const Login = () => {
               </TouchableOpacity>
 
               {/* Tombol Masuk sebagai Guest */}
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 style={[
                   styles.altButton,
-                  {backgroundColor: colors.background},
+                  { backgroundColor: colors.background },
                 ]}>
                 <Image
                   source={require('../assets/images/guest.png')}
                   style={styles.iconImage}
                 />
-                {/* <MaterialIcons name="person-outline" size={24} color="black" /> */}
                 <Text style={styles.altText}>Masuk Sebagai Guest</Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
 
               {/* Link Daftar */}
               <View
@@ -342,7 +389,7 @@ const Login = () => {
                   justifyContent: 'center',
                   marginTop: 20,
                 }}>
-                <Text style={{fontSize: 16, color: colors.text}}>
+                <Text style={{ fontSize: 16, color: colors.text }}>
                   Belum punya akun?
                 </Text>
                 <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
@@ -436,6 +483,13 @@ const styles = StyleSheet.create({
     marginTop: 10,
     paddingHorizontal: 10,
   },
+  forgotText: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#F36A1D',
+    paddingVertical: 5,
+  },
   altText: {
     flex: 1,
     fontSize: 16,
@@ -454,5 +508,17 @@ const styles = StyleSheet.create({
     color: '#F36A1D',
     fontWeight: 'bold',
   },
-  errorText: {color: 'red', fontSize: 14, marginBottom: 10},
+  // errorText: { color: 'red', fontSize: 14, marginBottom: 10 },
+  errorContainer: {
+    flexDirection: "row",
+  },
+  icon: {
+    marginRight: 8,
+  },
+  errorText: {
+    fontSize: 14,
+    color: "red",
+    flex: 1,
+    marginBottom: 10
+  },
 });

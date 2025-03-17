@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState, useRef } from "react";
 import { Platform, ToastAndroid, Text, View, StyleSheet, Animated } from "react-native";
+import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import CustomToast from "./CustomToast";
 
 interface AlertContextType {
     showAlert: (type: "success" | "error", message: string) => void;
@@ -17,11 +19,13 @@ export const useAlert = () => {
 
 export const AlertProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [alert, setAlert] = useState<{ type: "success" | "error"; message: string } | null>(null);
+    const [toastVisible, setToastVisible] = useState(false);
     const opacity = useRef(new Animated.Value(0)).current;
 
     const showAlert = (type: "success" | "error", message: string) => {
         if (Platform.OS === "android") {
-            ToastAndroid.show(message, ToastAndroid.SHORT);
+            setAlert({ type, message });
+            setToastVisible(true);
         } else {
             setAlert({ type, message });
 
@@ -40,7 +44,7 @@ export const AlertProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return (
         <AlertContext.Provider value={{ showAlert }}>
             {children}
-            {alert && (
+            {alert && Platform.OS !== "android" && (
                 <Animated.View
                     style={[
                         styles.alertBox,
@@ -48,8 +52,22 @@ export const AlertProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                         { opacity },
                     ]}
                 >
+                    <MaterialIcons
+                        name={alert.type === "success" ? "check-circle" : "error"}
+                        size={24}
+                        color={alert.type === "success" ? "green" : "red"}
+                        style={styles.icon}
+                    />
                     <Text style={styles.alertText}>{alert.message}</Text>
                 </Animated.View>
+            )}
+            {toastVisible && (
+                <CustomToast
+                    message={alert?.message || ""}
+                    type={alert?.type || "success"}
+                    visible={toastVisible}
+                    onHide={() => setToastVisible(false)}
+                />
             )}
         </AlertContext.Provider>
     );
@@ -71,6 +89,7 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.2,
         shadowRadius: 3,
+        flexDirection: "row",
     },
     successBorder: {
         borderWidth: 1,
@@ -83,6 +102,10 @@ const styles = StyleSheet.create({
     alertText: {
         fontSize: 14,
         color: "#333",
+        marginLeft: 10,
+    },
+    icon: {
+        marginRight: 10,
     },
 });
 

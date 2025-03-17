@@ -71,7 +71,7 @@ function makeStyles(colors: any) {
       borderWidth: 1,
       borderColor: colors.text,
     },
-    chipSelected: { borderColor: '#f36a1d' },
+    chipSelected: { borderColor: '#F36A1D' },
     buttonRow: {
       flexDirection: 'column',
       justifyContent: 'center',
@@ -418,9 +418,9 @@ const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
                   value={radius}
                   onValueChange={value => setTempRadius(value)}
                   onSlidingComplete={value => setRadius(value)}
-                  minimumTrackTintColor="#f36a1d"
+                  minimumTrackTintColor="#F36A1D"
                   maximumTrackTintColor={colors.text}
-                  thumbTintColor="#f36a1d"
+                  thumbTintColor="#F36A1D"
                 />
               </View>
               <View style={styles.sliderLabelRow}>

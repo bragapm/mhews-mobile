@@ -351,7 +351,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     marginHorizontal: 5,
   },
-  chipSelected: { borderColor: '#f36a1d' },
+  chipSelected: { borderColor: '#F36A1D' },
   iconImage: {
     width: 20,
     height: 15,

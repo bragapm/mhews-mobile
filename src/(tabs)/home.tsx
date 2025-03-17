@@ -186,7 +186,7 @@ export default function HomeScreen() {
             <View style={styles.header}>
               <View style={styles.headerTextContainer}>
                 <Text style={[styles.greeting, { color: color.text }]}>
-                  Hi, {profile?.first_name} {profile?.last_name}
+                  Hi, {profile?.first_name || profile?.last_name ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : 'Guest'}!
                 </Text>
                 <View style={styles.locationContainer}>
                   <Icon name="map-pin" size={16} color={color.subText} />
@@ -279,7 +279,7 @@ export default function HomeScreen() {
                   ]}
                   activeOpacity={0.8}>
                   <LinearGradient
-                    colors={['#CD541B', 'transparent']}
+                    colors={['#F36A1D', 'transparent']}
                     start={{ x: 0, y: 1 }}
                     end={{ x: 0.1, y: 0.1 }}
                     style={styles.gradientBackground}

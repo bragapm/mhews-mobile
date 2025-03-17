@@ -68,24 +68,18 @@ const Signup = () => {
     setLoading(true);
     try {
       const { confirm_password, ...requestData } = formData;
-      // Set default role (opsional, sesuai kebutuhan Anda)
       requestData.role = "16f26149-65b3-4de5-ba0d-cd7130887441";
-
-      // Contoh postData ke server
       const response = await postData("/users", requestData);
+      console.log(response);
 
-      // Bypass: asumsikan response sukses
       setTimeout(() => {
         setLoading(false);
         showAlert("success", "Akun berhasil dibuat!");
-
-        // Simpan data yang diperlukan untuk di-push ke OTP
         setSavedData({
           email: formData.email,
           phone: formData.phone,
         });
 
-        // Tampilkan modal untuk memilih metode pengiriman OTP
         setIsModalVisible(true);
       }, 2000);
     } catch (error: any) {
@@ -132,27 +126,27 @@ const Signup = () => {
       >
         <View style={styles.overlay} />
         <View style={styles.container}>
-          <KeyboardAwareScrollView
-            contentContainerStyle={{ flexGrow: 1 }}
-            keyboardShouldPersistTaps="handled"
-            enableOnAndroid={true}
-            extraScrollHeight={20}
-          >
-            <View style={styles.header}>
-              <TouchableOpacity onPress={() => navigation.goBack()}>
-                <MaterialIcons name="arrow-back-ios" size={24} color={colors.text} />
-              </TouchableOpacity>
-              <Text style={[styles.title, { color: colors.text }]}>
-                Buat Akun
-              </Text>
-            </View>
+          <View style={styles.header}>
+            <TouchableOpacity onPress={() => navigation.goBack()}>
+              <MaterialIcons name="arrow-back-ios" size={24} color={colors.text} />
+            </TouchableOpacity>
+            <Text style={[styles.title, { color: colors.text }]}>
+              Buat Akun
+            </Text>
+          </View>
 
-            <View style={[styles.card, { backgroundColor: colors.background }]}>
-              <Text style={[styles.sectionTitle, { color: colors.text }]}>
-                Silahkan lengkapi formulir dibawah ini sesuai dengan data diri
-                anda untuk membuat akun
-              </Text>
+          <View style={[styles.card, { backgroundColor: colors.background }]}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>
+              Silahkan lengkapi formulir dibawah ini sesuai dengan data diri
+              anda untuk membuat akun
+            </Text>
 
+            <KeyboardAwareScrollView
+              contentContainerStyle={{ flexGrow: 1 }}
+              keyboardShouldPersistTaps="handled"
+              enableOnAndroid={true}
+              extraScrollHeight={20}
+            >
               {/* Input NIK */}
               <Controller
                 control={control}
@@ -484,8 +478,8 @@ const Signup = () => {
                   <Text style={styles.textButton}>Buat Akun</Text>
                 )}
               </TouchableOpacity>
-            </View>
-          </KeyboardAwareScrollView>
+            </KeyboardAwareScrollView>
+          </View>
         </View>
       </ImageBackground>
       {/* MODAL PILIHAN OTP */}

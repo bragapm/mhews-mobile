@@ -57,9 +57,9 @@ export default function TabNavigator() {
     />
   );
 
-  if (!isAuthenticated) {
-    return null;
-  }
+  // if (!isAuthenticated) {
+  //   return null;
+  // }
 
   return (
     <SOSModalProvider>
@@ -105,14 +105,16 @@ export default function TabNavigator() {
             },
           })}
         />
-        <Tab.Screen
-          name="profile"
-          component={ProfileScreen}
-          options={{
-            tabBarLabel: "Profile",
-            tabBarIcon: ({ focused }) => getTabIcon(focused, "profile"),
-          }}
-        />
+        {isAuthenticated && (
+          <Tab.Screen
+            name="profile"
+            component={ProfileScreen}
+            options={{
+              tabBarLabel: "Profile",
+              tabBarIcon: ({ focused }) => getTabIcon(focused, "profile"),
+            }}
+          />
+        )}
       </Tab.Navigator>
     </SOSModalProvider>
   );

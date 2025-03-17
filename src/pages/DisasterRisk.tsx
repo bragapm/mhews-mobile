@@ -1299,7 +1299,7 @@ const styles = StyleSheet.create({
   },
   cardLoc: {
     fontSize: 12,
-    color: '#CD541B',
+    color: '#F36A1D',
   },
   cardHeader: {
     flexDirection: 'row',
@@ -1392,7 +1392,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     marginHorizontal: 5,
   },
-  chipSelected: { borderColor: '#f36a1d' },
+  chipSelected: { borderColor: '#F36A1D' },
   headerAlertContainer: {
     flexDirection: 'row',
     backgroundColor: '#e74c3c',

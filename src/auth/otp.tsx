@@ -176,8 +176,8 @@ const OTPConfirmation = () => {
           <Text style={styles.description}>
             {from === "signin" ? (
               <>
-                Kode OTP (One-Time Password) telah dikirimkan ke email{" "}
-                <Text style={{ fontWeight: "bold" }}>{email}</Text>. Harap periksa email Anda secara berkala.
+                Kode OTP (One-Time-Password) akan dikirimkan sebagai metode verifikasi akun pada alamat email{" "}
+                <Text style={{ fontWeight: "bold" }}>{email}</Text>. Pastikan alamat email yang anda masukkan sudah benar
               </>
             ) : sendTo === "wa" ? (
               <>
@@ -186,13 +186,13 @@ const OTPConfirmation = () => {
               </>
             ) : (
               <>
-                Kode OTP (One-Time Password) telah dikirimkan ke email{" "}
-                <Text style={{ fontWeight: "bold" }}>{email}</Text>. Harap periksa email Anda secara berkala.
+                Kode OTP (One-Time-Password) akan dikirimkan sebagai metode verifikasi akun pada alamat email{" "}
+                <Text style={{ fontWeight: "bold" }}>{email}</Text>. Pastikan alamat email yang anda masukkan sudah benar
               </>
             )}
           </Text>
 
-          {from === "signup" && (
+          {/* {from === "signup" && (
             <TouchableOpacity
               style={{
                 width: "100%",
@@ -200,7 +200,7 @@ const OTPConfirmation = () => {
             >
               <Text style={styles.changeMethod}>Ganti Metode?</Text>
             </TouchableOpacity>
-          )}
+          )} */}
 
           {/* OTP Input (CodeField) */}
           <CodeField
@@ -289,12 +289,12 @@ const styles = StyleSheet.create({
     color: "#666",
     marginBottom: 20,
   },
-  changeMethod: {
-    color: "#FF6200",
-    fontWeight: "bold",
-    marginBottom: 10,
-    textAlign: "left",
-  },
+  // changeMethod: {
+  //   color: "#FF6200",
+  //   fontWeight: "bold",
+  //   marginBottom: 10,
+  //   textAlign: "left",
+  // },
   codeFieldRoot: {
     marginTop: 20,
     marginBottom: 20,

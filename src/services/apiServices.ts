@@ -36,28 +36,42 @@ api.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response) {
-            console.error("API Error:", {
-                status: error.response.status,
-                data: error.response.data,
-                headers: error.response.headers,
-            });
+            if (error.response.status === 401) {
+                const errorMessage = error.response.data?.errors?.[0]?.message || "Invalid credentials";
+                const errorCode = error.response.data?.errors?.[0]?.extensions?.code || "UNKNOWN_ERROR";
+
+                return Promise.reject({
+                    status: error.response.status,
+                    message: errorMessage,
+                    code: errorCode,
+                    data: error.response.data,
+                });
+            } else {
+                return Promise.reject({
+                    status: error.response.status,
+                    message: "An unexpected error occurred",
+                    data: error.response.data,
+                });
+            }
         } else if (error.request) {
-            console.error("No response received:", error.request);
+            return Promise.reject({
+                status: null,
+                message: "No response from the server",
+            });
         } else {
-            console.error("Request setup error:", error.message);
+            return Promise.reject({
+                status: null,
+                message: "Failed to setup the request",
+            });
         }
-        return Promise.reject(error);
     }
 );
 
-
 export const getData = async (endpoint: string, params = {}) => {
     try {
-        console.log(`Fetching data from ${BASE_URL}${endpoint}`, params);
         const response = await api.get(endpoint, { params });
         return response.data;
     } catch (error) {
-        console.error("Error fetching data:", error);
         throw error;
     }
 };
