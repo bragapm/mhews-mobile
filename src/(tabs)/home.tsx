@@ -44,7 +44,6 @@ export default function HomeScreen() {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const colorScheme = useColorScheme();
   const { profile, getProfile } = useAuthStore();
-  const [emergencyMessage, setEmergencyMessage] = useState('');
   const [siagaBencana, setSiagaBencana] = useState([]);
   const [fiturPendukung, setFiturPendukung] = useState([]);
   const [infoTerkait, setInfoTerkait] = useState([]);
@@ -142,6 +141,7 @@ export default function HomeScreen() {
     requestAllPermissions();
     handleGetLocation();
     fetchData();
+    getProfile();
   }, []);
 
   const onRefresh = async () => {
@@ -186,7 +186,7 @@ export default function HomeScreen() {
             <View style={styles.header}>
               <View style={styles.headerTextContainer}>
                 <Text style={[styles.greeting, { color: color.text }]}>
-                  Hi, {profile?.first_name || profile?.last_name ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : 'Guest'}!
+                  Hi, {profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : 'Guest'}
                 </Text>
                 <View style={styles.locationContainer}>
                   <Icon name="map-pin" size={16} color={color.subText} />
