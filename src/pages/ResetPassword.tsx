@@ -50,6 +50,7 @@ const ResetPasswordPage = () => {
   const colors = COLORS();
   const iconInfo = require('../assets/images/resikoBahayaActive.png');
   const [loading, setLoading] = useState(false);
+  const [isPasswordReset, setIsPasswordReset] = useState(false);
 
   const backgroundSource =
     colorScheme === 'dark'
@@ -71,11 +72,16 @@ const ResetPasswordPage = () => {
 
   const handleSendOTP = data => {
     setLoading(true);
-    // Logika pengiriman OTP
+    // Logika pengiriman OTP atau Reset Password
     console.log('Data:', data);
     setTimeout(() => {
       setLoading(false);
+      setIsPasswordReset(true);
     }, 2000);
+  };
+
+  const handleBackToLogin = () => {
+    navigation.replace('Login');
   };
 
   return (
@@ -99,122 +105,134 @@ const ResetPasswordPage = () => {
             />
 
             <Text style={[styles.subTitle, {color: colors.info}]}>
-              Masukkan password baru dan konfirmasi untuk melanjutkan.
+              {isPasswordReset
+                ? 'Password baru berhasil disimpan. Silahkan kembali ke halaman login'
+                : 'Masukkan password baru dan konfirmasi untuk melanjutkan.'}
             </Text>
-
-            <Controller
-              control={control}
-              name="password"
-              render={({field: {onChange, value}}) => (
-                <View
-                  style={[
-                    styles.inputContainer,
-                    {
-                      borderColor: colors.border,
-                      backgroundColor: colors.background,
-                    },
-                  ]}>
-                  <MaterialIcons
-                    name="lock"
-                    size={24}
-                    color={colors.text}
-                    style={styles.inputIcon}
-                  />
-                  <TextInput
-                    style={[
-                      styles.input,
-                      {color: colors.text, backgroundColor: colors.background},
-                    ]}
-                    placeholder="Password Baru"
-                    secureTextEntry
-                    value={value}
-                    onChangeText={onChange}
-                    placeholderTextColor={colors.text}
-                  />
-                </View>
-              )}
-            />
-            {errors.password && (
-              <Text style={styles.errorText}>{errors.password.message}</Text>
-            )}
-
-            <Controller
-              control={control}
-              name="confirmPassword"
-              render={({field: {onChange, value}}) => (
-                <View
-                  style={[
-                    styles.inputContainer,
-                    {
-                      borderColor: colors.border,
-                      backgroundColor: colors.background,
-                    },
-                  ]}>
-                  <MaterialIcons
-                    name="lock"
-                    size={24}
-                    color={colors.text}
-                    style={styles.inputIcon}
-                  />
-                  <TextInput
-                    style={[
-                      styles.input,
-                      {color: colors.text, backgroundColor: colors.background},
-                    ]}
-                    placeholder="Konfirmasi Password Baru"
-                    secureTextEntry
-                    value={value}
-                    onChangeText={onChange}
-                    placeholderTextColor={colors.text}
-                  />
-                </View>
-              )}
-            />
-            {errors.confirmPassword && (
-              <Text style={styles.errorText}>
-                {errors.confirmPassword.message}
-              </Text>
-            )}
-
-            <View style={styles.rulesContainer}>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                }}>
-                <Image source={iconInfo} style={styles.iconImage} />
-                <Text style={styles.ruleText}>
-                  Password <Text style={styles.bold}>harus</Text> mengandung{' '}
-                  <Text style={styles.highlight}>
-                    kombinasi huruf besar dan kecil
+            {!isPasswordReset && (
+              <>
+                <Controller
+                  control={control}
+                  name="password"
+                  render={({field: {onChange, value}}) => (
+                    <View
+                      style={[
+                        styles.inputContainer,
+                        {
+                          borderColor: colors.border,
+                          backgroundColor: colors.background,
+                        },
+                      ]}>
+                      <MaterialIcons
+                        name="lock"
+                        size={24}
+                        color={colors.text}
+                        style={styles.inputIcon}
+                      />
+                      <TextInput
+                        style={[
+                          styles.input,
+                          {
+                            color: colors.text,
+                            backgroundColor: colors.background,
+                          },
+                        ]}
+                        placeholder="Password Baru"
+                        secureTextEntry
+                        value={value}
+                        onChangeText={onChange}
+                        placeholderTextColor={colors.text}
+                      />
+                    </View>
+                  )}
+                />
+                {errors.password && (
+                  <Text style={styles.errorText}>
+                    {errors.password.message}
                   </Text>
-                </Text>
-              </View>
+                )}
 
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                }}>
-                <Image source={iconInfo} style={styles.iconImage} />
-                <Text style={styles.ruleText}>
-                  Password <Text style={styles.bold}>harus</Text> mengandung{' '}
-                  <Text style={styles.highlight}>angka</Text>
-                </Text>
-              </View>
+                <Controller
+                  control={control}
+                  name="confirmPassword"
+                  render={({field: {onChange, value}}) => (
+                    <View
+                      style={[
+                        styles.inputContainer,
+                        {
+                          borderColor: colors.border,
+                          backgroundColor: colors.background,
+                        },
+                      ]}>
+                      <MaterialIcons
+                        name="lock"
+                        size={24}
+                        color={colors.text}
+                        style={styles.inputIcon}
+                      />
+                      <TextInput
+                        style={[
+                          styles.input,
+                          {
+                            color: colors.text,
+                            backgroundColor: colors.background,
+                          },
+                        ]}
+                        placeholder="Konfirmasi Password Baru"
+                        secureTextEntry
+                        value={value}
+                        onChangeText={onChange}
+                        placeholderTextColor={colors.text}
+                      />
+                    </View>
+                  )}
+                />
+                {errors.confirmPassword && (
+                  <Text style={styles.errorText}>
+                    {errors.confirmPassword.message}
+                  </Text>
+                )}
+                <View style={styles.rulesContainer}>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                    }}>
+                    <Image source={iconInfo} style={styles.iconImage} />
+                    <Text style={styles.ruleText}>
+                      Password <Text style={styles.bold}>harus</Text> mengandung{' '}
+                      <Text style={styles.highlight}>
+                        kombinasi huruf besar dan kecil
+                      </Text>
+                    </Text>
+                  </View>
 
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                }}>
-                <Image source={iconInfo} style={styles.iconImage} />
-                <Text style={styles.ruleText}>
-                  Password <Text style={styles.bold}>harus</Text> mengandung{' '}
-                  <Text style={styles.highlight}>minimal 8 karakter</Text>
-                </Text>
-              </View>
-            </View>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                    }}>
+                    <Image source={iconInfo} style={styles.iconImage} />
+                    <Text style={styles.ruleText}>
+                      Password <Text style={styles.bold}>harus</Text> mengandung{' '}
+                      <Text style={styles.highlight}>angka</Text>
+                    </Text>
+                  </View>
+
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                    }}>
+                    <Image source={iconInfo} style={styles.iconImage} />
+                    <Text style={styles.ruleText}>
+                      Password <Text style={styles.bold}>harus</Text> mengandung{' '}
+                      <Text style={styles.highlight}>minimal 8 karakter</Text>
+                    </Text>
+                  </View>
+                </View>
+              </>
+            )}
           </View>
 
           <View style={{padding: 16}}>
@@ -224,12 +242,21 @@ const ResetPasswordPage = () => {
                 !(password && confirmPassword && isValid) &&
                   styles.buttonDisabled,
               ]}
-              onPress={handleSubmit(handleSendOTP)}
-              disabled={loading || !(password && confirmPassword && isValid)}>
+              onPress={
+                isPasswordReset
+                  ? handleBackToLogin
+                  : handleSubmit(handleSendOTP)
+              }
+              disabled={
+                loading ||
+                (!isPasswordReset && !(password && confirmPassword && isValid))
+              }>
               {loading ? (
                 <ActivityIndicator size="small" color="#fff" />
               ) : (
-                <Text style={styles.textButton}>Reset Password</Text>
+                <Text style={styles.textButton}>
+                  {isPasswordReset ? 'Kembali ke Login' : 'Reset Password'}
+                </Text>
               )}
             </TouchableOpacity>
           </View>
