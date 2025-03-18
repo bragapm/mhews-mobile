@@ -42,6 +42,7 @@ const ForgotPasswordPage = () => {
   const [invalidCredential, setInvalidCredential] = useState(false);
   const [messageInvalid, setMessageInvalid] = useState('');
   const [loading, setLoading] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
   const backgroundSource =
     colorScheme === 'dark'
       ? require('../assets/images/bg-page-dark.png')
@@ -72,6 +73,7 @@ const ForgotPasswordPage = () => {
   const handleSendOTP = data => {
     // Logika untuk proses pengiriman kode OTP
     console.log('Data yang dikirim:', data);
+    setModalVisible(true);
   };
 
   return (
@@ -166,6 +168,49 @@ const ForgotPasswordPage = () => {
           </View>
         </ScrollView>
       </ImageBackground>
+      <Modal
+        visible={modalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setModalVisible(false)}>
+        {/* Latar belakang gelap (semi-transparan) */}
+        <View style={styles.modalOverlay}>
+          {/* Konten bottom sheet */}
+          <View
+            style={[styles.bottomSheetContainer, {backgroundColor: colors.bg}]}>
+            <Text style={[styles.bottomSheetTitle, {color: colors.text}]}>
+              Kirim kode OTP
+            </Text>
+            <Text style={[styles.bottomSheetDesc, {color: colors.info}]}>
+              Kode OTP (One-Time-Password) akan dikirimkan sebagai metode
+              verifikasi akun pada alamat email{' '}
+              <Text style={{fontWeight: 'bold'}}>{emailValue}</Text>. Pastikan
+              alamat email yang anda masukkan sudah benar.
+            </Text>
+
+            {/* Tombol "Kirim kode OTP" di dalam bottom sheet */}
+            <TouchableOpacity style={styles.bottomSheetButton}>
+              <Text style={styles.bottomSheetButtonText}>Kirim Kode OTP</Text>
+            </TouchableOpacity>
+
+            {/* Tombol "Batalkan" untuk menutup bottom sheet */}
+            <TouchableOpacity
+              style={[
+                styles.bottomSheetButton,
+                {
+                  backgroundColor: colors.bg,
+                  borderWidth: 1,
+                  borderColor: '#F36A1D',
+                },
+              ]}
+              onPress={() => setModalVisible(false)}>
+              <Text style={[styles.bottomSheetButtonText, {color: '#F36A1D'}]}>
+                Batalkan
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </>
   );
 };
@@ -235,5 +280,42 @@ const styles = StyleSheet.create({
   },
   buttonDisabled: {
     backgroundColor: '#ccc',
+  } /* ---- Styling Modal Bottom Sheet ---- */,
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'flex-end', // Menempel ke bagian bawah layar
+    backgroundColor: 'rgba(0,0,0,0.5)', // Latar belakang hitam transparan
+  },
+  bottomSheetContainer: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 16,
+    // Atur minimal tinggi bottom sheet di sini
+    minHeight: 200,
+  },
+  bottomSheetTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 8,
+    textAlign: 'left',
+  },
+  bottomSheetDesc: {
+    fontSize: 14,
+    marginBottom: 20,
+    textAlign: 'left',
+  },
+  bottomSheetButton: {
+    width: '100%',
+    paddingVertical: 15,
+    borderRadius: 10,
+    backgroundColor: '#F36A1D',
+    marginBottom: 10,
+  },
+  bottomSheetButtonText: {
+    color: '#fff',
+    textAlign: 'center',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
 });
