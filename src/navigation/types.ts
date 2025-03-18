@@ -10,11 +10,12 @@ export type RootStackParamList = {
   Splash: undefined;
   Login: undefined;
   Signup: undefined;
+  ForgotPassword: undefined;
   EvacuationLocation: undefined;
   DisasterReport: undefined;
   NotifEvacuateLocationScreen: undefined;
   ManageLocations: undefined;
   Notifications: undefined;
   FindFamily: undefined;
-  Otp: { email: string; phone: string | null; sendTo: string; from: string };
+  Otp: {email: string; phone: string | null; sendTo: string; from: string};
 };

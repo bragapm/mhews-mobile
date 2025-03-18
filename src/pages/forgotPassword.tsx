@@ -1,0 +1,239 @@
+import React, {useRef, useState, useEffect, useCallback} from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Dimensions,
+  TouchableOpacity,
+  Animated,
+  PanResponder,
+  StatusBar,
+  Modal,
+  FlatList,
+  Image,
+  useColorScheme,
+  TextInput,
+  ScrollView,
+  ImageBackground,
+  Platform,
+  ActivityIndicator,
+} from 'react-native';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import COLORS from '../config/COLORS';
+import {HeaderNav} from '../components/Header';
+import MapboxGL, {Camera} from '@rnmapbox/maps';
+import {useNavigation} from '@react-navigation/native';
+import {StackNavigationProp} from '@react-navigation/stack';
+import {RootStackParamList} from '../navigation/types';
+import {z} from 'zod';
+import {useForm, Controller} from 'react-hook-form';
+import {zodResolver} from '@hookform/resolvers/zod';
+
+const forgotEmail = z.object({
+  email: z.string().email('Format email tidak valid'),
+});
+
+const {width, height} = Dimensions.get('window');
+
+const ForgotPasswordPage = () => {
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const colorScheme = useColorScheme();
+  const colors = COLORS();
+  const [invalidCredential, setInvalidCredential] = useState(false);
+  const [messageInvalid, setMessageInvalid] = useState('');
+  const [loading, setLoading] = useState(false);
+  const backgroundSource =
+    colorScheme === 'dark'
+      ? require('../assets/images/bg-page-dark.png')
+      : require('../assets/images/bg-page-light.png');
+  const handleBack = () => {
+    navigation.replace('Tabs');
+  };
+  const arrowLeft =
+    colorScheme === 'dark'
+      ? require('../assets/images/left-dark.png')
+      : require('../assets/images/left-light.png');
+
+  const backToProfile = () => {
+    navigation.replace('Login');
+  };
+
+  const {
+    control,
+    handleSubmit,
+    setError,
+    watch,
+    formState: {errors},
+  } = useForm({
+    resolver: zodResolver(forgotEmail),
+  });
+
+  const emailValue = watch('email');
+  const handleSendOTP = data => {
+    // Logika untuk proses pengiriman kode OTP
+    console.log('Data yang dikirim:', data);
+  };
+
+  return (
+    <>
+      <StatusBar
+        translucent
+        backgroundColor="transparent"
+        barStyle="dark-content"
+      />
+      <ImageBackground
+        source={backgroundSource}
+        style={styles.background}
+        resizeMode="cover">
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          showsVerticalScrollIndicator={false}>
+          <View style={styles.container}>
+            <HeaderNav onPress={backToProfile} title="Lupa Password" />
+
+            <Text style={[styles.subTitle, {color: colors.info}]}>
+              Masukkan alamat email anda yang terdaftar untuk mengirimkan kode
+              OTP untuk reset password.
+            </Text>
+
+            <Controller
+              control={control}
+              name="email"
+              render={({field: {onChange, value}}) => (
+                <View
+                  style={[
+                    styles.inputContainer,
+                    {
+                      borderColor: colors.border,
+                      backgroundColor: colors.background,
+                    },
+                  ]}>
+                  <MaterialIcons
+                    name="email"
+                    size={24}
+                    color={colors.text}
+                    style={styles.inputIcon}
+                  />
+                  <TextInput
+                    style={[
+                      styles.input,
+                      {
+                        color: colors.text,
+                        backgroundColor: colors.background,
+                      },
+                    ]}
+                    placeholder="Masukkan Email Anda"
+                    placeholderTextColor={colors.text}
+                    keyboardType="email-address"
+                    value={value}
+                    onChangeText={onChange}
+                  />
+                </View>
+              )}
+            />
+            {invalidCredential && (
+              <View style={styles.errorContainer}>
+                <MaterialIcons
+                  name="error-outline"
+                  size={20}
+                  color="red"
+                  style={styles.icon}
+                />
+                {/* Pesan error */}
+                <Text style={styles.errorText}>{messageInvalid}</Text>
+              </View>
+            )}
+            {errors.email?.message && (
+              <Text style={styles.errorText}>
+                {String(errors.email.message)}
+              </Text>
+            )}
+          </View>
+          <View
+            style={{
+              padding: 16,
+            }}>
+            <TouchableOpacity
+              style={[styles.button, !emailValue && styles.buttonDisabled]}
+              onPress={handleSubmit(handleSendOTP)}
+              disabled={!emailValue || loading}>
+              {loading ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text style={styles.textButton}>Kirim Kode OTP</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </ImageBackground>
+    </>
+  );
+};
+
+export default ForgotPasswordPage;
+
+const styles = StyleSheet.create({
+  background: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    paddingBottom: 20,
+  },
+  container: {flex: 1, padding: 16, marginTop: '5%'},
+  subTitle: {
+    fontSize: 14,
+    textAlign: 'left',
+    color: '#666',
+    marginBottom: '3%',
+    marginLeft: '3%',
+    marginTop: '5%',
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    borderRadius: 10,
+    marginBottom: 10,
+    paddingHorizontal: 10,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  inputIcon: {
+    marginRight: 10,
+  },
+  input: {
+    flex: 1,
+    height: 50,
+    fontSize: 16,
+  },
+  errorContainer: {
+    flexDirection: 'row',
+  },
+  icon: {
+    marginRight: 8,
+  },
+  errorText: {
+    fontSize: 14,
+    color: 'red',
+    flex: 1,
+    marginBottom: 10,
+  },
+  button: {
+    backgroundColor: '#F36A1D',
+    paddingVertical: 15,
+    borderRadius: 10,
+    marginTop: 10,
+  },
+  textButton: {
+    color: 'white',
+    fontWeight: 'bold',
+    textAlign: 'center',
+    fontSize: 18,
+  },
+  buttonDisabled: {
+    backgroundColor: '#ccc',
+  },
+});
