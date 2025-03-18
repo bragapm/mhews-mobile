@@ -36,6 +36,7 @@ import ChatScreen from './src/(tabs)/chat';
 import DisasterReportScreen from './src/pages/DisasterReport';
 import NotificationsScreen from './src/pages/Notifications';
 import ForgotPasswordPage from './src/pages/forgotPassword';
+import ResetPasswordPage from './src/pages/ResetPassword';
 const Stack = createStackNavigator();
 
 function App() {
@@ -122,6 +123,10 @@ function App() {
               <Stack.Screen
                 name="ForgotPassword"
                 component={ForgotPasswordPage}
+              />
+              <Stack.Screen
+                name="ResetPassword"
+                component={ResetPasswordPage}
               />
               <Stack.Screen
                 name="NotifEvacuateLocationScreen"

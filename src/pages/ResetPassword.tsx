@@ -28,52 +28,54 @@ import {RootStackParamList} from '../navigation/types';
 import {z} from 'zod';
 import {useForm, Controller} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod';
+import Feather from 'react-native-vector-icons/Feather';
 
-const forgotEmail = z.object({
-  email: z.string().email('Format email tidak valid'),
-});
+const resetPasswordSchema = z
+  .object({
+    password: z
+      .string()
+      .min(8, 'Password minimal 8 karakter')
+      .regex(/[A-Z]/, 'Harus mengandung huruf besar')
+      .regex(/[0-9]/, 'Harus mengandung angka'),
+    confirmPassword: z.string(),
+  })
+  .refine(data => data.password === data.confirmPassword, {
+    message: 'Password tidak cocok',
+    path: ['confirmPassword'],
+  });
 
-const {width, height} = Dimensions.get('window');
-
-const ForgotPasswordPage = () => {
+const ResetPasswordPage = () => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const colorScheme = useColorScheme();
   const colors = COLORS();
-  const [invalidCredential, setInvalidCredential] = useState(false);
-  const [messageInvalid, setMessageInvalid] = useState('');
+  const iconInfo = require('../assets/images/resikoBahayaActive.png');
   const [loading, setLoading] = useState(false);
-  const [modalVisible, setModalVisible] = useState(false);
+
   const backgroundSource =
     colorScheme === 'dark'
       ? require('../assets/images/bg-page-dark.png')
       : require('../assets/images/bg-page-light.png');
-  const handleBack = () => {
-    navigation.replace('Tabs');
-  };
-  const arrowLeft =
-    colorScheme === 'dark'
-      ? require('../assets/images/left-dark.png')
-      : require('../assets/images/left-light.png');
-
-  const backToProfile = () => {
-    navigation.replace('Login');
-  };
 
   const {
     control,
     handleSubmit,
-    setError,
     watch,
-    formState: {errors},
+    formState: {errors, isValid},
   } = useForm({
-    resolver: zodResolver(forgotEmail),
+    resolver: zodResolver(resetPasswordSchema),
+    mode: 'onChange',
   });
 
-  const emailValue = watch('email');
+  const password = watch('password');
+  const confirmPassword = watch('confirmPassword');
+
   const handleSendOTP = data => {
-    // Logika untuk proses pengiriman kode OTP
-    console.log('Data yang dikirim:', data);
-    setModalVisible(true);
+    setLoading(true);
+    // Logika pengiriman OTP
+    console.log('Data:', data);
+    setTimeout(() => {
+      setLoading(false);
+    }, 2000);
   };
 
   return (
@@ -91,16 +93,18 @@ const ForgotPasswordPage = () => {
           contentContainerStyle={styles.scrollContainer}
           showsVerticalScrollIndicator={false}>
           <View style={styles.container}>
-            <HeaderNav onPress={backToProfile} title="Lupa Password" />
+            <HeaderNav
+              onPress={() => navigation.replace('ForgotPassword')}
+              title="Reset Password"
+            />
 
             <Text style={[styles.subTitle, {color: colors.info}]}>
-              Masukkan alamat email anda yang terdaftar untuk mengirimkan kode
-              OTP untuk reset password.
+              Masukkan password baru dan konfirmasi untuk melanjutkan.
             </Text>
 
             <Controller
               control={control}
-              name="email"
+              name="password"
               render={({field: {onChange, value}}) => (
                 <View
                   style={[
@@ -111,7 +115,7 @@ const ForgotPasswordPage = () => {
                     },
                   ]}>
                   <MaterialIcons
-                    name="email"
+                    name="lock"
                     size={24}
                     color={colors.text}
                     style={styles.inputIcon}
@@ -119,105 +123,123 @@ const ForgotPasswordPage = () => {
                   <TextInput
                     style={[
                       styles.input,
-                      {
-                        color: colors.text,
-                        backgroundColor: colors.background,
-                      },
+                      {color: colors.text, backgroundColor: colors.background},
                     ]}
-                    placeholder="Masukkan Email Anda"
-                    placeholderTextColor={colors.text}
-                    keyboardType="email-address"
+                    placeholder="Password Baru"
+                    secureTextEntry
                     value={value}
                     onChangeText={onChange}
+                    placeholderTextColor={colors.text}
                   />
                 </View>
               )}
             />
-            {invalidCredential && (
-              <View style={styles.errorContainer}>
-                <MaterialIcons
-                  name="error-outline"
-                  size={20}
-                  color="red"
-                  style={styles.icon}
-                />
-                {/* Pesan error */}
-                <Text style={styles.errorText}>{messageInvalid}</Text>
-              </View>
+            {errors.password && (
+              <Text style={styles.errorText}>{errors.password.message}</Text>
             )}
-            {errors.email?.message && (
+
+            <Controller
+              control={control}
+              name="confirmPassword"
+              render={({field: {onChange, value}}) => (
+                <View
+                  style={[
+                    styles.inputContainer,
+                    {
+                      borderColor: colors.border,
+                      backgroundColor: colors.background,
+                    },
+                  ]}>
+                  <MaterialIcons
+                    name="lock"
+                    size={24}
+                    color={colors.text}
+                    style={styles.inputIcon}
+                  />
+                  <TextInput
+                    style={[
+                      styles.input,
+                      {color: colors.text, backgroundColor: colors.background},
+                    ]}
+                    placeholder="Konfirmasi Password Baru"
+                    secureTextEntry
+                    value={value}
+                    onChangeText={onChange}
+                    placeholderTextColor={colors.text}
+                  />
+                </View>
+              )}
+            />
+            {errors.confirmPassword && (
               <Text style={styles.errorText}>
-                {String(errors.email.message)}
+                {errors.confirmPassword.message}
               </Text>
             )}
+
+            <View style={styles.rulesContainer}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                }}>
+                <Image source={iconInfo} style={styles.iconImage} />
+                <Text style={styles.ruleText}>
+                  Password <Text style={styles.bold}>harus</Text> mengandung{' '}
+                  <Text style={styles.highlight}>
+                    kombinasi huruf besar dan kecil
+                  </Text>
+                </Text>
+              </View>
+
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                }}>
+                <Image source={iconInfo} style={styles.iconImage} />
+                <Text style={styles.ruleText}>
+                  Password <Text style={styles.bold}>harus</Text> mengandung{' '}
+                  <Text style={styles.highlight}>angka</Text>
+                </Text>
+              </View>
+
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                }}>
+                <Image source={iconInfo} style={styles.iconImage} />
+                <Text style={styles.ruleText}>
+                  Password <Text style={styles.bold}>harus</Text> mengandung{' '}
+                  <Text style={styles.highlight}>minimal 8 karakter</Text>
+                </Text>
+              </View>
+            </View>
           </View>
-          <View
-            style={{
-              padding: 16,
-            }}>
+
+          <View style={{padding: 16}}>
             <TouchableOpacity
-              style={[styles.button, !emailValue && styles.buttonDisabled]}
+              style={[
+                styles.button,
+                !(password && confirmPassword && isValid) &&
+                  styles.buttonDisabled,
+              ]}
               onPress={handleSubmit(handleSendOTP)}
-              disabled={!emailValue || loading}>
+              disabled={loading || !(password && confirmPassword && isValid)}>
               {loading ? (
                 <ActivityIndicator size="small" color="#fff" />
               ) : (
-                <Text style={styles.textButton}>Kirim Kode OTP</Text>
+                <Text style={styles.textButton}>Reset Password</Text>
               )}
             </TouchableOpacity>
           </View>
         </ScrollView>
       </ImageBackground>
-      <Modal
-        visible={modalVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setModalVisible(false)}>
-        {/* Latar belakang gelap (semi-transparan) */}
-        <View style={styles.modalOverlay}>
-          {/* Konten bottom sheet */}
-          <View
-            style={[styles.bottomSheetContainer, {backgroundColor: colors.bg}]}>
-            <Text style={[styles.bottomSheetTitle, {color: colors.text}]}>
-              Kirim kode OTP
-            </Text>
-            <Text style={[styles.bottomSheetDesc, {color: colors.info}]}>
-              Kode OTP (One-Time-Password) akan dikirimkan sebagai metode
-              verifikasi akun pada alamat email{' '}
-              <Text style={{fontWeight: 'bold'}}>{emailValue}</Text>. Pastikan
-              alamat email yang anda masukkan sudah benar.
-            </Text>
-
-            {/* Tombol "Kirim kode OTP" di dalam bottom sheet */}
-            <TouchableOpacity
-              onPress={() => navigation.navigate('ResetPassword')}
-              style={styles.bottomSheetButton}>
-              <Text style={styles.bottomSheetButtonText}>Kirim Kode OTP</Text>
-            </TouchableOpacity>
-
-            {/* Tombol "Batalkan" untuk menutup bottom sheet */}
-            <TouchableOpacity
-              style={[
-                styles.bottomSheetButton,
-                {
-                  backgroundColor: colors.bg,
-                  borderWidth: 1,
-                  borderColor: '#F36A1D',
-                },
-              ]}
-              onPress={() => setModalVisible(false)}>
-              <Text style={[styles.bottomSheetButtonText, {color: '#F36A1D'}]}>
-                Batalkan
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
     </>
   );
 };
 
-export default ForgotPasswordPage;
+export default ResetPasswordPage;
 
 const styles = StyleSheet.create({
   background: {
@@ -265,7 +287,7 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: 14,
     color: 'red',
-    flex: 1,
+    // flex: 1,
     marginBottom: 10,
   },
   button: {
@@ -319,5 +341,31 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: 'bold',
     fontSize: 16,
+  },
+  rulesContainer: {
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    backgroundColor: '#fff8f2',
+    marginTop: 10,
+  },
+  ruleText: {
+    color: '#F36A1D',
+    fontSize: 13,
+    marginBottom: 6,
+  },
+  highlight: {
+    color: '#F36A1D',
+    fontWeight: 'bold',
+  },
+  bold: {
+    fontWeight: 'bold',
+  },
+  iconImage: {
+    width: 20,
+    height: 15,
+    resizeMode: 'contain',
+    marginRight: '2%',
   },
 });
