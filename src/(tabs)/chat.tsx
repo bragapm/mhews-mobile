@@ -178,28 +178,11 @@ export default function ChatScreen() {
 
     if (option?.id == 'informasi_bencana') {
       const location = await fetchLocation();
-      if (location) {
-        const address: any = await getLocationDetails(
-          location.latitude,
-          location.longitude,
-        );
-
-        setMessages(prevMessages => [
-          ...prevMessages,
-          {
-            id: `bot_response_${option.id}_auto_${timestamp}`,
-            text: `Berikut beberapa informasi bencana yang terjadi di lokasi anda di ${address}, radius 20 kilometer`,
-            role: 'safebot',
-          },
-        ]);
-      }
 
       try {
         const [dataBencana] = await Promise.all([
           getData(`disaster/${profile?.id}?radius=20000`),
         ]);
-
-        console.log(dataBencana);
 
         const bencana = dataBencana?.data;
         if (!bencana) return;
@@ -210,6 +193,22 @@ export default function ChatScreen() {
           ];
 
         if (generateMessage) {
+          if (location) {
+            const address: any = await getLocationDetails(
+              location.latitude,
+              location.longitude,
+            );
+
+            setMessages(prevMessages => [
+              ...prevMessages,
+              {
+                id: `bot_response_${option.id}_auto_${timestamp}`,
+                text: `Berikut beberapa informasi bencana yang terjadi di lokasi anda di ${address}, radius 20 kilometer`,
+                role: 'safebot',
+              },
+            ]);
+          }
+
           const infoBencana = generateMessage(bencana);
           setMessages(prevMessages => [
             ...prevMessages,
@@ -230,7 +229,32 @@ export default function ChatScreen() {
             },
           ]);
         }
-      } catch (err: any) { }
+      } catch (err: any) {
+        if (location) {
+          const address: any = await getLocationDetails(
+            location.latitude,
+            location.longitude,
+          );
+
+          setMessages(prevMessages => [
+            ...prevMessages,
+            {
+              id: `bot_response_${option.id}_autoresnodata_${timestamp}`,
+              text: `Tidak ada laporan bencana di lokasi Anda (${address}) dalam radius 20 kilometer.`,
+              role: 'safebot',
+            },
+          ]);
+        } else {
+          setMessages(prevMessages => [
+            ...prevMessages,
+            {
+              id: `bot_response_${option.id}_autoresnodata_${timestamp}`,
+              text: `Lokasi Anda tidak dapat terdeteksi. Harap periksa izin lokasi perangkat Anda.`,
+              role: 'safebot',
+            },
+          ]);
+        }
+      }
     }
   };
 

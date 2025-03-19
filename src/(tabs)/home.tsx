@@ -115,6 +115,8 @@ export default function HomeScreen() {
       ]);
 
       setSiagaBencana(siaga?.data || []);
+      console.log(fitur);
+
       setFiturPendukung(fitur?.data || []);
       setInfoTerkait(info?.data || []);
     } catch (err: any) {
@@ -157,6 +159,12 @@ export default function HomeScreen() {
       navigation.navigate('EvacuationLocation');
     } else if (item?.title == 'Lapor Bencana') {
       navigation.navigate('DisasterReport');
+    }
+  };
+
+  const handleClickFitur = (item: any) => {
+    if (item?.title == "Pantau Kerabat") {
+      navigation.navigate('FamilyProfile');
     }
   };
 
@@ -328,7 +336,8 @@ export default function HomeScreen() {
                   style={[
                     styles.supportCard,
                     { backgroundColor: colors.supportCardBackground },
-                  ]}>
+                  ]}
+                  onPress={() => handleClickFitur(item)}>
                   {(() => {
                     let iconUri = `${ASSET_URL}${item.icon}/${item.id}.png`;
                     return (

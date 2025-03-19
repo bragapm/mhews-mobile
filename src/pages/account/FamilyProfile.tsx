@@ -284,7 +284,8 @@ export default function FamilyProfileScreen() {
                           color: colors.text,
                           textAlign: 'center',
                         }}
-                        numberOfLines={1}>
+                        ellipsizeMode="tail"
+                        numberOfLines={3}>
                         {item?.friends?.first_name} {item?.friends?.last_name}
                       </Text>
                       <Text
@@ -293,7 +294,9 @@ export default function FamilyProfileScreen() {
                           color: colors.info,
                           marginTop: 4,
                           textAlign: 'center',
-                        }}>
+                        }}
+                        ellipsizeMode="tail"
+                        numberOfLines={2}>
                         {item?.relation ?? '-'}
                       </Text>
                       <View
