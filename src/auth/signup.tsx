@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, {useEffect, useState} from 'react';
 import {
   StyleSheet,
   Text,
@@ -10,40 +10,40 @@ import {
   ActivityIndicator,
   StatusBar,
   Pressable,
-} from "react-native";
-import Modal from "react-native-modal";
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import MaterialIcons from "react-native-vector-icons/MaterialIcons";
-import Feather from "react-native-vector-icons/Feather";
-import { z } from "zod";
-import { postData } from "../services/apiServices";
-import { useColorScheme } from "react-native";
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import { useAlert } from "../components/AlertContext";
-import { useNavigation } from "@react-navigation/native";
-import { StackNavigationProp } from "@react-navigation/stack";
-import { RootStackParamList } from "../navigation/types";
-import COLORS from "../config/COLORS";
+} from 'react-native';
+import Modal from 'react-native-modal';
+import {useForm, Controller} from 'react-hook-form';
+import {zodResolver} from '@hookform/resolvers/zod';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import Feather from 'react-native-vector-icons/Feather';
+import {z} from 'zod';
+import {postData} from '../services/apiServices';
+import {useColorScheme} from 'react-native';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+import {useAlert} from '../components/AlertContext';
+import {useNavigation} from '@react-navigation/native';
+import {StackNavigationProp} from '@react-navigation/stack';
+import {RootStackParamList} from '../navigation/types';
+import COLORS from '../config/COLORS';
 
 // Skema validasi dengan Zod
 const signupSchema = z
   .object({
-    NIK: z.string().min(16, "NIK harus 16 digit").max(16, "NIK harus 16 digit"),
-    first_name: z.string().min(2, "Nama depan minimal 2 karakter"),
-    last_name: z.string().min(2, "Nama belakang minimal 2 karakter"),
-    phone: z.string().min(10, "Nomor HP minimal 10 digit"),
-    email: z.string().email("Format email tidak valid"),
-    password: z.string().min(6, "Password minimal 6 karakter"),
+    NIK: z.string().min(16, 'NIK harus 16 digit').max(16, 'NIK harus 16 digit'),
+    first_name: z.string().min(2, 'Nama depan minimal 2 karakter'),
+    last_name: z.string().min(2, 'Nama belakang minimal 2 karakter'),
+    phone: z.string().min(10, 'Nomor HP minimal 10 digit'),
+    email: z.string().email('Format email tidak valid'),
+    password: z.string().min(6, 'Password minimal 6 karakter'),
     confirm_password: z.string(),
   })
-  .refine((data) => data.password === data.confirm_password, {
-    message: "Password tidak cocok",
-    path: ["confirm_password"],
+  .refine(data => data.password === data.confirm_password, {
+    message: 'Password tidak cocok',
+    path: ['confirm_password'],
   });
 
 const Signup = () => {
-  const { showAlert } = useAlert();
+  const {showAlert} = useAlert();
   const colorScheme = useColorScheme();
   const colors = COLORS();
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
@@ -52,14 +52,14 @@ const Signup = () => {
     useState(false);
   const [loading, setLoading] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedMethod, setSelectedMethod] = useState<"wa" | "email">("wa");
+  const [selectedMethod, setSelectedMethod] = useState<'wa' | 'email'>('wa');
   const [savedData, setSavedData] = useState<any>({});
 
   const {
     control,
     handleSubmit,
     setError,
-    formState: { errors },
+    formState: {errors},
   } = useForm({
     resolver: zodResolver(signupSchema),
   });
@@ -67,14 +67,14 @@ const Signup = () => {
   const handleSignup = async (formData: any) => {
     setLoading(true);
     try {
-      const { confirm_password, ...requestData } = formData;
-      requestData.role = "16f26149-65b3-4de5-ba0d-cd7130887441";
-      const response = await postData("/users", requestData);
+      const {confirm_password, ...requestData} = formData;
+      requestData.role = '16f26149-65b3-4de5-ba0d-cd7130887441';
+      const response = await postData('/users', requestData);
       console.log(response);
 
       setTimeout(() => {
         setLoading(false);
-        showAlert("success", "Akun berhasil dibuat!");
+        showAlert('success', 'Akun berhasil dibuat!');
         setSavedData({
           email: formData.email,
           phone: formData.phone,
@@ -83,7 +83,8 @@ const Signup = () => {
         setIsModalVisible(true);
       }, 2000);
     } catch (error: any) {
-      showAlert("error", error.message);
+      showAlert('error', error.message);
+      console.log('error', error);
       setLoading(false);
     }
   };
@@ -92,66 +93,66 @@ const Signup = () => {
     setIsModalVisible(false);
 
     try {
-      navigation.navigate("Otp", {
+      navigation.navigate('Otp', {
         email: savedData.email,
         phone: savedData.phone,
         sendTo: selectedMethod,
-        from: "signup"
+        from: 'signup',
       });
     } catch (error: any) {
-      showAlert("error", error.message);
+      showAlert('error', error.message);
     }
   };
 
   const backgroundSource =
-    colorScheme === "dark"
-      ? require("../assets/images/overlay-dark.png")
-      : require("../assets/images/overlay-light.png");
+    colorScheme === 'dark'
+      ? require('../assets/images/overlay-dark.png')
+      : require('../assets/images/overlay-light.png');
   const logoSource =
-    colorScheme === "dark"
-      ? require("../assets/images/logo-dark.png")
-      : require("../assets/images/braga-logo.png");
+    colorScheme === 'dark'
+      ? require('../assets/images/logo-dark.png')
+      : require('../assets/images/braga-logo.png');
 
   return (
     <>
       <StatusBar
         translucent={true}
         backgroundColor="transparent"
-        barStyle={colorScheme === "dark" ? "light-content" : "dark-content"}
+        barStyle={colorScheme === 'dark' ? 'light-content' : 'dark-content'}
       />
       <ImageBackground
         source={backgroundSource}
         style={styles.background}
-        resizeMode="cover"
-      >
+        resizeMode="cover">
         <View style={styles.overlay} />
         <View style={styles.container}>
           <View style={styles.header}>
             <TouchableOpacity onPress={() => navigation.goBack()}>
-              <MaterialIcons name="arrow-back-ios" size={24} color={colors.text} />
+              <MaterialIcons
+                name="arrow-back-ios"
+                size={24}
+                color={colors.text}
+              />
             </TouchableOpacity>
-            <Text style={[styles.title, { color: colors.text }]}>
-              Buat Akun
-            </Text>
+            <Text style={[styles.title, {color: colors.text}]}>Buat Akun</Text>
           </View>
 
-          <View style={[styles.card, { backgroundColor: colors.background }]}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>
+          <View style={[styles.card, {backgroundColor: colors.background}]}>
+            <Text style={[styles.sectionTitle, {color: colors.text}]}>
               Silahkan lengkapi formulir dibawah ini sesuai dengan data diri
               anda untuk membuat akun
             </Text>
 
             <KeyboardAwareScrollView
-              contentContainerStyle={{ flexGrow: 1 }}
+              contentContainerStyle={{flexGrow: 1}}
               keyboardShouldPersistTaps="handled"
               enableOnAndroid={true}
-              extraScrollHeight={20}
-            >
+              extraScrollHeight={20}>
               {/* Input NIK */}
               <Controller
                 control={control}
                 name="NIK"
-                render={({ field: { onChange, value } }) => (
+                render={({field: {onChange, value}}) => (
                   <View
                     style={[
                       styles.inputContainer,
@@ -159,8 +160,7 @@ const Signup = () => {
                         borderColor: colors.border,
                         backgroundColor: colors.background,
                       },
-                    ]}
-                  >
+                    ]}>
                     <Feather
                       name="user"
                       size={24}
@@ -195,7 +195,7 @@ const Signup = () => {
               <Controller
                 control={control}
                 name="first_name"
-                render={({ field: { onChange, value } }) => (
+                render={({field: {onChange, value}}) => (
                   <View
                     style={[
                       styles.inputContainer,
@@ -203,8 +203,7 @@ const Signup = () => {
                         borderColor: colors.border,
                         backgroundColor: colors.background,
                       },
-                    ]}
-                  >
+                    ]}>
                     <Feather
                       name="user"
                       size={24}
@@ -237,7 +236,7 @@ const Signup = () => {
               <Controller
                 control={control}
                 name="last_name"
-                render={({ field: { onChange, value } }) => (
+                render={({field: {onChange, value}}) => (
                   <View
                     style={[
                       styles.inputContainer,
@@ -245,8 +244,7 @@ const Signup = () => {
                         borderColor: colors.border,
                         backgroundColor: colors.background,
                       },
-                    ]}
-                  >
+                    ]}>
                     <Feather
                       name="user"
                       size={24}
@@ -279,7 +277,7 @@ const Signup = () => {
               <Controller
                 control={control}
                 name="email"
-                render={({ field: { onChange, value } }) => (
+                render={({field: {onChange, value}}) => (
                   <View
                     style={[
                       styles.inputContainer,
@@ -287,8 +285,7 @@ const Signup = () => {
                         borderColor: colors.border,
                         backgroundColor: colors.background,
                       },
-                    ]}
-                  >
+                    ]}>
                     <MaterialIcons
                       name="email"
                       size={24}
@@ -322,7 +319,7 @@ const Signup = () => {
               <Controller
                 control={control}
                 name="phone"
-                render={({ field: { onChange, value } }) => (
+                render={({field: {onChange, value}}) => (
                   <View
                     style={[
                       styles.inputContainer,
@@ -330,8 +327,7 @@ const Signup = () => {
                         borderColor: colors.border,
                         backgroundColor: colors.background,
                       },
-                    ]}
-                  >
+                    ]}>
                     <MaterialIcons
                       name="phone"
                       size={24}
@@ -365,7 +361,7 @@ const Signup = () => {
               <Controller
                 control={control}
                 name="password"
-                render={({ field: { onChange, value } }) => (
+                render={({field: {onChange, value}}) => (
                   <View
                     style={[
                       styles.inputContainer,
@@ -373,8 +369,7 @@ const Signup = () => {
                         borderColor: colors.border,
                         backgroundColor: colors.background,
                       },
-                    ]}
-                  >
+                    ]}>
                     <MaterialIcons
                       name="lock"
                       size={24}
@@ -396,10 +391,9 @@ const Signup = () => {
                       onChangeText={onChange}
                     />
                     <TouchableOpacity
-                      onPress={() => setIsPasswordVisible(!isPasswordVisible)}
-                    >
+                      onPress={() => setIsPasswordVisible(!isPasswordVisible)}>
                       <Feather
-                        name={isPasswordVisible ? "eye" : "eye-off"}
+                        name={isPasswordVisible ? 'eye' : 'eye-off'}
                         size={24}
                         color={colors.text}
                       />
@@ -417,7 +411,7 @@ const Signup = () => {
               <Controller
                 control={control}
                 name="confirm_password"
-                render={({ field: { onChange, value } }) => (
+                render={({field: {onChange, value}}) => (
                   <View
                     style={[
                       styles.inputContainer,
@@ -425,8 +419,7 @@ const Signup = () => {
                         borderColor: colors.border,
                         backgroundColor: colors.background,
                       },
-                    ]}
-                  >
+                    ]}>
                     <MaterialIcons
                       name="lock"
                       size={24}
@@ -450,10 +443,9 @@ const Signup = () => {
                     <TouchableOpacity
                       onPress={() =>
                         setIsConfirmPasswordVisible(!isConfirmPasswordVisible)
-                      }
-                    >
+                      }>
                       <Feather
-                        name={isConfirmPasswordVisible ? "eye" : "eye-off"}
+                        name={isConfirmPasswordVisible ? 'eye' : 'eye-off'}
                         size={24}
                         color={colors.text}
                       />
@@ -470,8 +462,7 @@ const Signup = () => {
               <TouchableOpacity
                 style={styles.button}
                 onPress={handleSubmit(handleSignup)}
-                disabled={loading}
-              >
+                disabled={loading}>
                 {loading ? (
                   <ActivityIndicator size="small" color="#fff" />
                 ) : (
@@ -488,18 +479,16 @@ const Signup = () => {
         onBackdropPress={() => setIsModalVisible(false)}
         swipeDirection="down"
         onSwipeComplete={() => setIsModalVisible(false)}
-        style={styles.modal}
-      >
+        style={styles.modal}>
         {/* Konten modal */}
         <View
-          style={[styles.modalContent, { backgroundColor: colors.background }]}
-        >
+          style={[styles.modalContent, {backgroundColor: colors.background}]}>
           <View style={styles.dragIndicator} />
 
-          <Text style={[styles.modalTitle, { color: colors.text }]}>
+          <Text style={[styles.modalTitle, {color: colors.text}]}>
             Kirim kode OTP
           </Text>
-          <Text style={[styles.modalSubtitle, { color: colors.text }]}>
+          <Text style={[styles.modalSubtitle, {color: colors.text}]}>
             Kode OTP (One-Time-Password) akan dikirimkan sebagai metode
             verifikasi akun. Pilih metode pengiriman kode OTP yang diinginkan.
           </Text>
@@ -510,17 +499,16 @@ const Signup = () => {
               styles.methodOption,
               {
                 backgroundColor:
-                  selectedMethod === "wa" ? colors.darkOrange : "transparent",
+                  selectedMethod === 'wa' ? colors.darkOrange : 'transparent',
               },
             ]}
-            onPress={() => setSelectedMethod("wa")}
-          >
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
+            onPress={() => setSelectedMethod('wa')}>
+            <View style={{flexDirection: 'row', alignItems: 'center'}}>
               <Feather
                 name="whatsapp"
                 size={20}
                 color="#fff"
-                style={{ marginRight: 8 }}
+                style={{marginRight: 8}}
               />
               <Text style={styles.methodTitle}>WhatsApp</Text>
             </View>
@@ -535,19 +523,18 @@ const Signup = () => {
               styles.methodOption,
               {
                 backgroundColor:
-                  selectedMethod === "email"
+                  selectedMethod === 'email'
                     ? colors.darkOrange
-                    : "transparent",
+                    : 'transparent',
               },
             ]}
-            onPress={() => setSelectedMethod("email")}
-          >
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
+            onPress={() => setSelectedMethod('email')}>
+            <View style={{flexDirection: 'row', alignItems: 'center'}}>
               <MaterialIcons
                 name="email"
                 size={20}
                 color="#fff"
-                style={{ marginRight: 8 }}
+                style={{marginRight: 8}}
               />
               <Text style={styles.methodTitle}>Email</Text>
             </View>
@@ -558,9 +545,8 @@ const Signup = () => {
 
           {/* Tombol Kirim OTP */}
           <TouchableOpacity
-            style={[styles.sendButton, { backgroundColor: colors.button }]}
-            onPress={handleSendOTP}
-          >
+            style={[styles.sendButton, {backgroundColor: colors.button}]}
+            onPress={handleSendOTP}>
             <Text style={styles.sendButtonText}>Kirim kode OTP</Text>
           </TouchableOpacity>
         </View>
@@ -574,8 +560,8 @@ export default Signup;
 const styles = StyleSheet.create({
   background: {
     flex: 1,
-    width: "100%",
-    height: "100%",
+    width: '100%',
+    height: '100%',
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
@@ -584,44 +570,44 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     marginTop: 40,
     paddingHorizontal: 20,
   },
   title: {
     fontSize: 24,
-    fontWeight: "bold",
-    textAlign: "center",
+    fontWeight: 'bold',
+    textAlign: 'center',
     marginRight: 20,
     flex: 1,
   },
   card: {
-    position: "absolute",
+    position: 'absolute',
     left: 0,
     right: 0,
     padding: 20,
     marginTop: 150,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    width: "100%",
-    height: "100%",
-    backgroundColor: "white",
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'white',
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: "400",
+    fontWeight: '400',
     marginBottom: 10,
   },
   inputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "white",
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'white',
     borderRadius: 10,
     marginBottom: 10,
     paddingHorizontal: 10,
     borderWidth: 1,
-    borderColor: "#E0E0E0",
+    borderColor: '#E0E0E0',
   },
   inputIcon: {
     marginRight: 10,
@@ -635,20 +621,20 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   button: {
-    backgroundColor: "#FF6200",
+    backgroundColor: '#FF6200',
     paddingVertical: 15,
     borderRadius: 10,
     marginTop: 10,
   },
   textButton: {
-    color: "white",
-    fontWeight: "bold",
-    textAlign: "center",
+    color: 'white',
+    fontWeight: 'bold',
+    textAlign: 'center',
     fontSize: 18,
   },
-  errorText: { color: "red", fontSize: 14, marginBottom: 10 },
+  errorText: {color: 'red', fontSize: 14, marginBottom: 10},
   modal: {
-    justifyContent: "flex-end",
+    justifyContent: 'flex-end',
     margin: 0, // Supaya modal full di bagian bawah
   },
   modalContent: {
@@ -659,20 +645,20 @@ const styles = StyleSheet.create({
   dragIndicator: {
     width: 50,
     height: 5,
-    backgroundColor: "#ccc",
+    backgroundColor: '#ccc',
     borderRadius: 10,
-    alignSelf: "center",
+    alignSelf: 'center',
     marginBottom: 10,
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   modalSubtitle: {
     fontSize: 14,
     marginTop: 5,
     marginBottom: 15,
-    textAlign: "center",
+    textAlign: 'center',
   },
   methodOption: {
     padding: 12,
@@ -682,23 +668,23 @@ const styles = StyleSheet.create({
   sendButton: {
     padding: 15,
     borderRadius: 10,
-    alignItems: "center",
+    alignItems: 'center',
     marginTop: 10,
   },
   sendButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
+    color: '#fff',
+    fontWeight: 'bold',
   },
   cancelButton: {
-    alignItems: "center",
+    alignItems: 'center',
     marginTop: 10,
   },
   methodTitle: {
-    color: "#fff",
-    fontWeight: "bold",
+    color: '#fff',
+    fontWeight: 'bold',
   },
   methodDesc: {
-    color: "#fff",
+    color: '#fff',
     fontSize: 12,
     marginTop: 2,
   },

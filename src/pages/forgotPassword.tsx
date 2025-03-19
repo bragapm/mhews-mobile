@@ -28,6 +28,8 @@ import {RootStackParamList} from '../navigation/types';
 import {z} from 'zod';
 import {useForm, Controller} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod';
+import {useAlert} from '../components/AlertContext';
+import {postData} from '../services/apiServices';
 
 const forgotEmail = z.object({
   email: z.string().email('Format email tidak valid'),
@@ -36,6 +38,7 @@ const forgotEmail = z.object({
 const {width, height} = Dimensions.get('window');
 
 const ForgotPasswordPage = () => {
+  const {showAlert} = useAlert();
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const colorScheme = useColorScheme();
   const colors = COLORS();
@@ -70,10 +73,19 @@ const ForgotPasswordPage = () => {
   });
 
   const emailValue = watch('email');
-  const handleSendOTP = data => {
-    // Logika untuk proses pengiriman kode OTP
-    console.log('Data yang dikirim:', data);
-    setModalVisible(true);
+
+  const handleSendOTP = async (data: any) => {
+    setLoading(true);
+    try {
+      navigation.navigate('Otp', {
+        email: data?.email,
+        phone: '',
+        sendTo: 'email',
+        from: 'forgotPassword',
+      });
+    } catch (error: any) {
+      showAlert('error', error.message);
+    }
   };
 
   return (
@@ -157,7 +169,8 @@ const ForgotPasswordPage = () => {
             }}>
             <TouchableOpacity
               style={[styles.button, !emailValue && styles.buttonDisabled]}
-              onPress={handleSubmit(handleSendOTP)}
+              // onPress={handleSubmit(handleSendOTP)}
+              onPress={() => setModalVisible(true)}
               disabled={!emailValue || loading}>
               {loading ? (
                 <ActivityIndicator size="small" color="#fff" />
@@ -190,7 +203,8 @@ const ForgotPasswordPage = () => {
 
             {/* Tombol "Kirim kode OTP" di dalam bottom sheet */}
             <TouchableOpacity
-              onPress={() => navigation.navigate('ResetPassword')}
+              onPress={handleSubmit(handleSendOTP)}
+              // onPress={() => navigation.navigate('ResetPassword')}
               style={styles.bottomSheetButton}>
               <Text style={styles.bottomSheetButtonText}>Kirim Kode OTP</Text>
             </TouchableOpacity>

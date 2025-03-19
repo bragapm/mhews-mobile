@@ -22,13 +22,21 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import COLORS from '../config/COLORS';
 import {HeaderNav} from '../components/Header';
 import MapboxGL, {Camera} from '@rnmapbox/maps';
-import {useNavigation} from '@react-navigation/native';
+import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {RootStackParamList} from '../navigation/types';
 import {z} from 'zod';
 import {useForm, Controller} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod';
 import Feather from 'react-native-vector-icons/Feather';
+import {useAlert} from '../components/AlertContext';
+import {postData} from '../services/apiServices';
+
+type RootParamList = {
+  ResetPasswordPage: {
+    email?: string;
+  };
+};
 
 const resetPasswordSchema = z
   .object({
@@ -45,9 +53,12 @@ const resetPasswordSchema = z
   });
 
 const ResetPasswordPage = () => {
+  const route = useRoute<RouteProp<RootParamList, 'ResetPasswordPage'>>();
+  const {email} = route.params || {};
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const colorScheme = useColorScheme();
   const colors = COLORS();
+  const {showAlert} = useAlert();
   const iconInfo = require('../assets/images/resikoBahayaActive.png');
   const [loading, setLoading] = useState(false);
   const [isPasswordReset, setIsPasswordReset] = useState(false);
@@ -70,14 +81,43 @@ const ResetPasswordPage = () => {
   const password = watch('password');
   const confirmPassword = watch('confirmPassword');
 
-  const handleSendOTP = data => {
+  const handleSendNewPassword = async (data: any) => {
     setLoading(true);
-    // Logika pengiriman OTP atau Reset Password
-    console.log('Data:', data);
-    setTimeout(() => {
+    try {
+      if (!email) {
+        showAlert('error', 'Email tidak ditemukan.');
+        return;
+      }
+      const endpoint = `/users/${email}`;
+      const payload = {password: data.password};
+
+      const response = await postData(endpoint, payload);
+
+      if (response) {
+        // Misal response.message mengandung kata "success" jika berhasil
+        if (
+          response.message &&
+          response.message.toLowerCase().includes('success')
+        ) {
+          showAlert('success', response.message);
+          setTimeout(() => {
+            setLoading(false);
+            setIsPasswordReset(true);
+          }, 2000);
+        } else {
+          showAlert('error', response.message || 'Gagal reset password');
+        }
+      } else {
+        showAlert('error', 'Tidak ada respon dari server.');
+      }
+    } catch (error: any) {
+      showAlert(
+        'error',
+        error.error || error.message || 'Terjadi kesalahan saat reset password',
+      );
+    } finally {
       setLoading(false);
-      setIsPasswordReset(true);
-    }, 2000);
+    }
   };
 
   const handleBackToLogin = () => {
@@ -245,7 +285,7 @@ const ResetPasswordPage = () => {
               onPress={
                 isPasswordReset
                   ? handleBackToLogin
-                  : handleSubmit(handleSendOTP)
+                  : handleSubmit(handleSendNewPassword)
               }
               disabled={
                 loading ||

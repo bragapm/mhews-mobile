@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -8,14 +8,19 @@ import {
   Alert,
   StatusBar,
   useColorScheme,
-} from "react-native";
-import { CodeField, Cursor, useBlurOnFulfill, useClearByFocusCell } from "react-native-confirmation-code-field";
-import MaterialIcons from "react-native-vector-icons/MaterialIcons";
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
-import { postData } from "../services/apiServices";
-import { useAlert } from "../components/AlertContext";
-import { StackNavigationProp } from "@react-navigation/stack";
-import { RootStackParamList } from "../navigation/types";
+} from 'react-native';
+import {
+  CodeField,
+  Cursor,
+  useBlurOnFulfill,
+  useClearByFocusCell,
+} from 'react-native-confirmation-code-field';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
+import {postData} from '../services/apiServices';
+import {useAlert} from '../components/AlertContext';
+import {StackNavigationProp} from '@react-navigation/stack';
+import {RootStackParamList} from '../navigation/types';
 
 const CELL_COUNT = 6;
 type RootParamList = {
@@ -28,15 +33,15 @@ type RootParamList = {
 };
 
 const OTPConfirmation = () => {
-  const [otp, setOtp] = useState("");
-  const { showAlert } = useAlert();
+  const [otp, setOtp] = useState('');
+  const {showAlert} = useAlert();
   const [loading, setLoading] = useState(false);
   const [countdown, setCountdown] = useState(300);
   const colorScheme = useColorScheme();
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const route = useRoute<RouteProp<RootParamList, 'OTPConfirmation'>>();
 
-  const { email, phone, sendTo, from } = route.params || {};
+  const {email, phone, sendTo, from} = route.params || {};
   const [secretKey, setSecretKey] = useState(null);
 
   useEffect(() => {
@@ -44,7 +49,7 @@ const OTPConfirmation = () => {
 
     if (countdown > 0) {
       interval = setInterval(() => {
-        setCountdown((prev) => {
+        setCountdown(prev => {
           if (prev <= 1) {
             clearInterval(interval);
             return 0;
@@ -71,7 +76,7 @@ const OTPConfirmation = () => {
     return `${sMinutes}:${sSeconds}`;
   };
 
-  const ref = useBlurOnFulfill({ value: otp, cellCount: CELL_COUNT });
+  const ref = useBlurOnFulfill({value: otp, cellCount: CELL_COUNT});
   const [propsCell, getCellOnLayoutHandler] = useClearByFocusCell({
     value: otp,
     setValue: setOtp,
@@ -80,40 +85,59 @@ const OTPConfirmation = () => {
   const handleVerifyOTP = async () => {
     setLoading(true);
     try {
-      if (from == "signin") {
+      if (from == 'signin') {
         const data = {
           email: email,
-          phone: "",
+          phone: '',
           otp: otp,
         };
-        const response = await postData("/signin-otp/verify", data);
+        const response = await postData('/signin-otp/verify', data);
         if (response) {
-          if (response?.status == "ok") {
-            navigation.replace("Tabs"); // Updated navigation
-            showAlert("success", "OTP Berhasil diverifikasi.");
+          if (response?.status == 'ok') {
+            navigation.replace('Tabs'); // Updated navigation
+            showAlert('success', 'OTP Berhasil diverifikasi.');
           } else {
-            showAlert("error", response?.message);
+            showAlert('error', response?.message);
+          }
+        }
+      } else if (from == 'forgotPassword') {
+        const data = {
+          email: email,
+          phone: '',
+          otp: otp,
+        };
+        const response = await postData('/forgotpass-otp/verify', data);
+        if (response) {
+          if (response?.status == 'ok') {
+            // navigation.replace('Tabs'); // Updated navigation
+            navigation.navigate('ResetPassword');
+            navigation.navigate('ResetPassword', {
+              email: data?.email,
+            });
+            showAlert('success', 'OTP Berhasil diverifikasi.');
+          } else {
+            showAlert('error', response?.message);
           }
         }
       } else {
         const data = {
-          email: sendTo == "email" ? email : "",
-          phone: sendTo == "wa" ? phone : "",
+          email: sendTo == 'email' ? email : '',
+          phone: sendTo == 'wa' ? phone : '',
           otp: otp,
           secret_key: secretKey,
         };
-        const response = await postData("/signup-otp/verify", data);
+        const response = await postData('/signup-otp/verify', data);
         if (response) {
-          if (response?.status == "ok") {
-            navigation.replace("Tabs"); // Updated navigation
-            showAlert("success", "OTP Berhasil diverifikasi.");
+          if (response?.status == 'ok') {
+            navigation.replace('Tabs'); // Updated navigation
+            showAlert('success', 'OTP Berhasil diverifikasi.');
           } else {
-            showAlert("error", response?.message);
+            showAlert('error', response?.message);
           }
         }
       }
     } catch (error: any) {
-      showAlert("error", error.error || error.message);
+      showAlert('error', error.error || error.message);
       setLoading(false);
     } finally {
       setLoading(false);
@@ -124,28 +148,35 @@ const OTPConfirmation = () => {
     try {
       let sendOtp;
 
-      if (from === "signin") {
-        sendOtp = await postData("/signin-otp/email", { email });
+      if (from === 'signin') {
+        sendOtp = await postData('/signin-otp/email', {email});
+      } else if (from === 'forgotPassword') {
+        sendOtp = await postData('/forgotpass-otp/email', {email});
       } else {
-        if (sendTo === "wa") {
-          sendOtp = await postData("/signup-otp/phone", { phone });
+        if (sendTo === 'wa') {
+          sendOtp = await postData('/signup-otp/phone', {phone});
         } else {
-          sendOtp = await postData("/signup-otp/email", { email });
+          sendOtp = await postData('/signup-otp/email', {email});
         }
       }
 
       if (!sendOtp || sendOtp.error) {
-        throw new Error(sendOtp?.message || "Gagal mengirim OTP. Silakan coba lagi.");
+        throw new Error(
+          sendOtp?.message || 'Gagal mengirim OTP. Silakan coba lagi.',
+        );
       }
 
       if (sendOtp?.secretKey) {
         setSecretKey(sendOtp?.secretKey);
       }
-      showAlert("success", "OTP Berhasil dikirim.");
+      showAlert('success', 'OTP Berhasil dikirim.');
       setCountdown(300);
     } catch (error: any) {
-      console.error("Error mengirim OTP:", error);
-      showAlert("error", error.message || "Terjadi kesalahan, silakan coba lagi.");
+      console.error('Error mengirim OTP:', error);
+      showAlert(
+        'error',
+        error.message || 'Terjadi kesalahan, silakan coba lagi.',
+      );
     }
   };
 
@@ -160,12 +191,14 @@ const OTPConfirmation = () => {
       <StatusBar
         translucent={true}
         backgroundColor="transparent"
-        barStyle={colorScheme === "dark" ? "light-content" : "dark-content"}
+        barStyle={colorScheme === 'dark' ? 'light-content' : 'dark-content'}
       />
       <View style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()}> {/* Use navigation.goBack() */}
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            {' '}
+            {/* Use navigation.goBack() */}
             <MaterialIcons name="arrow-back-ios" size={24} color="black" />
           </TouchableOpacity>
           <Text style={styles.title}>Konfirmasi Kode OTP</Text>
@@ -174,20 +207,26 @@ const OTPConfirmation = () => {
         {/* Card Content */}
         <View style={styles.card}>
           <Text style={styles.description}>
-            {from === "signin" ? (
+            {from === 'signin' ? (
               <>
-                Kode OTP (One-Time-Password) akan dikirimkan sebagai metode verifikasi akun pada alamat email{" "}
-                <Text style={{ fontWeight: "bold" }}>{email}</Text>. Pastikan alamat email yang anda masukkan sudah benar
+                Kode OTP (One-Time-Password) akan dikirimkan sebagai metode
+                verifikasi akun pada alamat email{' '}
+                <Text style={{fontWeight: 'bold'}}>{email}</Text>. Pastikan
+                alamat email yang anda masukkan sudah benar
               </>
-            ) : sendTo === "wa" ? (
+            ) : sendTo === 'wa' ? (
               <>
-                Kode OTP (One-Time Password) telah dikirimkan ke nomor WhatsApp (+
-                <Text style={{ fontWeight: "bold" }}>{phone}</Text>). Harap periksa WhatsApp Anda secara berkala.
+                Kode OTP (One-Time Password) telah dikirimkan ke nomor WhatsApp
+                (+
+                <Text style={{fontWeight: 'bold'}}>{phone}</Text>). Harap
+                periksa WhatsApp Anda secara berkala.
               </>
             ) : (
               <>
-                Kode OTP (One-Time-Password) akan dikirimkan sebagai metode verifikasi akun pada alamat email{" "}
-                <Text style={{ fontWeight: "bold" }}>{email}</Text>. Pastikan alamat email yang anda masukkan sudah benar
+                Kode OTP (One-Time-Password) akan dikirimkan sebagai metode
+                verifikasi akun pada alamat email{' '}
+                <Text style={{fontWeight: 'bold'}}>{email}</Text>. Pastikan
+                alamat email yang anda masukkan sudah benar
               </>
             )}
           </Text>
@@ -212,14 +251,13 @@ const OTPConfirmation = () => {
             rootStyle={styles.codeFieldRoot}
             keyboardType="number-pad"
             textContentType="oneTimeCode"
-            renderCell={({ index, symbol, isFocused }) => (
+            renderCell={({index, symbol, isFocused}) => (
               <View
                 key={index}
                 style={[styles.cell, isFocused && styles.focusCell]}
-                onLayout={getCellOnLayoutHandler(index)}
-              >
+                onLayout={getCellOnLayoutHandler(index)}>
                 <Text style={styles.cellText}>
-                  {symbol || (isFocused ? <Cursor /> : "*")}
+                  {symbol || (isFocused ? <Cursor /> : '*')}
                 </Text>
               </View>
             )}
@@ -227,10 +265,12 @@ const OTPConfirmation = () => {
 
           {/* Tombol verifikasi OTP -> disabled kalau belum 6 digit */}
           <TouchableOpacity
-            style={[styles.verifyButton, !isOtpComplete && { backgroundColor: "#ccc" }]}
+            style={[
+              styles.verifyButton,
+              !isOtpComplete && {backgroundColor: '#ccc'},
+            ]}
             onPress={handleVerifyOTP}
-            disabled={!isOtpComplete || loading}
-          >
+            disabled={!isOtpComplete || loading}>
             {loading ? (
               <ActivityIndicator size="small" color="#fff" />
             ) : (
@@ -259,34 +299,34 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     marginTop: 40,
     paddingHorizontal: 20,
   },
   card: {
-    position: "absolute",
+    position: 'absolute',
     left: 0,
     right: 0,
     padding: 20,
     marginTop: 150,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    width: "100%",
-    height: "80%",
-    alignItems: "center",
+    width: '100%',
+    height: '80%',
+    alignItems: 'center',
   },
   title: {
     fontSize: 24,
-    fontWeight: "bold",
-    textAlign: "center",
+    fontWeight: 'bold',
+    textAlign: 'center',
     marginRight: 20,
     flex: 1,
   },
   description: {
     fontSize: 14,
-    textAlign: "left",
-    color: "#666",
+    textAlign: 'left',
+    color: '#666',
     marginBottom: 20,
   },
   // changeMethod: {
@@ -298,47 +338,47 @@ const styles = StyleSheet.create({
   codeFieldRoot: {
     marginTop: 20,
     marginBottom: 20,
-    width: "100%",
-    justifyContent: "space-between",
+    width: '100%',
+    justifyContent: 'space-between',
   },
   cell: {
     width: 45,
     height: 50,
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: '#ccc',
     borderRadius: 5,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   focusCell: {
-    borderColor: "#FF6200",
+    borderColor: '#FF6200',
   },
   cellText: {
     fontSize: 20,
-    color: "#000",
-    textAlign: "center",
+    color: '#000',
+    textAlign: 'center',
   },
   verifyButton: {
-    backgroundColor: "#FF6200",
+    backgroundColor: '#FF6200',
     padding: 15,
     borderRadius: 10,
-    width: "100%",
-    alignItems: "center",
+    width: '100%',
+    alignItems: 'center',
     marginBottom: 10,
   },
   verifyText: {
-    color: "#fff",
-    fontWeight: "bold",
+    color: '#fff',
+    fontWeight: 'bold',
     fontSize: 16,
   },
   resendText: {
-    color: "#FF6200",
-    fontWeight: "bold",
+    color: '#FF6200',
+    fontWeight: 'bold',
   },
   countdownText: {
-    color: "#666",
+    color: '#666',
     marginTop: 5,
-    fontWeight: "600",
+    fontWeight: '600',
   },
 });
 
