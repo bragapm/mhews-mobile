@@ -30,7 +30,7 @@ import {useForm, Controller} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod';
 import Feather from 'react-native-vector-icons/Feather';
 import {useAlert} from '../components/AlertContext';
-import {postData} from '../services/apiServices';
+import {patchData, postData} from '../services/apiServices';
 
 type RootParamList = {
   ResetPasswordPage: {
@@ -89,23 +89,22 @@ const ResetPasswordPage = () => {
         return;
       }
       const endpoint = `/users/${userID}`;
+      console.log('endpoint', endpoint);
       const payload = {password: data.password};
+      console.log('password', password);
 
-      const response = await postData(endpoint, payload);
+      const response = await patchData(endpoint, payload, {returnStatus: true});
+      console.log('resultya', response);
 
       if (response) {
-        // Misal response.message mengandung kata "success" jika berhasil
-        if (
-          response.message &&
-          response.message.toLowerCase().includes('success')
-        ) {
-          showAlert('success', response.message);
+        if (response.status === 200) {
+          showAlert('success', 'Password Berhasil di Ubah');
           setTimeout(() => {
             setLoading(false);
             setIsPasswordReset(true);
           }, 2000);
         } else {
-          showAlert('error', response.message || 'Gagal reset password');
+          showAlert('error', response.data.message || 'Gagal reset password');
         }
       } else {
         showAlert('error', 'Tidak ada respon dari server.');
