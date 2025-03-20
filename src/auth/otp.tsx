@@ -109,10 +109,8 @@ const OTPConfirmation = () => {
         const response = await postData('/forgotpass-otp/verify', data);
         if (response) {
           if (response?.status == 'ok') {
-            // navigation.replace('Tabs'); // Updated navigation
-            navigation.navigate('ResetPassword');
             navigation.navigate('ResetPassword', {
-              email: data?.email,
+              userID: response?.data?.userID,
             });
             showAlert('success', 'OTP Berhasil diverifikasi.');
           } else {

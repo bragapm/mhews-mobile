@@ -34,7 +34,7 @@ import {postData} from '../services/apiServices';
 
 type RootParamList = {
   ResetPasswordPage: {
-    email?: string;
+    userID?: string;
   };
 };
 
@@ -54,7 +54,7 @@ const resetPasswordSchema = z
 
 const ResetPasswordPage = () => {
   const route = useRoute<RouteProp<RootParamList, 'ResetPasswordPage'>>();
-  const {email} = route.params || {};
+  const {userID} = route.params || {};
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const colorScheme = useColorScheme();
   const colors = COLORS();
@@ -84,11 +84,11 @@ const ResetPasswordPage = () => {
   const handleSendNewPassword = async (data: any) => {
     setLoading(true);
     try {
-      if (!email) {
-        showAlert('error', 'Email tidak ditemukan.');
+      if (!userID) {
+        showAlert('error', 'User ID tidak ditemukan.');
         return;
       }
-      const endpoint = `/users/${email}`;
+      const endpoint = `/users/${userID}`;
       const payload = {password: data.password};
 
       const response = await postData(endpoint, payload);
