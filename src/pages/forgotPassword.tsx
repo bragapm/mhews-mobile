@@ -70,6 +70,7 @@ const ForgotPasswordPage = () => {
     formState: {errors},
   } = useForm({
     resolver: zodResolver(forgotEmail),
+    mode: 'onChange',
   });
 
   const emailValue = watch('email');
@@ -104,13 +105,24 @@ const ForgotPasswordPage = () => {
         error?.message || // => "email does not exist..."
         error?.data?.error ||
         'Terjadi kesalahan.';
+
+      let messageError = errorMsg;
+      if (
+        error?.data?.error ===
+        'email does not exist, you need to register it first'
+      ) {
+        messageError =
+          'Email tidak ditemukan. Pastikan anda telah memasukkan email yang benar.';
+      }
+
+      // Agar tampil di bawah TextInput
+      setError('email', {type: 'custom', message: messageError});
       showAlert('error', errorMsg);
     } finally {
       setLoading(false);
     }
   };
 
-  
   return (
     <>
       <StatusBar
@@ -191,10 +203,13 @@ const ForgotPasswordPage = () => {
               padding: 16,
             }}>
             <TouchableOpacity
-              style={[styles.button, !emailValue && styles.buttonDisabled]}
-              // onPress={handleSubmit(handleSendOTP)}
+              style={[
+                styles.button,
+                (!emailValue || !!errors.email || loading) &&
+                  styles.buttonDisabled,
+              ]}
               onPress={() => setModalVisible(true)}
-              disabled={!emailValue || loading}>
+              disabled={!emailValue || !!errors.email || loading}>
               {loading ? (
                 <ActivityIndicator size="small" color="#fff" />
               ) : (
