@@ -81,10 +81,14 @@ export const getData = async (endpoint: string, params = {}) => {
   }
 };
 
-export const postData = async (endpoint: string, data = {}) => {
+export const postData = async (
+  endpoint: string,
+  data = {},
+  options: {returnStatus?: boolean} = {},
+) => {
   try {
     const response = await api.post(endpoint, data);
-    return response.data;
+    return options.returnStatus ? response : response.data;
   } catch (error) {
     throw error;
   }

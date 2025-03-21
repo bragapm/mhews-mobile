@@ -74,20 +74,43 @@ const ForgotPasswordPage = () => {
 
   const emailValue = watch('email');
 
-  const handleSendOTP = async (data: any) => {
+  const handleSendOTP = async (data: {email: string}) => {
     setLoading(true);
     try {
+      // Panggil API
+      const response = await postData(
+        '/forgotpass-otp/email',
+        {email: data.email},
+        {returnStatus: true},
+      );
+      console.log('response', response);
+
+      // Jika berhasil, status = 200/201 => Tampilkan success alert
+      showAlert('success', 'Kode OTP berhasil dikirim.');
       navigation.navigate('Otp', {
-        email: data?.email,
+        email: data.email,
         phone: '',
         sendTo: 'email',
         from: 'forgotPassword',
       });
     } catch (error: any) {
-      showAlert('error', error.message);
+      // Karena status 400/401/500 dilempar ke sini oleh interceptor
+      console.error(error);
+
+      // Pastikan modal tertutup kalau perlu
+      setModalVisible(false);
+
+      const errorMsg =
+        error?.message || // => "email does not exist..."
+        error?.data?.error ||
+        'Terjadi kesalahan.';
+      showAlert('error', errorMsg);
+    } finally {
+      setLoading(false);
     }
   };
 
+  
   return (
     <>
       <StatusBar
@@ -206,7 +229,11 @@ const ForgotPasswordPage = () => {
               onPress={handleSubmit(handleSendOTP)}
               // onPress={() => navigation.navigate('ResetPassword')}
               style={styles.bottomSheetButton}>
-              <Text style={styles.bottomSheetButtonText}>Kirim Kode OTP</Text>
+              {loading ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text style={styles.bottomSheetButtonText}>Kirim Kode OTP</Text>
+              )}
             </TouchableOpacity>
 
             {/* Tombol "Batalkan" untuk menutup bottom sheet */}
