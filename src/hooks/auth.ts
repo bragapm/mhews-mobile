@@ -66,6 +66,7 @@ interface UserProfile {
   NIK: string;
   phone: string;
   password: string;
+  act_otp: boolean;
 }
 
 // Membuat store Zustand dengan middleware persist

@@ -9,14 +9,14 @@ import {
   useColorScheme,
   Animated,
 } from 'react-native';
-import {useEffect, useRef, useState} from 'react';
+import { useEffect, useRef, useState } from 'react';
 import COLORS from './config/COLORS';
-import {StatusBar} from 'react-native';
+import { StatusBar } from 'react-native';
 import useAuthStore from './hooks/auth';
-import {useNavigation} from '@react-navigation/native';
-import {StackNavigationProp} from '@react-navigation/stack';
-import {RootStackParamList} from './navigation/types';
-import {PanGestureHandler, State} from 'react-native-gesture-handler';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from './navigation/types';
+import { PanGestureHandler, State } from 'react-native-gesture-handler';
 
 const SplashScreen = () => {
   const token = useAuthStore(state => state.token);
@@ -24,6 +24,7 @@ const SplashScreen = () => {
   const colors = COLORS();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
+  const reset = useAuthStore(state => state.reset);
 
   const logoOpacity = useRef(new Animated.Value(0)).current;
   const textOpacity = useRef(new Animated.Value(0)).current;
@@ -96,7 +97,7 @@ const SplashScreen = () => {
 
   const onHandlerStateChange = (event: any) => {
     if (event.nativeEvent.oldState === State.ACTIVE) {
-      const {translationX} = event.nativeEvent;
+      const { translationX } = event.nativeEvent;
       if (translationX < -50) {
         nextStep();
       } else if (translationX > 50) {
@@ -110,8 +111,8 @@ const SplashScreen = () => {
       ? require('./assets/images/overlay-dark.png')
       : require('./assets/images/overlay-light.png')
     : colorScheme === 'dark'
-    ? require('./assets/images/splash-dark.png')
-    : require('./assets/images/splashscreen.png');
+      ? require('./assets/images/splash-dark.png')
+      : require('./assets/images/splashscreen.png');
 
   const logoSource =
     colorScheme === 'dark'
@@ -119,6 +120,11 @@ const SplashScreen = () => {
       : require('./assets/images/braga-logo.png');
 
   const onboardImage = require('./assets/images/onboard.png');
+
+  const loginAsGuest = () => {
+    reset();
+    navigation.replace('Tabs');
+  }
 
   return (
     <>
@@ -135,19 +141,19 @@ const SplashScreen = () => {
           <>
             <View style={styles.overlay} />
             <View style={styles.content}>
-              <Animated.View style={{opacity: logoOpacity}}>
+              <Animated.View style={{ opacity: logoOpacity }}>
                 <Image source={logoSource} style={styles.brand} />
               </Animated.View>
 
               <Animated.Text
                 style={[
                   styles.title,
-                  {color: colors.text, opacity: textOpacity},
+                  { color: colors.text, opacity: textOpacity },
                 ]}>
                 Multi-Hazard Early{'\n'}Warning System
               </Animated.Text>
 
-              <Animated.View style={{opacity: loadingOpacity}}>
+              <Animated.View style={{ opacity: loadingOpacity }}>
                 <ActivityIndicator
                   size="large"
                   color="#FF6600"
@@ -161,7 +167,7 @@ const SplashScreen = () => {
             <Animated.View
               style={[
                 styles.onboardingContainer,
-                {opacity: onboardingOpacity},
+                { opacity: onboardingOpacity },
               ]}>
               <View style={styles.overlay} />
 
@@ -215,7 +221,7 @@ const SplashScreen = () => {
                     </TouchableOpacity>
                     <TouchableOpacity
                       style={styles.buttonGuest}
-                      onPress={() => navigation.replace('Tabs')}>
+                      onPress={loginAsGuest}>
                       <View>
                         <Text style={styles.buttonGuestText}>
                           Masuk Tanpa Akun
@@ -232,10 +238,10 @@ const SplashScreen = () => {
             <View style={styles.overlay} />
             <View style={styles.content}>
               <Image source={logoSource} style={styles.brand} />
-              <Text style={[styles.title, {color: colors.text}]}>
+              <Text style={[styles.title, { color: colors.text }]}>
                 Multi-Hazard Early{'\n'}Warning System
               </Text>
-              <Text style={[styles.description, {color: colors.text}]}>
+              <Text style={[styles.description, { color: colors.text }]}>
                 Sistem Peringatan Dini Bencana Alam yang dapat diakses dimanapun
                 dan kapanpun dalam genggaman tangan pengguna
               </Text>
