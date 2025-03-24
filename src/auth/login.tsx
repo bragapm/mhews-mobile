@@ -75,7 +75,7 @@ const Login = () => {
           response?.data?.access_token,
           response?.data?.refresh_token,
         );
-        recheckDataAuth(data);
+        recheckDataAuth(data, "email");
       } else {
         setLoading(false);
         // showAlert('error', 'Email atau password yang anda tidak valid');
@@ -106,7 +106,7 @@ const Login = () => {
     }
   };
 
-  const recheckDataAuth = async (data: any) => {
+  const recheckDataAuth = async (data: any, from: any) => {
     await getProfile();
 
     setLoading(false);
@@ -115,7 +115,7 @@ const Login = () => {
         email: data?.email,
         phone: null,
         sendTo: 'email',
-        from: 'signin',
+        from: from == "google" ? 'google-signin' : 'signin',
       });
     } else {
       navigation.navigate('Tabs');
@@ -139,16 +139,25 @@ const Login = () => {
       const userInfo = await GoogleSignin.signIn();
 
       const googleEmail = userInfo?.data?.user?.email || '';
-      setAuthData('dummyAccessToken', 'dummyRefreshToken');
+      const data = { access_token: userInfo.data?.idToken }
+      const response = await postData('/auth/login/google', data);
+      console.log(response);
 
-      navigation.navigate('Otp', {
-        email: googleEmail,
-        phone: null,
-        sendTo: 'email',
-        from: 'google-signin',
-      });
-
-      setLoading(false);
+      if (response?.data) {
+        setAuthData(
+          response?.data?.access_token,
+          response?.data?.refresh_token,
+        );
+        recheckDataAuth({ email: googleEmail }, "google");
+      } else {
+        setLoading(false);
+        setMessageInvalid('Email atau password tidak valid');
+        setInvalidCredential(true);
+        setTimeout(() => {
+          setMessageInvalid('');
+          setInvalidCredential(false);
+        }, 3000);
+      }
     } catch (error: any) {
       setLoading(false);
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
