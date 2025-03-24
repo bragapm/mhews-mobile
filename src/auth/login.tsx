@@ -159,6 +159,8 @@ const Login = () => {
         }, 3000);
       }
     } catch (error: any) {
+      console.log(error);
+
       setLoading(false);
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
         showAlert('error', `Login dibatalkan.`);

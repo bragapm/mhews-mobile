@@ -12,7 +12,20 @@
           "package_name": "com.mhews.braga.id"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "205553627601-t7lek2kepr7usiemvamgcglgk9qmhdmo.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mhews.braga.id",
+            "certificate_hash": "447e1aed0939d55bc395926e2716651efb0155d5"
+          }
+        },
+        {
+          "client_id": "205553627601-bm6o39g55pepepv1r57cs4mhuladrtrf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyD-8YvaKcCi5OYYN05UXYCEB1R_nDwjYkk"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "205553627601-bm6o39g55pepepv1r57cs4mhuladrtrf.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
