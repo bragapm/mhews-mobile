@@ -44,7 +44,7 @@ export default function HomeScreen() {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const colorScheme = useColorScheme();
   const { profile, getProfile } = useAuthStore();
-  const [siagaBencana, setSiagaBencana] = useState([]);
+  const [siagaBencana, setSiagaBencana] = useState<any>([]);
   const [fiturPendukung, setFiturPendukung] = useState([]);
   const [infoTerkait, setInfoTerkait] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -114,8 +114,20 @@ export default function HomeScreen() {
         getData('items/info_terkait'),
       ]);
 
-      setSiagaBencana(siaga?.data || []);
-      console.log(fitur);
+      const enhancedSiaga: any = [
+        {
+          id: 4,
+          sort: null,
+          user_created: "system-generated",
+          date_created: new Date().toISOString(),
+          title: "Potensi Bahaya",
+          description: "Informasi potensi bahaya dan ancaman bencana terkini",
+          icon: "edb7d848-83db-4c58-a146-4fbce39a71cf"
+        },
+        ...(siaga?.data || [])
+      ];
+
+      setSiagaBencana(enhancedSiaga);
 
       setFiturPendukung(fitur?.data || []);
       setInfoTerkait(info?.data || []);
@@ -157,6 +169,8 @@ export default function HomeScreen() {
       navigation.navigate('DisasterRisk');
     } else if (item?.title == 'Lokasi Evakuasi') {
       navigation.navigate('EvacuationLocation');
+    } else if (item?.title == 'Potensi Bahaya') {
+      navigation.navigate('PotentialDangers');
     } else if (item?.title == 'Lapor Bencana') {
       navigation.navigate('DisasterReport');
     }

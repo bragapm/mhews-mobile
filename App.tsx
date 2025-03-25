@@ -38,6 +38,7 @@ import NotificationsScreen from './src/pages/Notifications';
 import ForgotPasswordPage from './src/pages/forgotPassword';
 import ResetPasswordPage from './src/pages/ResetPassword';
 import TwoFactorAuthScreen from './src/pages/account/TwoFactorAuth';
+import PotentialDangersScreen from './src/pages/PotentialDangers';
 const Stack = createStackNavigator();
 
 function App() {
@@ -101,6 +102,10 @@ function App() {
               <Stack.Screen name="Language" component={LanguageScreen} />
               <Stack.Screen name="AboutUs" component={AboutUsScreen} />
               <Stack.Screen name="HelpCenter" component={HelpCenterScreen} />
+              <Stack.Screen
+                name="PotentialDangers"
+                component={PotentialDangersScreen}
+              />
               <Stack.Screen
                 name="DisasterRisk"
                 component={DisasterRiskScreen}

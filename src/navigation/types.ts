@@ -6,6 +6,7 @@ export type RootStackParamList = {
   FamilyProfile: undefined;
   NotFound: undefined;
   DisasterRisk: undefined;
+  PotentialDangers: undefined;
   DisasterAlert: undefined;
   Splash: undefined;
   Login: undefined;
