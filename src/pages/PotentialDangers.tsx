@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import {
   View,
   Text,
@@ -19,65 +19,70 @@ import {
   Switch,
 } from 'react-native';
 // import MapView, { Circle, Marker, PROVIDER_GOOGLE, UrlTile } from "react-native-maps";
-import MapboxGL, { Camera } from '@rnmapbox/maps';
+import MapboxGL, {Camera} from '@rnmapbox/maps';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { useNavigation } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../navigation/types';
+import {useNavigation} from '@react-navigation/native';
+import {StackNavigationProp} from '@react-navigation/stack';
+import {RootStackParamList} from '../navigation/types';
 import GetLocation from 'react-native-get-location';
-import { useAlert } from '../components/AlertContext';
-import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
+import {useAlert} from '../components/AlertContext';
+import {check, request, PERMISSIONS, RESULTS} from 'react-native-permissions';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Feather from 'react-native-vector-icons/Feather';
-import { BASE_URL, getData, MAPBOX_ACCESS_TOKEN, postData } from '../services/apiServices';
+import {
+  BASE_URL,
+  getData,
+  MAPBOX_ACCESS_TOKEN,
+  postData,
+} from '../services/apiServices';
 import haversine from 'haversine';
 import useAuthStore from '../hooks/auth';
 import FilterBottomSheet from '../components/FilterBottomSheet';
-import { filterDisasterData } from '../utils/filterDisaster';
+import {filterDisasterData} from '../utils/filterDisaster';
 import COLORS from '../config/COLORS';
-import { fetchLocation } from '../utils/locationUtils';
+import {fetchLocation} from '../utils/locationUtils';
 
-const { width, height } = Dimensions.get('window');
+const {width, height} = Dimensions.get('window');
 
 const customMapStyle = [
   {
     featureType: 'landscape',
     elementType: 'geometry',
     stylers: [
-      { color: '#FAD9C3' }, // Warna daratan pastel oranye
+      {color: '#FAD9C3'}, // Warna daratan pastel oranye
     ],
   },
   {
     featureType: 'water',
     elementType: 'geometry.fill',
     stylers: [
-      { color: '#9AC7D4' }, // Warna laut biru kehijauan
+      {color: '#9AC7D4'}, // Warna laut biru kehijauan
     ],
   },
   {
     featureType: 'road',
     elementType: 'geometry',
     stylers: [
-      { color: '#F2B8A9' }, // Warna jalan pastel
+      {color: '#F2B8A9'}, // Warna jalan pastel
     ],
   },
   {
     featureType: 'road',
     elementType: 'labels.text.fill',
     stylers: [
-      { color: '#6B4A3A' }, // Warna teks jalan
+      {color: '#6B4A3A'}, // Warna teks jalan
     ],
   },
   {
     featureType: 'poi',
     elementType: 'labels.text.fill',
-    stylers: [{ color: '#845B47' }],
+    stylers: [{color: '#845B47'}],
   },
   {
     featureType: 'administrative',
     elementType: 'labels.text.fill',
-    stylers: [{ color: '#594536' }],
+    stylers: [{color: '#594536'}],
   },
 ];
 
@@ -94,7 +99,7 @@ export default function PotentialDangersScreen() {
     longitude: number;
   } | null>(null);
   const pulseAnim = useRef(new Animated.Value(1)).current;
-  const { showAlert } = useAlert();
+  const {showAlert} = useAlert();
   const [alertVisible, setAlertVisible] = useState(false);
   const [nearbyDisasters, setNearbyDisasters] = useState([]);
   const mapRef = useRef<MapboxGL.MapView | null>(null);
@@ -103,7 +108,7 @@ export default function PotentialDangersScreen() {
   const [dataBencana, setDataBencana] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const { token } = useAuthStore();
+  const {token} = useAuthStore();
   const [selectedBencana, setSelectedBencana] = useState<any>(null);
   const [isMapReady, setIsMapReady] = useState(false);
   const [selectedFilterJenisBencana, setSelectedFilterJenisBencana] = useState<
@@ -161,9 +166,11 @@ export default function PotentialDangersScreen() {
   ]);
 
   const toggleLayer = (id: any) => {
-    setPotensiBahaya(potensiBahaya.map(item =>
-      item.id === id ? { ...item, layerActive: !item.layerActive } : item
-    ));
+    setPotensiBahaya(
+      potensiBahaya.map(item =>
+        item.id === id ? {...item, layerActive: !item.layerActive} : item,
+      ),
+    );
   };
 
   const lihatEdukasi = (id: any) => {
@@ -391,12 +398,12 @@ export default function PotentialDangersScreen() {
   useEffect(() => {
     if (location && dataBencana) {
       const nearbyDisaster = dataBencana.filter((disaster: any) => {
-        const { coordinates } = disaster.geom;
+        const {coordinates} = disaster.geom;
         const disasterLocation = {
           latitude: coordinates[1],
           longitude: coordinates[0],
         };
-        const distance = haversine(location, disasterLocation, { unit: 'meter' });
+        const distance = haversine(location, disasterLocation, {unit: 'meter'});
 
         return distance <= 500; //meter
       });
@@ -434,49 +441,45 @@ export default function PotentialDangersScreen() {
     pulseLoop();
   }, []);
 
-  const renderItem = ({ item }: { item: any }) => (
+  const renderItem = ({item}: {item: any}) => (
     <View
       style={[
         styles.dangerCard,
         {
-          backgroundColor: "#FEF4F0",
+          backgroundColor: colors.bg,
           borderWidth: 1,
           borderColor: item.color,
-          marginBottom: 16
-        }
-      ]}
-    >
+          marginBottom: 16,
+        },
+      ]}>
       <View style={styles.dangerHeader}>
-        <Text style={[styles.dangerTitle, { color: colors.text }]}>
+        <Text style={[styles.dangerTitle, {color: colors.text}]}>
           {item.nama}
         </Text>
-        <View style={[styles.riskBadge, { backgroundColor: item.color }]}>
+        <View style={[styles.riskBadge, {backgroundColor: item.color}]}>
           <Text style={styles.riskText}>Potensi {item.tingkat}</Text>
         </View>
       </View>
 
-      <View style={[styles.divider, { backgroundColor: colors.border }]} />
+      <View style={[styles.divider, {backgroundColor: colors.border}]} />
 
       <View style={styles.optionItem}>
         <Switch
           value={item.layerActive}
           onValueChange={() => toggleLayer(item.id)}
-          trackColor={{ false: '#E5E7EB', true: colors.tint }}
-          thumbColor={item.layerActive ? colors.cardBackground : '#f4f3f4'}
+          trackColor={{false: colors.text, true: colors.tint}}
+          thumbColor={item.layerActive ? colors.text : colors.text}
         />
-        <Text style={[styles.optionText, { color: colors.text }]}>
+        <Text style={[styles.optionText, {color: colors.text}]}>
           Aktifkan Layer Potensi Bencana
         </Text>
       </View>
 
       <TouchableOpacity
-        style={[
-          styles.edukasiButton,
-          { backgroundColor: colors.tint }
-        ]}
-        onPress={() => lihatEdukasi(item.nama)}
-      >
-        <Text style={[styles.edukasiButtonText, { color: colors.cardBackground }]}>
+        style={[styles.edukasiButton, {backgroundColor: colors.tint}]}
+        onPress={() => lihatEdukasi(item.nama)}>
+        <Text
+          style={[styles.edukasiButtonText, {color: colors.cardBackground}]}>
           Lihat Edukasi Mitigasi
         </Text>
       </TouchableOpacity>
@@ -607,14 +610,14 @@ export default function PotentialDangersScreen() {
         <View style={styles.headerContainer}>
           {/* Tombol Back */}
           <TouchableOpacity
-            style={[styles.headerBackButton, { backgroundColor: colors.bg }]}
+            style={[styles.headerBackButton, {backgroundColor: colors.bg}]}
             onPress={() => navigation.navigate('Tabs')}>
             <AntDesign name="arrowleft" size={24} color={colors.text} />
           </TouchableOpacity>
 
           {/* Search Bar */}
           <TouchableOpacity
-            style={[styles.headerSearchContainer, { backgroundColor: colors.bg }]}
+            style={[styles.headerSearchContainer, {backgroundColor: colors.bg}]}
             onPress={() => setModalVisible(true)}>
             <Feather
               name="search"
@@ -634,21 +637,19 @@ export default function PotentialDangersScreen() {
             <TouchableOpacity
               style={[
                 styles.mapToolButton,
-                { backgroundColor: colors.bg },
+                {backgroundColor: colors.bg},
                 styles.mapToolButtonTop,
               ]}
-              onPress={locateMe}
-            >
+              onPress={locateMe}>
               <Ionicons name="locate-outline" size={24} color={colors.text} />
             </TouchableOpacity>
 
             <TouchableOpacity
               style={[
                 styles.mapToolButton,
-                { backgroundColor: colors.bg },
+                {backgroundColor: colors.bg},
                 styles.mapToolButtonBottom,
-              ]}
-            >
+              ]}>
               <Ionicons name="layers-outline" size={24} color={colors.text} />
             </TouchableOpacity>
           </View>
@@ -675,7 +676,7 @@ export default function PotentialDangersScreen() {
             <TouchableOpacity
               style={[
                 styles.locateMeButton,
-                { bottom: bottomSheetHeight + 60, backgroundColor: colors.bg },
+                {bottom: bottomSheetHeight + 60, backgroundColor: colors.bg},
               ]}>
               <Ionicons
                 name="locate-outline"
@@ -688,13 +689,9 @@ export default function PotentialDangersScreen() {
             <TouchableOpacity
               style={[
                 styles.historyButton,
-                { bottom: bottomSheetHeight + 10, backgroundColor: colors.bg },
+                {bottom: bottomSheetHeight + 10, backgroundColor: colors.bg},
               ]}>
-              <Ionicons
-                name="reader-outline"
-                size={24}
-                color={colors.text}
-              />
+              <Ionicons name="reader-outline" size={24} color={colors.text} />
               <Text
                 style={{
                   color: colors.text,
@@ -708,16 +705,19 @@ export default function PotentialDangersScreen() {
               {...panResponder.panHandlers}
               style={[
                 styles.bottomSheet,
-                { height: bottomSheetHeight, backgroundColor: colors.bg },
+                {height: bottomSheetHeight, backgroundColor: colors.bg},
               ]}>
               {/* Drag Indicator */}
               <View style={styles.dragIndicator} />
-              <ScrollView showsVerticalScrollIndicator={false} style={styles.container}>
-                <Text style={[styles.sectionTitle, { color: colors.text }]}>
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                style={styles.container}>
+                <Text style={[styles.sectionTitle, {color: colors.text}]}>
                   Potensi Bahaya
                 </Text>
-                <Text style={[styles.sectionSubtitle, { color: colors.info }]}>
-                  Daftar potensi bahaya yang memiliki kemungkinan terjadi di sekitar anda
+                <Text style={[styles.sectionSubtitle, {color: colors.info}]}>
+                  Daftar potensi bahaya yang memiliki kemungkinan terjadi di
+                  sekitar anda
                 </Text>
 
                 {/* List Potensi Bahaya */}
@@ -744,13 +744,13 @@ export default function PotentialDangersScreen() {
         {/* Modal Detail Bencana */}
         <Modal visible={!!selectedBencana} transparent animationType="slide">
           <View style={styles.modalContainer}>
-            <View style={[styles.modalContent, { backgroundColor: colors.bg }]}>
+            <View style={[styles.modalContent, {backgroundColor: colors.bg}]}>
               {/* Garis Tarik untuk Swipe */}
               <View style={styles.swipeIndicator} />
 
               {/* Header Modal */}
               <View style={styles.modalHeaderDetail}>
-                <Text style={[styles.modalTitle, { color: colors.text }]}>
+                <Text style={[styles.modalTitle, {color: colors.text}]}>
                   {selectedBencana?.jenis_bencana
                     .replace(/_/g, ' ')
                     .replace(/\b\w/g, (c: any) => c.toUpperCase())}
@@ -844,26 +844,26 @@ export default function PotentialDangersScreen() {
                 {selectedBencana?.jenis_bencana === 'tanah_longsor' && (
                   <>
                     <View style={styles.infoBox}>
-                      <Text style={[styles.infoTitle, { color: colors.text }]}>
+                      <Text style={[styles.infoTitle, {color: colors.text}]}>
                         Volume Material Longsor
                       </Text>
-                      <Text style={[styles.infoValue, { color: colors.info }]}>
+                      <Text style={[styles.infoValue, {color: colors.info}]}>
                         {selectedBencana?.vol_mat_longsor || 0} m³
                       </Text>
                     </View>
                     <View style={styles.infoBox}>
-                      <Text style={[styles.infoTitle, { color: colors.text }]}>
+                      <Text style={[styles.infoTitle, {color: colors.text}]}>
                         Kemiringan Lereng
                       </Text>
-                      <Text style={[styles.infoValue, { color: colors.info }]}>
+                      <Text style={[styles.infoValue, {color: colors.info}]}>
                         {selectedBencana?.sudut_mir_longsor || 0}°
                       </Text>
                     </View>
                     <View style={styles.infoBox}>
-                      <Text style={[styles.infoTitle, { color: colors.text }]}>
+                      <Text style={[styles.infoTitle, {color: colors.text}]}>
                         Waktu
                       </Text>
-                      <Text style={[styles.infoValue, { color: colors.info }]}>
+                      <Text style={[styles.infoValue, {color: colors.info}]}>
                         {new Intl.DateTimeFormat('id-ID', {
                           dateStyle: 'full',
                           timeStyle: 'medium',
@@ -903,16 +903,16 @@ export default function PotentialDangersScreen() {
               {/* Scrollable Content */}
               <ScrollView style={styles.detailContainer}>
                 {/* Lokasi */}
-                <Text style={[styles.cardTitleData, { color: colors.text }]}>
+                <Text style={[styles.cardTitleData, {color: colors.text}]}>
                   Lokasi
                 </Text>
-                <Text style={[styles.cardDescription, , { color: colors.info }]}>
+                <Text style={[styles.cardDescription, , {color: colors.info}]}>
                   {selectedBencana?.geom?.coordinates?.[1]},{' '}
                   {selectedBencana?.geom?.coordinates?.[0]}
                 </Text>
 
                 {/* Tipe Bencana */}
-                <Text style={[styles.cardTitleData, { color: colors.text }]}>
+                <Text style={[styles.cardTitleData, {color: colors.text}]}>
                   Tipe Bencana
                 </Text>
                 <View style={styles.badge}>
@@ -920,25 +920,25 @@ export default function PotentialDangersScreen() {
                 </View>
 
                 {/* Wilayah Terdampak */}
-                <Text style={[styles.cardTitleData, { color: colors.text }]}>
+                <Text style={[styles.cardTitleData, {color: colors.text}]}>
                   Wilayah Terdampak
                 </Text>
-                <Text style={[styles.cardDescription, { color: colors.info }]}>
+                <Text style={[styles.cardDescription, {color: colors.info}]}>
                   {selectedBencana?.wilayah || '-'}
                 </Text>
 
                 {/* Saran & Arahan */}
-                <Text style={[styles.cardTitleData, { color: colors.text }]}>
+                <Text style={[styles.cardTitleData, {color: colors.text}]}>
                   Rekomendasi BMKG
                 </Text>
-                <Text style={[styles.cardDetails, { color: colors.info }]}>
+                <Text style={[styles.cardDetails, {color: colors.info}]}>
                   {selectedBencana?.saran_bmkg || '-'}
                 </Text>
 
-                <Text style={[styles.cardTitleData, { color: colors.text }]}>
+                <Text style={[styles.cardTitleData, {color: colors.text}]}>
                   Arahan Evakuasi
                 </Text>
-                <Text style={[styles.cardDetails, { color: colors.info }]}>
+                <Text style={[styles.cardDetails, {color: colors.info}]}>
                   {selectedBencana?.arahan || '-'}
                 </Text>
               </ScrollView>
@@ -985,7 +985,7 @@ export default function PotentialDangersScreen() {
               ListHeaderComponent={() => (
                 <Text style={styles.resultHeader}>Hasil Pencarian</Text>
               )}
-              renderItem={({ item }) => (
+              renderItem={({item}) => (
                 <TouchableOpacity
                   style={styles.resultItem}
                   onPress={() => handleSelectLocation(item)}>
@@ -1117,7 +1117,7 @@ const styles = StyleSheet.create({
     zIndex: 999,
     flexDirection: 'column',
     alignItems: 'center',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.2,
     shadowRadius: 4,
   },
@@ -1147,7 +1147,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   historyButton: {
-    flexDirection: "row",
+    flexDirection: 'row',
     alignItems: 'center',
     position: 'absolute',
     right: 10,
@@ -1156,7 +1156,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgb(255, 255, 255)',
     padding: 8,
     borderRadius: 10,
-    gap: 5
+    gap: 5,
   },
   headerSearchContainer: {
     flexDirection: 'row',
@@ -1207,7 +1207,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     marginHorizontal: 5,
   },
-  chipSelected: { borderColor: '#F36A1D' },
+  chipSelected: {borderColor: '#F36A1D'},
   headerAlertContainer: {
     flexDirection: 'row',
     backgroundColor: '#e74c3c',
