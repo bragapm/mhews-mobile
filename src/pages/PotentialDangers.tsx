@@ -119,7 +119,79 @@ export default function PotentialDangersScreen() {
   const [searchResults, setSearchResults] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const colors = COLORS();
+  const [modalRiwayatVisible, setModalRiwayatVisible] = useState(false);
 
+  const [riwayatData, setRiwayatData] = useState([
+    {
+      id: 1,
+      nama: 'Erupsi Gunung Berapi',
+      date: '14 Februari 2025 - 10:56 WIB',
+      detail:
+        'Status Aktivitas Level 3 (Siaga)\nKetinggian Kolom Abu 2000 Meter',
+    },
+    {
+      id: 2,
+      nama: 'Tanah Longsor',
+      date: '14 Februari 2025 - 18:30 WIB',
+      detail: 'Volume Material 1.930 m³\nKemiringan Lereng 10° (14%)',
+    },
+    {
+      id: 3,
+      nama: 'Banjir',
+      date: '14 Februari 2025 - 20:00 WIB',
+      detail: 'Kecepatan Arus 70 m/s\nKetinggian Muka Air 1,2 Meter',
+    },
+    {
+      id: 4,
+      nama: 'Gempa Bumi',
+      date: '14 Februari 2025 - 22:30 WIB',
+      detail: 'Kekuatan Gempa 6.7 M',
+    },
+  ]);
+
+  const [selectedFilters, setSelectedFilters] = useState<string[]>(['semua']);
+  const FILTER_OPTIONS = [
+    {id: 'filter', label: 'Filter'},
+    {id: 'semua', label: 'Semua Bencana'},
+    {id: 'gempa_bumi', label: 'Gempa Bumi'},
+    {id: 'banjir', label: 'Banjir'},
+    {id: 'longsor', label: 'Tanah Longsor'},
+    {id: 'tsunami', label: 'Tsunami'},
+    {id: 'erupsi', label: 'Erupsi Gunung'},
+    // Tambahkan lagi jika mau
+  ];
+
+  const handleFilterPressRiwayat = (jenis: string) => {
+    // Jika menekan 'filter', buka modal filter
+    if (jenis === 'filter') {
+      // misalnya setFilterModalVisible(true);
+      console.log('Buka modal filter...');
+      return;
+    }
+
+    // Jika menekan 'semua', set langsung jadi ['semua']
+    if (jenis === 'semua') {
+      setSelectedFilters(['semua']);
+      return;
+    }
+
+    // Toggle multi-select
+    setSelectedFilters(prev => {
+      // Jika sebelumnya ada 'semua', maka kita ganti dengan item saat ini
+      if (prev.includes('semua')) {
+        return [jenis];
+      }
+
+      // Jika item sudah ada di selectedFilters, hapus
+      if (prev.includes(jenis)) {
+        const newFilters = prev.filter(f => f !== jenis);
+        return newFilters.length > 0 ? newFilters : ['semua'];
+      } else {
+        // Tambah ke array
+        return [...prev, jenis];
+      }
+    });
+  };
   const [potensiBahaya, setPotensiBahaya] = useState([
     {
       id: 1,
@@ -687,6 +759,7 @@ export default function PotentialDangersScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity
+              onPress={() => setModalRiwayatVisible(true)}
               style={[
                 styles.historyButton,
                 {bottom: bottomSheetHeight + 10, backgroundColor: colors.bg},
@@ -1000,6 +1073,105 @@ export default function PotentialDangersScreen() {
               )}
               ItemSeparatorComponent={() => <View style={styles.separator} />}
             />
+          </View>
+        </Modal>
+        {/* [MODAL RIWAYAT BENCANA] (4) */}
+        <Modal
+          visible={modalRiwayatVisible}
+          animationType="slide"
+          transparent
+          onRequestClose={() => setModalRiwayatVisible(false)}>
+          <View style={styles.modalOverlay}>
+            <View
+              {...panResponder.panHandlers}
+              style={[
+                styles.bottomSheetRiwayat,
+                {height: '850', backgroundColor: colors.bg},
+              ]}>
+              <View style={styles.dragIndicator} />
+              {/* Header Modal Riwayat */}
+              <View
+                style={[
+                  styles.riwayatHeader,
+                  {backgroundColor: colors.bg, paddingBottom: '1%'},
+                ]}>
+                <Text style={[styles.riwayatTitle, {color: colors.text}]}>
+                  Riwayat Bencana
+                </Text>
+                <TouchableOpacity onPress={() => setModalRiwayatVisible(false)}>
+                  <AntDesign name="close" size={24} color={colors.text} />
+                </TouchableOpacity>
+              </View>
+              <View
+                style={[
+                  styles.riwayatHeader,
+                  {
+                    backgroundColor: colors.bg,
+                    paddingHorizontal: '4%',
+                    paddingTop: '1%',
+                  },
+                ]}>
+                <Text style={{color: colors.info}}>
+                  Daftar riwayat bahaya yang telah terjadi di sekitar anda
+                </Text>
+              </View>
+
+              {/* Tombol Filter di atas (opsional, bisa dihubungkan ke FilterBottomSheet) */}
+              <View style={[styles.riwayatTabs, {backgroundColor: colors.bg}]}>
+                <FlatList
+                  data={FILTER_OPTIONS}
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  keyExtractor={item => item.id}
+                  contentContainerStyle={{
+                    paddingLeft: '4%',
+                  }}
+                  renderItem={({item}) => {
+                    const isSelected = selectedFilters.includes(item.id);
+                    return (
+                      <TouchableOpacity
+                        style={[
+                          styles.riwayatFilterButton,
+                          isSelected && {
+                            backgroundColor: '#F36A1D',
+                          }, // warna jika dipilih
+                        ]}
+                        onPress={() => handleFilterPressRiwayat(item.id)}>
+                        <Text
+                          style={[
+                            styles.riwayatFilterText,
+                            isSelected && {color: '#FFF'}, // warna teks jika dipilih
+                          ]}>
+                          {item.label}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                />
+              </View>
+
+              {/* Daftar Riwayat */}
+              <FlatList
+                data={riwayatData}
+                keyExtractor={item => item.id.toString()}
+                renderItem={({item}) => (
+                  <View style={styles.riwayatCard}>
+                    <Text
+                      style={[styles.riwayatCardTitle, {color: colors.text}]}>
+                      {item.nama}
+                    </Text>
+                    <Text
+                      style={[styles.riwayatCardDate, {color: colors.info}]}>
+                      {item.date}
+                    </Text>
+                    <Text
+                      style={[styles.riwayatCardDetail, {color: colors.info}]}>
+                      {item.detail}
+                    </Text>
+                  </View>
+                )}
+              />
+            </View>
           </View>
         </Modal>
       </View>
@@ -1448,5 +1620,72 @@ const styles = StyleSheet.create({
   edukasiButtonText: {
     fontSize: 15,
     fontWeight: '500',
+  },
+
+  riwayatHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    backgroundColor: '#f2f2f2',
+  },
+  riwayatTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  riwayatTabs: {
+    flexDirection: 'row',
+    // justifyContent: 'space-around',
+    paddingVertical: 8,
+    backgroundColor: '#fff',
+  },
+  riwayatFilterButton: {
+    backgroundColor: '#e5e5e5',
+    borderRadius: 8,
+    paddingHorizontal: '3%',
+    paddingVertical: '3%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 'auto',
+  },
+  riwayatFilterText: {
+    fontSize: 16,
+    color: '#333',
+  },
+  riwayatCard: {
+    margin: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+  },
+  riwayatCardTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  riwayatCardDate: {
+    fontSize: 12,
+    color: '#666',
+    marginBottom: 6,
+  },
+  riwayatCardDetail: {
+    fontSize: 12,
+    color: '#333',
+  },
+  modalOverlay: {
+    flex: 1,
+    // Tambahkan warna hitam semi-transparan agar tampilan belakang meredup
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  bottomSheetRiwayat: {
+    backgroundColor: 'white',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 16,
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
   },
 });
