@@ -59,10 +59,13 @@ const ResetPasswordPage = () => {
   const colorScheme = useColorScheme();
   const colors = COLORS();
   const {showAlert} = useAlert();
+
   const iconInfo = require('../assets/images/resikoBahayaActive.png');
   const [loading, setLoading] = useState(false);
   const [isPasswordReset, setIsPasswordReset] = useState(false);
-
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] =
+    useState(false);
   const backgroundSource =
     colorScheme === 'dark'
       ? require('../assets/images/bg-page-dark.png')
@@ -177,14 +180,25 @@ const ResetPasswordPage = () => {
                           },
                         ]}
                         placeholder="Password Baru"
-                        secureTextEntry
+                        secureTextEntry={!isPasswordVisible}
                         value={value}
                         onChangeText={onChange}
                         placeholderTextColor={colors.text}
                       />
+                      <TouchableOpacity
+                        onPress={() =>
+                          setIsPasswordVisible(!isPasswordVisible)
+                        }>
+                        <Feather
+                          name={isPasswordVisible ? 'eye' : 'eye-off'}
+                          size={24}
+                          color={colors.text}
+                        />
+                      </TouchableOpacity>
                     </View>
                   )}
                 />
+
                 {errors.password && (
                   <Text style={styles.errorText}>
                     {errors.password.message}
@@ -218,11 +232,21 @@ const ResetPasswordPage = () => {
                           },
                         ]}
                         placeholder="Konfirmasi Password Baru"
-                        secureTextEntry
+                        secureTextEntry={!isConfirmPasswordVisible}
                         value={value}
                         onChangeText={onChange}
                         placeholderTextColor={colors.text}
                       />
+                      <TouchableOpacity
+                        onPress={() =>
+                          setIsConfirmPasswordVisible(!isConfirmPasswordVisible)
+                        }>
+                        <Feather
+                          name={isConfirmPasswordVisible ? 'eye' : 'eye-off'}
+                          size={24}
+                          color={colors.text}
+                        />
+                      </TouchableOpacity>
                     </View>
                   )}
                 />
