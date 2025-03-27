@@ -120,78 +120,196 @@ export default function PotentialDangersScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const colors = COLORS();
   const [modalRiwayatVisible, setModalRiwayatVisible] = useState(false);
-
+  const [selectedRiwayatDetail, setSelectedRiwayatDetail] = useState<any>(null);
   const [riwayatData, setRiwayatData] = useState([
     {
       id: 1,
-      nama: 'Erupsi Gunung Berapi',
-      date: '14 Februari 2025 - 10:56 WIB',
-      detail:
-        'Status Aktivitas Level 3 (Siaga)\nKetinggian Kolom Abu 2000 Meter',
+      nama: 'Banjir',
+      date: '14 Februari 2024 - 18:30:56 WIB',
+      latlong: '-6.238270, 106.975571',
+      informasiBahaya: {
+        kolom1Label: 'Kecepatan Air',
+        kolom1Value: '70 m/s',
+        kolom2Label: 'Ketinggian Muka Air',
+        kolom2Value: '1,2 Meter',
+      },
+      detailBencana: {
+        rekomendasi:
+          'Bencana ini dirasakan untuk untuk diteruskan kepada masyarakat sebagai perintah evakuasi',
+      },
     },
     {
       id: 2,
-      nama: 'Tanah Longsor',
-      date: '14 Februari 2025 - 18:30 WIB',
-      detail: 'Volume Material 1.930 m³\nKemiringan Lereng 10° (14%)',
+      nama: 'Erupsi Gunung Berapi',
+      date: '14 Februari 2025 - 10:56 WIB',
+      latlong: '-6.595038, 106.816635',
+      informasiBahaya: {
+        kolom1Label: 'Status Aktivitas',
+        kolom1Value: 'Level 3 (Siaga)',
+        kolom2Label: 'Ketinggian Kolom Abu',
+        kolom2Value: '2000 Meter',
+      },
+      detailBencana: {
+        rekomendasi:
+          'Hindari radius 3 km dari puncak kawah. Perhatikan arahan PVMBG setempat.',
+      },
     },
     {
       id: 3,
-      nama: 'Banjir',
-      date: '14 Februari 2025 - 20:00 WIB',
-      detail: 'Kecepatan Arus 70 m/s\nKetinggian Muka Air 1,2 Meter',
+      nama: 'Tanah Longsor',
+      date: '14 Februari 2025 - 18:30 WIB',
+      latlong: '-6.178306, 106.631889',
+      informasiBahaya: {
+        kolom1Label: 'Volume Material',
+        kolom1Value: '1.930 m³',
+        kolom2Label: 'Kemiringan Lereng',
+        kolom2Value: '10° (14%)',
+      },
+      detailBencana: {
+        rekomendasi:
+          'Evakuasi warga di area lereng terjal, waspadai pergerakan tanah.',
+      },
     },
     {
       id: 4,
       nama: 'Gempa Bumi',
       date: '14 Februari 2025 - 22:30 WIB',
-      detail: 'Kekuatan Gempa 6.7 M',
+      latlong: '-6.208763, 106.845599',
+      informasiBahaya: {
+        kolom1Label: 'Magnitudo',
+        kolom1Value: '6.7 M',
+        kolom2Label: 'Kedalaman',
+        kolom2Value: '10 km',
+      },
+      detailBencana: {
+        rekomendasi:
+          'Segera cari tempat aman. Jika di pantai, waspadai potensi tsunami.',
+      },
     },
   ]);
 
-  const [selectedFilters, setSelectedFilters] = useState<string[]>(['semua']);
-  const FILTER_OPTIONS = [
-    {id: 'filter', label: 'Filter'},
-    {id: 'semua', label: 'Semua Bencana'},
-    {id: 'gempa_bumi', label: 'Gempa Bumi'},
-    {id: 'banjir', label: 'Banjir'},
-    {id: 'longsor', label: 'Tanah Longsor'},
-    {id: 'tsunami', label: 'Tsunami'},
-    {id: 'erupsi', label: 'Erupsi Gunung'},
-    // Tambahkan lagi jika mau
-  ];
-
-  const handleFilterPressRiwayat = (jenis: string) => {
-    // Jika menekan 'filter', buka modal filter
-    if (jenis === 'filter') {
-      // misalnya setFilterModalVisible(true);
-      console.log('Buka modal filter...');
-      return;
-    }
-
-    // Jika menekan 'semua', set langsung jadi ['semua']
-    if (jenis === 'semua') {
-      setSelectedFilters(['semua']);
-      return;
-    }
-
-    // Toggle multi-select
-    setSelectedFilters(prev => {
-      // Jika sebelumnya ada 'semua', maka kita ganti dengan item saat ini
-      if (prev.includes('semua')) {
-        return [jenis];
+  const [selectedRiwayatFilter, setSelectedRiwayatFilter] = useState<string[]>([
+    'semua',
+  ]);
+  const [modalFilterAdvancedVisible, setModalFilterAdvancedVisible] =
+    useState(false);
+  const toggleRiwayatFilter = (value: string) => {
+    setSelectedRiwayatFilter(prev => {
+      // Jika user menekan 'semua', reset jadi ['semua']
+      if (value === 'semua') {
+        // Kalau sudah 'semua', bisa diatur mau dihilangkan atau tidak;
+        // tapi umumnya kita set lagi jadi ['semua'].
+        return ['semua'];
       }
 
-      // Jika item sudah ada di selectedFilters, hapus
-      if (prev.includes(jenis)) {
-        const newFilters = prev.filter(f => f !== jenis);
-        return newFilters.length > 0 ? newFilters : ['semua'];
+      // Jika sebelumnya ada 'semua', buang 'semua' dan set ke item yang baru
+      if (prev.includes('semua')) {
+        return [value];
+      }
+
+      // Jika item sudah ada di array, artinya mau di-unselect
+      if (prev.includes(value)) {
+        const newArr = prev.filter(item => item !== value);
+        // Kalau newArr kosong, artinya tidak ada filter => kembalikan ke ['semua']
+        return newArr.length === 0 ? ['semua'] : newArr;
       } else {
-        // Tambah ke array
-        return [...prev, jenis];
+        // Jika item belum ada, tambahkan ke array
+        return [...prev, value];
       }
     });
   };
+
+  const disasterOptions = [
+    {
+      value: 'filter_modal',
+      label: 'Filter',
+      icon: 'options', // Ionicons name="options"
+      iconSelected: null,
+      iconUnselected: null,
+    },
+    {
+      value: 'semua',
+      label: 'Semua Bencana',
+      icon: 'earth',
+      iconSelected: null,
+      iconUnselected: null,
+    },
+    {
+      value: 'gempa_bumi',
+      label: 'Gempa Bumi',
+      iconSelected: require('../assets/images/gempaActive.png'),
+      iconUnselected: {
+        light: require('../assets/images/gempaDeactive.png'),
+        dark: require('../assets/images/gempaDeactive-dark.png'),
+      },
+    },
+    {
+      value: 'tsunami',
+      label: 'Tsunami',
+      iconSelected: require('../assets/images/tsunamiActive.png'),
+      iconUnselected: {
+        light: require('../assets/images/tsunamiDeactive.png'),
+        dark: require('../assets/images/tsunamiDeactive-dark.png'),
+      },
+    },
+    {
+      value: 'banjir',
+      label: 'Banjir',
+      iconSelected: require('../assets/images/banjirActive.png'),
+      iconUnselected: {
+        light: require('../assets/images/banjirDeactive.png'),
+        dark: require('../assets/images/banjirDeactive-dark.png'),
+      },
+    },
+    {
+      value: 'longsor',
+      label: 'Longsor',
+      iconSelected: require('../assets/images/longsorActive.png'),
+      iconUnselected: {
+        light: require('../assets/images/longsorDeactive.png'),
+        dark: require('../assets/images/longsorDeactive-dark.png'),
+      },
+    },
+    {
+      value: 'gunung_berapi',
+      label: 'Erupsi Gn. Berapi',
+      iconSelected: require('../assets/images/erupsiActive.png'),
+      iconUnselected: {
+        light: require('../assets/images/erupsiDeactive.png'),
+        dark: require('../assets/images/erupsiDeactive-dark.png'),
+      },
+    },
+  ];
+
+  const filteredRiwayatData = riwayatData.filter(item => {
+    // Jika user pilih "semua", tampilkan semua
+    if (selectedRiwayatFilter.includes('semua')) {
+      return true;
+    }
+
+    // Lainnya: cek apakah item cocok dengan setidaknya satu filter
+    // (Misalnya cek kata kunci "gempa", "banjir", dsb. sesuai switch-case atau if)
+    const namaLower = item.nama.toLowerCase();
+
+    // Pengecekan per item di selectedRiwayatFilters
+    return selectedRiwayatFilter.some(filterValue => {
+      switch (filterValue) {
+        case 'gempa_bumi':
+          return namaLower.includes('gempa');
+        case 'tsunami':
+          return namaLower.includes('tsunami');
+        case 'banjir':
+          return namaLower.includes('banjir');
+        case 'longsor':
+          return namaLower.includes('longsor');
+        case 'gunung_berapi':
+          return namaLower.includes('gunung') || namaLower.includes('erupsi');
+        default:
+          return false;
+      }
+    });
+  });
+
   const [potensiBahaya, setPotensiBahaya] = useState([
     {
       id: 1,
@@ -1085,8 +1203,8 @@ export default function PotentialDangersScreen() {
             <View
               {...panResponder.panHandlers}
               style={[
-                styles.bottomSheetRiwayat,
-                {height: '850', backgroundColor: colors.bg},
+                styles.bottomSheet,
+                {height: bottomSheetHeight, backgroundColor: colors.bg},
               ]}>
               <View style={styles.dragIndicator} />
               {/* Header Modal Riwayat */}
@@ -1116,31 +1234,77 @@ export default function PotentialDangersScreen() {
                 </Text>
               </View>
 
-              {/* Tombol Filter di atas (opsional, bisa dihubungkan ke FilterBottomSheet) */}
-              <View style={[styles.riwayatTabs, {backgroundColor: colors.bg}]}>
+              <View style={{marginVertical: 10}}>
                 <FlatList
-                  data={FILTER_OPTIONS}
+                  data={disasterOptions}
                   horizontal
+                  keyExtractor={item => item.value}
                   showsHorizontalScrollIndicator={false}
-                  keyExtractor={item => item.id}
-                  contentContainerStyle={{
-                    paddingLeft: '4%',
-                  }}
                   renderItem={({item}) => {
-                    const isSelected = selectedFilters.includes(item.id);
+                    // Jika item adalah filter_modal, buat tombol khusus
+                    if (item.value === 'filter_modal') {
+                      return (
+                        <TouchableOpacity
+                          style={[
+                            styles.disasterOptionItem,
+                            {borderColor: '#aaa'},
+                          ]}
+                          onPress={() => {
+                            // Close modal Riwayat dan buka FilterBottomSheet
+                            setModalRiwayatVisible(false);
+                            setModalFilterAdvancedVisible(true);
+                          }}>
+                          <Ionicons
+                            name="options"
+                            size={20}
+                            color="#777"
+                            style={{marginRight: 5}}
+                          />
+                          <Text
+                            style={[
+                              styles.disasterOptionLabel,
+                              {color: colors.text},
+                            ]}>
+                            {item.label}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    }
+                    // Item bencana biasa:
+                    const isSelected = selectedRiwayatFilter.includes(
+                      item.value,
+                    );
+                    let iconSource = null;
+                    if (item.iconSelected && item.iconUnselected) {
+                      iconSource = isSelected
+                        ? item.iconSelected
+                        : item.iconUnselected[colorScheme] ||
+                          item.iconUnselected.light;
+                    }
                     return (
                       <TouchableOpacity
                         style={[
-                          styles.riwayatFilterButton,
-                          isSelected && {
-                            backgroundColor: '#F36A1D',
-                          }, // warna jika dipilih
+                          styles.disasterOptionItem,
+                          isSelected && styles.disasterOptionItemSelected,
                         ]}
-                        onPress={() => handleFilterPressRiwayat(item.id)}>
+                        onPress={() => toggleRiwayatFilter(item.value)}>
+                        {iconSource ? (
+                          <Image
+                            source={iconSource}
+                            style={styles.disasterOptionIcon}
+                          />
+                        ) : (
+                          <Ionicons
+                            name={item.icon || 'earth'}
+                            size={20}
+                            color={isSelected ? '#f36a1d' : '#777'}
+                            style={{marginRight: 5}}
+                          />
+                        )}
                         <Text
                           style={[
-                            styles.riwayatFilterText,
-                            isSelected && {color: '#FFF'}, // warna teks jika dipilih
+                            styles.disasterOptionLabel,
+                            {color: isSelected ? '#f36a1d' : colors.text},
                           ]}>
                           {item.label}
                         </Text>
@@ -1154,26 +1318,128 @@ export default function PotentialDangersScreen() {
               <FlatList
                 data={riwayatData}
                 keyExtractor={item => item.id.toString()}
-                renderItem={({item}) => (
-                  <View style={styles.riwayatCard}>
-                    <Text
-                      style={[styles.riwayatCardTitle, {color: colors.text}]}>
-                      {item.nama}
-                    </Text>
-                    <Text
-                      style={[styles.riwayatCardDate, {color: colors.info}]}>
-                      {item.date}
-                    </Text>
-                    <Text
-                      style={[styles.riwayatCardDetail, {color: colors.info}]}>
-                      {item.detail}
-                    </Text>
-                  </View>
-                )}
+                renderItem={({item}) => {
+                  return (
+                    <TouchableOpacity
+                      style={styles.riwayatCard}
+                      onPress={() => setSelectedRiwayatDetail(item)}>
+                      <Text
+                        style={[styles.riwayatCardTitle, {color: colors.text}]}>
+                        {item.nama}
+                      </Text>
+                      <Text
+                        style={[styles.riwayatCardDate, {color: colors.info}]}>
+                        {item.date}
+                      </Text>
+                      <Text
+                        style={[styles.riwayatCardLatLong, {color: '#13569F'}]}>
+                        {item.latlong}
+                      </Text>
+                      {/* Misalnya detail ringkas */}
+                      <Text
+                        style={[
+                          styles.riwayatCardDetail,
+                          {color: colors.info},
+                        ]}>
+                        {item.informasiBahaya.kolom1Label}{' '}
+                        {item.informasiBahaya.kolom1Value} ...
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                }}
               />
             </View>
           </View>
         </Modal>
+
+        {/* Modal Detail Riwayat */}
+        <Modal
+          visible={!!selectedRiwayatDetail} // tampil jika selectedRiwayatDetail != null
+          transparent
+          animationType="slide"
+          onRequestClose={() => setSelectedRiwayatDetail(null)}>
+          <View
+            {...panResponder.panHandlers}
+            style={[
+              styles.bottomSheetRiwayat,
+              {height: 850, backgroundColor: colors.bg},
+            ]}>
+            <View style={styles.dragIndicator} />
+            <View
+              style={[
+                styles.riwayatHeader,
+                {backgroundColor: colors.bg, paddingBottom: '10%'},
+              ]}>
+              <Text style={[styles.riwayatTitle, {color: colors.text}]}>
+                {selectedRiwayatDetail?.nama}
+              </Text>
+              <TouchableOpacity onPress={() => setSelectedRiwayatDetail(null)}>
+                <AntDesign name="close" size={24} color={colors.text} />
+              </TouchableOpacity>
+            </View>
+
+            {/* Box "Informasi Bahaya" - contoh conditional */}
+            <View style={styles.infoBahayaBox}>
+              <Text style={[styles.infoBahayaTitle, {color: colors.text}]}>
+                Informasi Bahaya
+              </Text>
+
+              <View
+                style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+                <View style={{flex: 1, marginRight: 10}}>
+                  <Text
+                    style={[styles.infoBahayaItemLabel, {color: colors.info}]}>
+                    {selectedRiwayatDetail?.informasiBahaya.kolom1Label}
+                  </Text>
+                  <Text
+                    style={[styles.infoBahayaItemValue, {color: colors.info}]}>
+                    {selectedRiwayatDetail?.informasiBahaya.kolom1Value}
+                  </Text>
+                </View>
+
+                <View style={{flex: 1}}>
+                  <Text
+                    style={[styles.infoBahayaItemLabel, {color: colors.info}]}>
+                    {selectedRiwayatDetail?.informasiBahaya.kolom2Label}
+                  </Text>
+                  <Text
+                    style={[styles.infoBahayaItemValue, {color: colors.info}]}>
+                    {selectedRiwayatDetail?.informasiBahaya.kolom2Value}
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Detail Bencana */}
+            <View style={styles.detailBencanaBox}>
+              <Text style={[styles.detailBencanaTitle, {color: colors.text}]}>
+                Detail Bencana
+              </Text>
+
+              {/* Waktu */}
+              <Text style={[styles.detailBencanaRow, {color: colors.info}]}>
+                Waktu: {selectedRiwayatDetail?.date}
+              </Text>
+
+              {/* Koordinat */}
+              <Text style={[styles.detailBencanaRow, {color: colors.info}]}>
+                Latitude, Longitude: {selectedRiwayatDetail?.latlong}
+              </Text>
+
+              {/* Rekomendasi */}
+              <Text style={[styles.detailBencanaRow, {color: colors.info}]}>
+                Rekomendasi: {selectedRiwayatDetail?.detailBencana?.rekomendasi}
+              </Text>
+            </View>
+          </View>
+        </Modal>
+
+        {/* [NEW] Modal Filter Lanjutan (dibuka dari item filter_modal) */}
+        <FilterBottomSheet
+          visible={modalFilterAdvancedVisible}
+          onClose={() => setModalFilterAdvancedVisible(false)}
+          onApply={handleApplyFilter}
+        />
       </View>
     </>
   );
@@ -1633,6 +1899,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+  riwayatCardLatLong: {
+    fontSize: 12,
+    color: '#13569F', // atau pakai colors.info
+    marginBottom: 6,
+  },
   riwayatTabs: {
     flexDirection: 'row',
     // justifyContent: 'space-around',
@@ -1687,5 +1958,81 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 0,
     width: '100%',
+  },
+  disasterOptionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    marginHorizontal: 5,
+    borderWidth: 1,
+    borderColor: '#ccc',
+  },
+  disasterOptionItemSelected: {
+    backgroundColor: '#ffe9de',
+    borderColor: '#f36a1d',
+  },
+  disasterOptionIcon: {
+    width: 20,
+    height: 20,
+    resizeMode: 'contain',
+    marginRight: 5,
+  },
+  disasterOptionLabel: {fontSize: 12, fontWeight: '600'},
+
+  modalDetailContainer: {
+    // agar terlihat seperti bottom sheet
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 16,
+  },
+  modalDetailHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  modalDetailTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  infoBahayaBox: {
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    padding: 12,
+  },
+  infoBahayaTitle: {
+    fontWeight: 'bold',
+    fontSize: 16,
+    marginBottom: 8,
+  },
+  infoBahayaItemLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  infoBahayaItemValue: {
+    fontSize: 14,
+    marginBottom: 8,
+  },
+  detailBencanaBox: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    padding: 12,
+  },
+  detailBencanaTitle: {
+    fontWeight: 'bold',
+    fontSize: 16,
+    marginBottom: 8,
+  },
+  detailBencanaRow: {
+    fontSize: 14,
+    marginBottom: 4,
   },
 });
