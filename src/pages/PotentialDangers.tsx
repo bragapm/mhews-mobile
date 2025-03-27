@@ -142,7 +142,8 @@ export default function PotentialDangersScreen() {
       id: 2,
       nama: 'Erupsi Gunung Berapi',
       date: '14 Februari 2025 - 10:56 WIB',
-      latlong: '-6.595038, 106.816635',
+      // latlong: '-6.595038, 106.816635',
+      latlong: '-6.4849, 106.8434',
       informasiBahaya: {
         kolom1Label: 'Status Aktivitas',
         kolom1Value: 'Level 3 (Siaga)',
@@ -735,6 +736,49 @@ export default function PotentialDangersScreen() {
               </>
             )}
 
+            {modalRiwayatVisible &&
+              filteredRiwayatData.map((item: any) => {
+                // 1) Tentukan ikon (bisa pakai fungsi getRiwayatIcon di atas)
+                let markerIcon = iconBanjir; // default
+                const namaLower = item.nama.toLowerCase();
+                if (namaLower.includes('gempa')) {
+                  markerIcon = iconGempa;
+                } else if (namaLower.includes('longsor')) {
+                  markerIcon = iconLongsor;
+                } else if (namaLower.includes('banjir')) {
+                  markerIcon = iconBanjir;
+                } else if (
+                  namaLower.includes('erupsi') ||
+                  namaLower.includes('gunung')
+                ) {
+                  markerIcon = iconErupsiGunung;
+                } else if (namaLower.includes('tsunami')) {
+                  markerIcon = iconTsunami;
+                }
+
+                // 2) Parse lat/long dari item.latlong
+                //    Bentuknya '-6.238270, 106.975571'
+                const [latStr, lngStr] = item.latlong.split(',');
+                const lat = parseFloat(latStr.trim());
+                const lng = parseFloat(lngStr.trim());
+
+                // 3) Tampilkan Marker
+                return (
+                  <MapboxGL.PointAnnotation
+                    key={`riwayat-${item.id}`}
+                    id={`riwayat-${item.id}`}
+                    coordinate={[lng, lat]} // format [longitude, latitude]
+                    onSelected={() => {
+                      // contoh: buka detail riwayat
+                      setSelectedRiwayatDetail(item);
+                    }}>
+                    <View style={styles.markerContainer}>
+                      <Image source={markerIcon} style={styles.markerIcon} />
+                    </View>
+                  </MapboxGL.PointAnnotation>
+                );
+              })}
+
             {location && (
               <>
                 <MapboxGL.ShapeSource
@@ -1194,163 +1238,161 @@ export default function PotentialDangersScreen() {
           </View>
         </Modal>
         {/* [MODAL RIWAYAT BENCANA] (4) */}
-        <Modal
-          visible={modalRiwayatVisible}
-          animationType="slide"
-          transparent
-          onRequestClose={() => setModalRiwayatVisible(false)}>
-          <View style={styles.modalOverlay}>
+        {modalRiwayatVisible && (
+          <View
+            {...panResponder.panHandlers}
+            style={[
+              styles.bottomSheet,
+              {height: bottomSheetHeight, backgroundColor: colors.bg},
+            ]}>
+            <View style={styles.dragIndicator} />
+            {/* Header Modal Riwayat */}
             <View
-              {...panResponder.panHandlers}
               style={[
-                styles.bottomSheet,
-                {height: bottomSheetHeight, backgroundColor: colors.bg},
+                styles.riwayatHeader,
+                {backgroundColor: colors.bg, paddingBottom: '1%'},
               ]}>
-              <View style={styles.dragIndicator} />
-              {/* Header Modal Riwayat */}
-              <View
-                style={[
-                  styles.riwayatHeader,
-                  {backgroundColor: colors.bg, paddingBottom: '1%'},
-                ]}>
-                <Text style={[styles.riwayatTitle, {color: colors.text}]}>
-                  Riwayat Bencana
-                </Text>
-                <TouchableOpacity onPress={() => setModalRiwayatVisible(false)}>
-                  <AntDesign name="close" size={24} color={colors.text} />
-                </TouchableOpacity>
-              </View>
-              <View
-                style={[
-                  styles.riwayatHeader,
-                  {
-                    backgroundColor: colors.bg,
-                    paddingHorizontal: '4%',
-                    paddingTop: '1%',
-                  },
-                ]}>
-                <Text style={{color: colors.info}}>
-                  Daftar riwayat bahaya yang telah terjadi di sekitar anda
-                </Text>
-              </View>
+              <Text style={[styles.riwayatTitle, {color: colors.text}]}>
+                Riwayat Bencana
+              </Text>
+              <TouchableOpacity onPress={() => setModalRiwayatVisible(false)}>
+                <AntDesign name="close" size={24} color={colors.text} />
+              </TouchableOpacity>
+            </View>
+            <View
+              style={[
+                styles.riwayatHeader,
+                {
+                  backgroundColor: colors.bg,
+                  paddingHorizontal: '4%',
+                  paddingTop: '1%',
+                },
+              ]}>
+              <Text style={{color: colors.info}}>
+                Daftar riwayat bahaya yang telah terjadi di sekitar anda
+              </Text>
+            </View>
 
-              <View style={{marginVertical: 10}}>
-                <FlatList
-                  data={disasterOptions}
-                  horizontal
-                  keyExtractor={item => item.value}
-                  showsHorizontalScrollIndicator={false}
-                  renderItem={({item}) => {
-                    // Jika item adalah filter_modal, buat tombol khusus
-                    if (item.value === 'filter_modal') {
-                      return (
-                        <TouchableOpacity
-                          style={[
-                            styles.disasterOptionItem,
-                            {borderColor: '#aaa'},
-                          ]}
-                          onPress={() => {
-                            // Close modal Riwayat dan buka FilterBottomSheet
-                            setModalRiwayatVisible(false);
-                            setModalFilterAdvancedVisible(true);
-                          }}>
-                          <Ionicons
-                            name="options"
-                            size={20}
-                            color="#777"
-                            style={{marginRight: 5}}
-                          />
-                          <Text
-                            style={[
-                              styles.disasterOptionLabel,
-                              {color: colors.text},
-                            ]}>
-                            {item.label}
-                          </Text>
-                        </TouchableOpacity>
-                      );
-                    }
-                    // Item bencana biasa:
-                    const isSelected = selectedRiwayatFilter.includes(
-                      item.value,
-                    );
-                    let iconSource = null;
-                    if (item.iconSelected && item.iconUnselected) {
-                      iconSource = isSelected
-                        ? item.iconSelected
-                        : item.iconUnselected[colorScheme] ||
-                          item.iconUnselected.light;
-                    }
+            <View style={{marginVertical: 10}}>
+              <FlatList
+                data={disasterOptions}
+                horizontal
+                keyExtractor={item => item.value}
+                showsHorizontalScrollIndicator={false}
+                renderItem={({item}) => {
+                  // Jika item adalah filter_modal, buat tombol khusus
+                  if (item.value === 'filter_modal') {
                     return (
                       <TouchableOpacity
                         style={[
                           styles.disasterOptionItem,
-                          isSelected && styles.disasterOptionItemSelected,
+                          {borderColor: '#aaa'},
                         ]}
-                        onPress={() => toggleRiwayatFilter(item.value)}>
-                        {iconSource ? (
-                          <Image
-                            source={iconSource}
-                            style={styles.disasterOptionIcon}
-                          />
-                        ) : (
-                          <Ionicons
-                            name={item.icon || 'earth'}
-                            size={20}
-                            color={isSelected ? '#f36a1d' : '#777'}
-                            style={{marginRight: 5}}
-                          />
-                        )}
+                        onPress={() => {
+                          // Close modal Riwayat dan buka FilterBottomSheet
+                          setModalRiwayatVisible(false);
+                          setModalFilterAdvancedVisible(true);
+                        }}>
+                        <Ionicons
+                          name="options"
+                          size={20}
+                          color="#777"
+                          style={{marginRight: 5}}
+                        />
                         <Text
                           style={[
                             styles.disasterOptionLabel,
-                            {color: isSelected ? '#f36a1d' : colors.text},
+                            {color: colors.text},
                           ]}>
                           {item.label}
                         </Text>
                       </TouchableOpacity>
                     );
-                  }}
-                />
-              </View>
-
-              {/* Daftar Riwayat */}
-              <FlatList
-                data={riwayatData}
-                keyExtractor={item => item.id.toString()}
-                renderItem={({item}) => {
+                  }
+                  // Item bencana biasa:
+                  const isSelected = selectedRiwayatFilter.includes(item.value);
+                  let iconSource = null;
+                  if (item.iconSelected && item.iconUnselected) {
+                    iconSource = isSelected
+                      ? item.iconSelected
+                      : item.iconUnselected[colorScheme] ||
+                        item.iconUnselected.light;
+                  }
                   return (
                     <TouchableOpacity
-                      style={styles.riwayatCard}
-                      onPress={() => setSelectedRiwayatDetail(item)}>
-                      <Text
-                        style={[styles.riwayatCardTitle, {color: colors.text}]}>
-                        {item.nama}
-                      </Text>
-                      <Text
-                        style={[styles.riwayatCardDate, {color: colors.info}]}>
-                        {item.date}
-                      </Text>
-                      <Text
-                        style={[styles.riwayatCardLatLong, {color: '#13569F'}]}>
-                        {item.latlong}
-                      </Text>
-                      {/* Misalnya detail ringkas */}
+                      style={[
+                        styles.disasterOptionItem,
+                        isSelected && styles.disasterOptionItemSelected,
+                      ]}
+                      onPress={() => toggleRiwayatFilter(item.value)}>
+                      {iconSource ? (
+                        <Image
+                          source={iconSource}
+                          style={styles.disasterOptionIcon}
+                        />
+                      ) : (
+                        <Ionicons
+                          name={item.icon || 'earth'}
+                          size={20}
+                          color={isSelected ? '#f36a1d' : '#777'}
+                          style={{marginRight: 5}}
+                        />
+                      )}
                       <Text
                         style={[
-                          styles.riwayatCardDetail,
-                          {color: colors.info},
+                          styles.disasterOptionLabel,
+                          {color: isSelected ? '#f36a1d' : colors.text},
                         ]}>
-                        {item.informasiBahaya.kolom1Label}{' '}
-                        {item.informasiBahaya.kolom1Value} ...
+                        {item.label}
                       </Text>
                     </TouchableOpacity>
                   );
                 }}
               />
             </View>
+
+            {/* Daftar Riwayat */}
+            <FlatList
+              data={riwayatData}
+              keyExtractor={item => item.id.toString()}
+              renderItem={({item}) => {
+                return (
+                  <TouchableOpacity
+                    style={styles.riwayatCard}
+                    onPress={() => setSelectedRiwayatDetail(item)}>
+                    <Text
+                      style={[styles.riwayatCardTitle, {color: colors.text}]}>
+                      {item.nama}
+                    </Text>
+                    <Text
+                      style={[styles.riwayatCardDate, {color: colors.info}]}>
+                      {item.date}
+                    </Text>
+                    <Text
+                      style={[styles.riwayatCardLatLong, {color: '#13569F'}]}>
+                      {item.latlong}
+                    </Text>
+                    {/* Misalnya detail ringkas */}
+                    <Text
+                      style={[styles.riwayatCardDetail, {color: colors.info}]}>
+                      {item.informasiBahaya.kolom1Label}{' '}
+                      {item.informasiBahaya.kolom1Value} ...
+                    </Text>
+                  </TouchableOpacity>
+                );
+              }}
+            />
           </View>
-        </Modal>
+        )}
+        {/* <Modal
+          visible={modalRiwayatVisible}
+          animationType="slide"
+          transparent
+          onRequestClose={() => setModalRiwayatVisible(false)}>
+          <View style={styles.modalOverlay}>
+           
+          </View>
+        </Modal> */}
 
         {/* Modal Detail Riwayat */}
         <Modal
