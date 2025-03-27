@@ -114,6 +114,20 @@ export default function PotentialDangersScreen() {
   const [selectedFilterJenisBencana, setSelectedFilterJenisBencana] = useState<
     string[]
   >(['semua']);
+  const [modalLayersVisible, setModalLayersVisible] = useState(false);
+  const [baseMapStyle, setBaseMapStyle] = useState(MapboxGL.StyleURL.Street);
+
+  // Daftar base map
+  const baseMaps = [
+    {id: 'light', label: 'Light', style: MapboxGL.StyleURL.Light},
+    {id: 'satellite', label: 'Satellite', style: MapboxGL.StyleURL.Satellite},
+    {id: 'street', label: 'Street View', style: MapboxGL.StyleURL.Street},
+  ];
+  function handleBaseMapChange(newStyle: any) {
+    setBaseMapStyle(newStyle);
+    // Jika ingin menutup modal setelah pilih base map:
+    // setModalLayersVisible(false);
+  }
   const [filterData, setFilterData] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
@@ -421,6 +435,57 @@ export default function PotentialDangersScreen() {
   const iconLongsor = require('../assets/images/iconLongsor.png');
   const iconErupsiGunung = require('../assets/images/iconErupsi.png');
 
+  const iconMapLight = require('../assets/images/map-light.png');
+  const iconMapSaterlite = require('../assets/images/map-saterlite.png');
+  const iconMapStreet = require('../assets/images/map-street.png');
+  const iconLayerGempa = require('../assets/images/layer-gempa.png');
+  const iconLayerBanjir = require('../assets/images/layer-banjir.png');
+  const iconLayerBanjirBandang = require('../assets/images/layer-bandang.png');
+  const iconLayerPergeseranTanah = require('../assets/images/layer-pergeseran.png');
+  const iconLayerGunungBerapi = require('../assets/images/layer-erupsi.png');
+  const iconLayerPatahan = require('../assets/images/layer-patahan.png');
+  const mapsBase = [
+    {
+      id: 'light',
+      label: 'Light',
+      style: MapboxGL.StyleURL.Light,
+      icon: iconMapLight,
+    },
+    {
+      id: 'satellite',
+      label: 'Satellite',
+      style: MapboxGL.StyleURL.Satellite,
+      icon: iconMapSaterlite,
+    },
+    {
+      id: 'street',
+      label: 'Street View',
+      style: MapboxGL.StyleURL.Street,
+      icon: iconMapStreet,
+    },
+  ];
+
+  // Data layer (contoh statis):
+  const layerPotensi = [
+    {id: 'gempa', label: 'Gempa Bumi', icon: iconLayerGempa},
+    {id: 'banjir', label: 'Banjir', icon: iconLayerBanjir},
+    {
+      id: 'banjirBandang',
+      label: 'Banjir Bandang',
+      icon: iconLayerBanjirBandang,
+    },
+    {
+      id: 'pergeseranTanah',
+      label: 'Pergeseran Tanah',
+      icon: iconLayerPergeseranTanah,
+    },
+    {
+      id: 'gunungBerapi',
+      label: 'Erupsi Gn. Berapi',
+      icon: iconLayerGunungBerapi,
+    },
+    {id: 'patahan', label: 'Fault/Patahan', icon: iconLayerPatahan},
+  ];
   const handleSearch = async (text: any) => {
     setSearchQuery(text);
     if (text.trim() === '') {
@@ -690,7 +755,8 @@ export default function PotentialDangersScreen() {
           <MapboxGL.MapView
             ref={mapRef}
             style={styles.map}
-            styleURL={MapboxGL.StyleURL.Street}
+            styleURL={baseMapStyle}
+            //   styleURL={MapboxGL.StyleURL.Street}
             onDidFinishLoadingMap={() => setIsMapReady(true)}>
             <Camera ref={cameraRef} minZoomLevel={4} />
 
@@ -879,6 +945,7 @@ export default function PotentialDangersScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity
+              onPress={() => setModalLayersVisible(true)}
               style={[
                 styles.mapToolButton,
                 {backgroundColor: colors.bg},
@@ -1472,6 +1539,88 @@ export default function PotentialDangersScreen() {
               <Text style={[styles.detailBencanaRow, {color: colors.info}]}>
                 Rekomendasi: {selectedRiwayatDetail?.detailBencana?.rekomendasi}
               </Text>
+            </View>
+          </View>
+        </Modal>
+
+        {/* MODAL LAYER */}
+        <Modal
+          visible={modalLayersVisible}
+          animationType="slide"
+          transparent
+          onRequestClose={() => setModalLayersVisible(false)}>
+          <View style={styles.modalOverlay}>
+            <View
+              style={[styles.bottomSheetLayers, {backgroundColor: colors.bg}]}>
+              {/* Tarik / Drag Indicator (opsional) */}
+              <View style={styles.dragIndicator} />
+
+              {/* Header Modal */}
+              <View style={styles.layersHeader}>
+                <Text style={[styles.layersTitle, {color: colors.text}]}>
+                  Base Map
+                </Text>
+                <TouchableOpacity onPress={() => setModalLayersVisible(false)}>
+                  <AntDesign name="close" size={24} color={colors.text} />
+                </TouchableOpacity>
+              </View>
+
+              <Text style={{color: colors.info, marginBottom: 10}}>
+                Daftar Base Map yang tersedia pada peta
+              </Text>
+
+              {/* Pilihan Base Map */}
+              <View style={styles.baseMapContainer}>
+                {mapsBase.map(bm => {
+                  const isSelected = baseMapStyle === bm.style;
+                  return (
+                    <TouchableOpacity
+                      key={bm.id}
+                      style={[
+                        styles.baseMapItem,
+                        isSelected && styles.baseMapItemSelected,
+                      ]}
+                      onPress={() => handleBaseMapChange(bm.style)}>
+                      {/* Tampilkan ikon base map */}
+                      <Image source={bm.icon} style={styles.baseMapIcon} />
+                      <Text
+                        style={{color: isSelected ? '#f36a1d' : colors.text}}>
+                        {bm.label}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+
+              {/* Separator */}
+              <View style={[styles.divider2, {marginVertical: 15}]} />
+
+              {/* Layer Potensi Bahaya */}
+              <Text style={[styles.layersTitle, {color: colors.text}]}>
+                Layer Potensi Bahaya
+              </Text>
+              <Text style={{color: colors.info, marginBottom: 10}}>
+                Daftar Layer Potensi Bahaya berdasarkan jenis bahaya
+              </Text>
+
+              {/* Grid Layer Potensi */}
+              <View style={styles.layerPotensiContainer}>
+                {layerPotensi.map(layer => (
+                  <TouchableOpacity
+                    key={layer.id}
+                    style={styles.layerPotensiItem}
+                    onPress={() => {
+                      // misal: toggle layer, atau apa pun
+                      console.log('Pressed layer:', layer.id);
+                    }}>
+                    <Image
+                      source={layer.icon}
+                      style={styles.layerPotensiIcon}
+                    />
+                    <Text style={{color: colors.text}}>{layer.label}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
             </View>
           </View>
         </Modal>
@@ -2076,5 +2225,76 @@ const styles = StyleSheet.create({
   detailBencanaRow: {
     fontSize: 14,
     marginBottom: 4,
+  },
+  bottomSheetLayers: {
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+    padding: 16,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: '80%', // supaya modal tidak melebihi 80% layar
+  },
+  layersHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  layersTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  baseMapContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 10,
+  },
+  baseMapItem: {
+    width: 90,
+    height: 110,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 5,
+    padding: 8,
+  },
+  baseMapItemSelected: {
+    borderColor: '#f36a1d',
+    backgroundColor: '#ffe9de',
+  },
+  baseMapIcon: {
+    width: 40,
+    height: 40,
+    marginBottom: 5,
+    resizeMode: 'contain',
+  },
+
+  layerPotensiContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  layerPotensiItem: {
+    width: '30%', // 3 kolom (sesuaikan preferensi)
+    margin: 5,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 10,
+  },
+  layerPotensiIcon: {
+    width: 40,
+    height: 40,
+    marginBottom: 5,
+    resizeMode: 'contain',
+  },
+
+  divider2: {
+    height: 1,
+    backgroundColor: '#ccc',
   },
 });
